@@ -154,8 +154,17 @@ final class OpsMessage
     }
 
     /** Queue the message. Returns the log row, or null when notifications or this event are disabled. */
+    /**
+     * Queues the message; never throws. An identical message sent again within
+     * ops-notify.dedupe_seconds is dropped (returns null), so code that runs once per user or
+     * per retry does not repeat itself in the chat.
+     */
     public function send(): ?OpsNotifyLog
     {
+        if (! Support\Dedupe::isFirst('message', $this->toArray())) {
+            return null;
+        }
+
         return app(OpsNotifier::class)->send($this);
     }
 

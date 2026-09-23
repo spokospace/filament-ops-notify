@@ -20,7 +20,8 @@ beforeEach(function () {
 function burst(int $count, string $event = 'error.thrown', string $title = 'Boom'): void
 {
     foreach (range(1, $count) as $i) {
-        OpsMessage::make($event)->error()->title($title)->send();
+        // A real burst differs in some detail (an id, a timestamp); identical messages are deduped.
+        OpsMessage::make($event)->error()->title($title)->field('Request', uniqid())->send();
     }
 }
 
