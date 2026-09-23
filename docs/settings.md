@@ -50,9 +50,12 @@ These live only in `config/ops-notify.php`:
 
 ## Languages
 
-The panel follows the viewer's locale. Translations ship for English, Polish, German, French,
-Spanish, Italian, Dutch, Brazilian Portuguese and Ukrainian. Any other locale falls back to
-English.
+The panel follows the viewer's locale. The package ships 25 translations:
+
+`bg` `cs` `da` `de` `el` `en` `es` `et` `fi` `fr` `hr` `hu` `it` `lt` `lv` `nb` `nl` `pl`
+`pt_BR` `ro` `sk` `sl` `sv` `tr` `uk`
+
+Any other locale falls back to English.
 
 **Message language** is a separate setting. It sets the language of the text the package adds to
 Telegram messages (for example *and 3 more fields*), so every message in a chat is in the same
