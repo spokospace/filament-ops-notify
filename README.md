@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="art/cover-dark.jpg">
-  <img alt="Filament Ops Notify: inquiries, errors and builds from your Filament panel, delivered to Telegram forum topics" src="art/cover-light.jpg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/cover-dark.jpg">
+  <img alt="Filament Ops Notify: inquiries, errors and builds from your Filament panel, delivered to Telegram forum topics" src="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/cover-light.jpg">
 </picture>
 
 # Filament Ops Notify
@@ -34,6 +34,29 @@ reach Telegram with no code changes.
   resent.
 - **`ops` notification channel and a fluent `OpsMessage`** for events that are not bell notifications.
 - **Channel-agnostic core.** Telegram today; other drivers plug in.
+
+## Screenshots
+
+**The Ops notifications page:** connection status and the history of every message sent, with
+failed ones ready to resend.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/page-dark.png">
+  <img alt="Ops notifications page with the connection status and the message history" src="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/page-light.png">
+</picture>
+
+**Settings:** bot token, chat id and message language, plus forum topics that can be created in
+Telegram or imported from it. Filled lists collapse to a one-line summary.
+
+<img alt="Settings slide-over with the Telegram connection and the topics list" src="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/settings-light.png" width="600">
+
+**Bot profile:** pick a preset avatar or upload your own, and set the name and descriptions
+Telegram shows.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/bot-profile-dark.png">
+  <img alt="Bot profile slide-over with preset avatars, display name and descriptions" src="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/bot-profile-light.png" width="600">
+</picture>
 
 ## Requirements
 
