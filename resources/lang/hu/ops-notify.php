@@ -13,6 +13,15 @@ return [
         'configured' => 'Beállítva',
         'not_configured' => 'Nincs beállítva',
         'connected_as' => 'Csatlakozva mint @:username',
+        'delivery' => 'Kézbesítés',
+        'delivery_sync' => 'Azonnal (sync sor)',
+        'horizon_running' => 'A Horizon fut',
+        'horizon_paused' => 'A Horizon szüneteltetve',
+        'horizon_inactive' => 'A Horizon nem fut',
+        'horizon_paused_warning' => 'A Horizon szüneteltetve van, ezért az üzenetek a sorban várakoznak. Futtasd: php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'A Horizon nem fut, ezért az üzenetek a sorban várakoznak. Indítsd el ezzel: php artisan horizon.',
+        'queue_not_in_horizon' => 'Egyik Horizon supervisor sem dolgozza fel a(z) „:queue” sort a(z) „:connection” kapcsolaton, így az üzenetek sosem hagyják el. Add hozzá a sort a config/horizon.php fájlhoz.',
+        'queue_stuck' => ':count üzenet több mint :minutes perce vár a sorban. Fut queue worker?|:count üzenet több mint :minutes perce vár a sorban. Fut queue worker?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Újraküldés',
         'sent' => 'Elküldve',
         'not_sent' => 'Nincs elküldve',
+        'via_queue' => 'Küldés a soron keresztül',
+        'via_queue_help' => 'A queue workert is teszteli. Kikapcsolva az üzenet azonnal elmegy, ami csak a tokent és a csevegést ellenőrzi.',
+        'queued' => 'Sorban áll',
+        'queued_body' => 'Az előzményekben „Elküldve” lesz, amint egy queue worker feldolgozza.',
     ],
 
     'table' => [

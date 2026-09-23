@@ -5,6 +5,7 @@ namespace Spokospace\OpsNotify\Filament\Pages;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -31,6 +32,7 @@ use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\OpsNotifier;
 use Spokospace\OpsNotify\Settings\SettingsStore;
+use Spokospace\OpsNotify\Support\QueueStatus;
 use Spokospace\OpsNotify\Support\Trans;
 use Throwable;
 use UnitEnum;
@@ -108,6 +110,12 @@ class OpsNotifyPage extends Page implements HasTable
                         ->default(Trans::get('actions.test_default_text'))
                         ->required()
                         ->maxLength(1000),
+                    // Hidden on the sync queue, where "through the queue" and "right away" are the same.
+                    Toggle::make('via_queue')
+                        ->label(Trans::get('actions.via_queue'))
+                        ->helperText(Trans::get('actions.via_queue_help'))
+                        ->default(true)
+                        ->visible(fn (): bool => ! app(QueueStatus::class)->isSync()),
                 ])
                 ->modalSubmitActionLabel(Trans::get('actions.send'))
                 ->action(function (array $data): void {
@@ -116,7 +124,7 @@ class OpsNotifyPage extends Page implements HasTable
                         ->line($data['text'])
                         ->field(Trans::get('message.sent_by'), auth()->user()?->email));
 
-                    $this->deliverNow($message);
+                    ($data['via_queue'] ?? false) ? $this->queue($message) : $this->deliverNow($message);
                 }),
         ];
     }
@@ -125,7 +133,7 @@ class OpsNotifyPage extends Page implements HasTable
     {
         return $schema->components([
             Section::make(Trans::get('page.status'))
-                ->columns(4)
+                ->columns(['default' => 1, 'sm' => 2, 'xl' => 5])
                 ->schema([
                     TextEntry::make('service')
                         ->label(Trans::get('page.service'))
@@ -146,6 +154,16 @@ class OpsNotifyPage extends Page implements HasTable
                     TextEntry::make('connection')
                         ->label(Trans::get('page.connection'))
                         ->state(fn (): string => $this->connectionStatus()),
+                    TextEntry::make('delivery')
+                        ->label(Trans::get('page.delivery'))
+                        ->state(fn (): string => app(QueueStatus::class)->summary()),
+                    TextEntry::make('delivery_warning')
+                        ->hiddenLabel()
+                        ->columnSpanFull()
+                        ->icon(Heroicon::OutlinedExclamationTriangle)
+                        ->iconColor('warning')
+                        ->state(fn (): ?string => app(QueueStatus::class)->warning())
+                        ->visible(fn (?string $state): bool => filled($state)),
                 ]),
             EmbeddedTable::make(),
         ]);
@@ -156,6 +174,8 @@ class OpsNotifyPage extends Page implements HasTable
         return $table
             ->query(OpsNotifyLog::query())
             ->defaultSort('id', 'desc')
+            // Watch queued rows turn Sent (or Failed) without reloading; idle otherwise.
+            ->poll(fn (): ?string => OpsNotifyLog::query()->where('status', DeliveryStatus::Queued)->exists() ? '5s' : null)
             ->columns([
                 TextColumn::make('created_at')
                     ->label(Trans::get('table.when'))
@@ -198,7 +218,12 @@ class OpsNotifyPage extends Page implements HasTable
                     ->icon(Heroicon::OutlinedArrowPath)
                     ->visible(fn (OpsNotifyLog $record): bool => $record->status === DeliveryStatus::Failed)
                     ->action(function (OpsNotifyLog $record): void {
-                        if (! $this->deliverNow($record->toMessage(), $resent)) {
+                        // Same path as real messages: through the queue unless it is sync.
+                        $sent = app(QueueStatus::class)->isSync()
+                            ? $this->deliverNow($record->toMessage(), $resent)
+                            : $this->queue($record->toMessage(), $resent);
+
+                        if (! $sent) {
                             return;
                         }
 
@@ -213,7 +238,7 @@ class OpsNotifyPage extends Page implements HasTable
             ->emptyStateHeading(Trans::get('table.empty'));
     }
 
-    /** Shows the outcome as a Filament notification; never throws. */
+    /** Sends right away and shows the outcome as a Filament notification; never throws. */
     private function deliverNow(OpsMessage $message, ?OpsNotifyLog &$log = null): bool
     {
         try {
@@ -229,6 +254,25 @@ class OpsNotifyPage extends Page implements HasTable
         }
 
         Notification::make()->success()->title(Trans::get('actions.sent'))->send();
+
+        return true;
+    }
+
+    /** Queues the message like any real one, so the worker is tested too; never throws. */
+    private function queue(OpsMessage $message, ?OpsNotifyLog &$log = null): bool
+    {
+        $notifier = app(OpsNotifier::class);
+
+        if ($notifier->destinationFor($message) === null) {
+            Notification::make()->warning()->title(Trans::get('actions.not_sent'))->body(MessageSkipped::for($message->event)->getMessage())->send();
+
+            return false;
+        }
+
+        // send() logs and swallows its own errors; the row it returns shows where the message is.
+        $log = $notifier->send($message);
+
+        Notification::make()->success()->title(Trans::get('actions.queued'))->body(Trans::get('actions.queued_body'))->send();
 
         return true;
     }

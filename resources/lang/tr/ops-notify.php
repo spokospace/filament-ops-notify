@@ -13,6 +13,15 @@ return [
         'configured' => 'Yapılandırıldı',
         'not_configured' => 'Yapılandırılmadı',
         'connected_as' => '@:username olarak bağlandı',
+        'delivery' => 'Teslimat',
+        'delivery_sync' => 'Hemen (sync kuyruğu)',
+        'horizon_running' => 'Horizon çalışıyor',
+        'horizon_paused' => 'Horizon duraklatıldı',
+        'horizon_inactive' => 'Horizon çalışmıyor',
+        'horizon_paused_warning' => 'Horizon duraklatıldı, bu yüzden mesajlar kuyrukta bekliyor. php artisan horizon:continue komutunu çalıştırın.',
+        'horizon_inactive_warning' => 'Horizon çalışmıyor, bu yüzden mesajlar kuyrukta bekliyor. php artisan horizon ile başlatın.',
+        'queue_not_in_horizon' => 'Hiçbir Horizon supervisor\'ı ":connection" üzerindeki ":queue" kuyruğunu işlemiyor, bu yüzden mesajlar kuyruktan hiç çıkmayacak. Kuyruğu config/horizon.php dosyasına ekleyin.',
+        'queue_stuck' => ':count mesaj :minutes dakikadan uzun süredir kuyrukta bekliyor. Bir queue worker çalışıyor mu?|:count mesaj :minutes dakikadan uzun süredir kuyrukta bekliyor. Bir queue worker çalışıyor mu?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Yeniden gönder',
         'sent' => 'Gönderildi',
         'not_sent' => 'Gönderilmedi',
+        'via_queue' => 'Kuyruk üzerinden gönder',
+        'via_queue_help' => 'Queue worker\'ı da test eder. Kapalıyken mesaj hemen gönderilir; bu yalnızca token\'ı ve sohbeti kontrol eder.',
+        'queued' => 'Kuyrukta',
+        'queued_body' => 'Bir queue worker mesajı aldığında geçmişte "Gönderildi" olarak görünür.',
     ],
 
     'table' => [

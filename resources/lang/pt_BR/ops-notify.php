@@ -13,6 +13,15 @@ return [
         'configured' => 'Configurado',
         'not_configured' => 'Não configurado',
         'connected_as' => 'Conectado como @:username',
+        'delivery' => 'Entrega',
+        'delivery_sync' => 'Imediata (fila sync)',
+        'horizon_running' => 'Horizon em execução',
+        'horizon_paused' => 'Horizon pausado',
+        'horizon_inactive' => 'Horizon parado',
+        'horizon_paused_warning' => 'O Horizon está pausado, então as mensagens aguardam na fila. Execute php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'O Horizon não está em execução, então as mensagens aguardam na fila. Inicie-o com php artisan horizon.',
+        'queue_not_in_horizon' => 'Nenhum supervisor do Horizon processa a fila ":queue" em ":connection", então as mensagens nunca sairão dela. Adicione a fila ao config/horizon.php.',
+        'queue_stuck' => ':count mensagem está na fila há mais de :minutes minutos. Há um worker de fila em execução?|:count mensagens estão na fila há mais de :minutes minutos. Há um worker de fila em execução?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Reenviar',
         'sent' => 'Enviado',
         'not_sent' => 'Não enviado',
+        'via_queue' => 'Enviar pela fila',
+        'via_queue_help' => 'Também testa o worker da fila. Desativado, a mensagem é enviada na hora, o que só verifica o token e o chat.',
+        'queued' => 'Na fila',
+        'queued_body' => 'Muda para "Enviado" no histórico assim que um worker da fila a processar.',
     ],
 
     'table' => [

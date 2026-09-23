@@ -13,6 +13,15 @@ return [
         'configured' => 'Määritetty',
         'not_configured' => 'Ei määritetty',
         'connected_as' => 'Yhdistetty käyttäjänä @:username',
+        'delivery' => 'Toimitus',
+        'delivery_sync' => 'Heti (sync-jono)',
+        'horizon_running' => 'Horizon käynnissä',
+        'horizon_paused' => 'Horizon keskeytetty',
+        'horizon_inactive' => 'Horizon ei käynnissä',
+        'horizon_paused_warning' => 'Horizon on keskeytetty, joten viestit odottavat jonossa. Suorita php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon ei ole käynnissä, joten viestit odottavat jonossa. Käynnistä se komennolla php artisan horizon.',
+        'queue_not_in_horizon' => 'Mikään Horizon-supervisor ei käsittele jonoa ”:queue” yhteydessä ”:connection”, joten viestit eivät koskaan lähde sieltä. Lisää jono tiedostoon config/horizon.php.',
+        'queue_stuck' => ':count viesti on ollut jonossa yli :minutes minuuttia. Onko queue worker käynnissä?|:count viestiä on ollut jonossa yli :minutes minuuttia. Onko queue worker käynnissä?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Lähetä uudelleen',
         'sent' => 'Lähetetty',
         'not_sent' => 'Ei lähetetty',
+        'via_queue' => 'Lähetä jonon kautta',
+        'via_queue_help' => 'Testaa myös queue workerin. Pois päältä viesti lähetetään heti, jolloin tarkistetaan vain token ja chat.',
+        'queued' => 'Jonossa',
+        'queued_body' => 'Historiassa tila vaihtuu muotoon ”Lähetetty”, kun queue worker poimii sen.',
     ],
 
     'table' => [

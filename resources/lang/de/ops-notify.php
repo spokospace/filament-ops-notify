@@ -13,6 +13,15 @@ return [
         'configured' => 'Konfiguriert',
         'not_configured' => 'Nicht konfiguriert',
         'connected_as' => 'Verbunden als @:username',
+        'delivery' => 'Zustellung',
+        'delivery_sync' => 'Sofort (sync-Warteschlange)',
+        'horizon_running' => 'Horizon läuft',
+        'horizon_paused' => 'Horizon pausiert',
+        'horizon_inactive' => 'Horizon läuft nicht',
+        'horizon_paused_warning' => 'Horizon ist pausiert, daher warten Nachrichten in der Warteschlange. Führe php artisan horizon:continue aus.',
+        'horizon_inactive_warning' => 'Horizon läuft nicht, daher warten Nachrichten in der Warteschlange. Starte es mit php artisan horizon.',
+        'queue_not_in_horizon' => 'Kein Horizon-Supervisor bearbeitet die Warteschlange „:queue“ auf „:connection“, daher verlassen Nachrichten sie nie. Füge die Warteschlange in config/horizon.php hinzu.',
+        'queue_stuck' => ':count Nachricht wartet seit über :minutes Minuten in der Warteschlange. Läuft ein Queue-Worker?|:count Nachrichten warten seit über :minutes Minuten in der Warteschlange. Läuft ein Queue-Worker?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Erneut senden',
         'sent' => 'Gesendet',
         'not_sent' => 'Nicht gesendet',
+        'via_queue' => 'Über die Warteschlange senden',
+        'via_queue_help' => 'Testet auch den Queue-Worker. Ausgeschaltet wird die Nachricht sofort gesendet, was nur Token und Chat prüft.',
+        'queued' => 'In Warteschlange',
+        'queued_body' => 'Im Verlauf wechselt sie zu „Gesendet“, sobald ein Queue-Worker sie abholt.',
     ],
 
     'table' => [

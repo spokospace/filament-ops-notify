@@ -13,6 +13,15 @@ return [
         'configured' => 'Postavljeno',
         'not_configured' => 'Nije postavljeno',
         'connected_as' => 'Povezano kao @:username',
+        'delivery' => 'Isporuka',
+        'delivery_sync' => 'Odmah (sync red čekanja)',
+        'horizon_running' => 'Horizon radi',
+        'horizon_paused' => 'Horizon pauziran',
+        'horizon_inactive' => 'Horizon ne radi',
+        'horizon_paused_warning' => 'Horizon je pauziran, pa poruke čekaju u redu čekanja. Pokreni php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon ne radi, pa poruke čekaju u redu čekanja. Pokreni ga naredbom php artisan horizon.',
+        'queue_not_in_horizon' => 'Nijedan Horizon supervisor ne obrađuje red čekanja „:queue“ na „:connection“, pa poruke nikada neće izaći iz njega. Dodaj red čekanja u config/horizon.php.',
+        'queue_stuck' => ':count poruka čeka u redu čekanja dulje od :minutes minuta. Radi li queue worker?|:count poruke čekaju u redu čekanja dulje od :minutes minuta. Radi li queue worker?|:count poruka čeka u redu čekanja dulje od :minutes minuta. Radi li queue worker?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Pošalji ponovno',
         'sent' => 'Poslano',
         'not_sent' => 'Nije poslano',
+        'via_queue' => 'Pošalji kroz red čekanja',
+        'via_queue_help' => 'Testira i queue worker. Kad je isključeno, poruka se šalje odmah, što provjerava samo token i chat.',
+        'queued' => 'U redu čekanja',
+        'queued_body' => 'U povijesti se mijenja u „Poslano“ čim je queue worker preuzme.',
     ],
 
     'table' => [

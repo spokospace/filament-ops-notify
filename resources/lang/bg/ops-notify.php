@@ -13,6 +13,15 @@ return [
         'configured' => 'Конфигурирано',
         'not_configured' => 'Не е конфигурирано',
         'connected_as' => 'Свързан като @:username',
+        'delivery' => 'Доставка',
+        'delivery_sync' => 'Веднага (опашка sync)',
+        'horizon_running' => 'Horizon работи',
+        'horizon_paused' => 'Horizon е на пауза',
+        'horizon_inactive' => 'Horizon не работи',
+        'horizon_paused_warning' => 'Horizon е на пауза, затова съобщенията чакат на опашката. Изпълнете php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon не работи, затова съобщенията чакат на опашката. Стартирайте го с php artisan horizon.',
+        'queue_not_in_horizon' => 'Нито един supervisor на Horizon не обработва опашката „:queue“ на „:connection“, затова съобщенията никога няма да я напуснат. Добавете опашката в config/horizon.php.',
+        'queue_stuck' => ':count съобщение чака на опашката повече от :minutes минути. Работи ли queue worker?|:count съобщения чакат на опашката повече от :minutes минути. Работи ли queue worker?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Изпрати отново',
         'sent' => 'Изпратено',
         'not_sent' => 'Не е изпратено',
+        'via_queue' => 'Изпращане през опашката',
+        'via_queue_help' => 'Проверява и queue worker-а. Когато е изключено, съобщението се изпраща веднага, което проверява само токена и чата.',
+        'queued' => 'На опашка',
+        'queued_body' => 'В историята се сменя на „Изпратено“, щом queue worker го обработи.',
     ],
 
     'table' => [

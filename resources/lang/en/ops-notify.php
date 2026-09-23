@@ -13,6 +13,15 @@ return [
         'configured' => 'Configured',
         'not_configured' => 'Not configured',
         'connected_as' => 'Connected as @:username',
+        'delivery' => 'Delivery',
+        'delivery_sync' => 'Immediately (sync queue)',
+        'horizon_running' => 'Horizon running',
+        'horizon_paused' => 'Horizon paused',
+        'horizon_inactive' => 'Horizon not running',
+        'horizon_paused_warning' => 'Horizon is paused, so messages wait in the queue. Run php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon is not running, so messages wait in the queue. Start it with php artisan horizon.',
+        'queue_not_in_horizon' => 'No Horizon supervisor works the ":queue" queue on ":connection", so messages will never leave it. Add the queue to config/horizon.php.',
+        'queue_stuck' => ':count message has been queued for over :minutes minutes. Is a queue worker running?|:count messages have been queued for over :minutes minutes. Is a queue worker running?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Resend',
         'sent' => 'Sent',
         'not_sent' => 'Not sent',
+        'via_queue' => 'Send through the queue',
+        'via_queue_help' => 'Also tests the queue worker. Turned off, the message is sent right away, which only checks the token and chat.',
+        'queued' => 'Queued',
+        'queued_body' => 'It changes to Sent in the history once a queue worker picks it up.',
     ],
 
     'table' => [

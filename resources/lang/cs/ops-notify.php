@@ -13,6 +13,15 @@ return [
         'configured' => 'Nastaveno',
         'not_configured' => 'Nenastaveno',
         'connected_as' => 'Připojeno jako @:username',
+        'delivery' => 'Doručování',
+        'delivery_sync' => 'Okamžitě (fronta sync)',
+        'horizon_running' => 'Horizon běží',
+        'horizon_paused' => 'Horizon pozastaven',
+        'horizon_inactive' => 'Horizon neběží',
+        'horizon_paused_warning' => 'Horizon je pozastaven, takže zprávy čekají ve frontě. Spusťte php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon neběží, takže zprávy čekají ve frontě. Spusťte ho příkazem php artisan horizon.',
+        'queue_not_in_horizon' => 'Žádný supervisor Horizonu nezpracovává frontu „:queue“ na „:connection“, takže ji zprávy nikdy neopustí. Přidejte frontu do config/horizon.php.',
+        'queue_stuck' => ':count zpráva čeká ve frontě déle než :minutes minut. Běží queue worker?|:count zprávy čekají ve frontě déle než :minutes minut. Běží queue worker?|:count zpráv čeká ve frontě déle než :minutes minut. Běží queue worker?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Odeslat znovu',
         'sent' => 'Odesláno',
         'not_sent' => 'Neodesláno',
+        'via_queue' => 'Odeslat přes frontu',
+        'via_queue_help' => 'Otestuje i queue worker. Když je vypnuto, zpráva se odešle hned, což ověří jen token a chat.',
+        'queued' => 'Ve frontě',
+        'queued_body' => 'V historii se změní na „Odesláno“, jakmile ji queue worker zpracuje.',
     ],
 
     'table' => [

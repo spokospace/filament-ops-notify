@@ -13,6 +13,15 @@ return [
         'configured' => 'Nastavené',
         'not_configured' => 'Nenastavené',
         'connected_as' => 'Pripojené ako @:username',
+        'delivery' => 'Doručovanie',
+        'delivery_sync' => 'Okamžite (front sync)',
+        'horizon_running' => 'Horizon beží',
+        'horizon_paused' => 'Horizon pozastavený',
+        'horizon_inactive' => 'Horizon nebeží',
+        'horizon_paused_warning' => 'Horizon je pozastavený, takže správy čakajú vo fronte. Spustite php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon nebeží, takže správy čakajú vo fronte. Spustite ho príkazom php artisan horizon.',
+        'queue_not_in_horizon' => 'Žiadny supervisor Horizonu nespracúva front „:queue“ na „:connection“, takže ho správy nikdy neopustia. Pridajte front do config/horizon.php.',
+        'queue_stuck' => ':count správa čaká vo fronte dlhšie ako :minutes minút. Beží queue worker?|:count správy čakajú vo fronte dlhšie ako :minutes minút. Beží queue worker?|:count správ čaká vo fronte dlhšie ako :minutes minút. Beží queue worker?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Odoslať znova',
         'sent' => 'Odoslané',
         'not_sent' => 'Neodoslané',
+        'via_queue' => 'Odoslať cez front',
+        'via_queue_help' => 'Otestuje aj queue worker. Keď je vypnuté, správa sa odošle hneď, čo overí len token a chat.',
+        'queued' => 'Vo fronte',
+        'queued_body' => 'V histórii sa zmení na „Odoslané“, keď ju queue worker spracuje.',
     ],
 
     'table' => [
@@ -49,7 +62,7 @@ return [
     ],
 
     'status' => [
-        'queued' => 'V poradí',
+        'queued' => 'Vo fronte',
         'sent' => 'Odoslané',
         'failed' => 'Zlyhalo',
         'resent' => 'Odoslané znova',

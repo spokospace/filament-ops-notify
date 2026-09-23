@@ -13,6 +13,15 @@ return [
         'configured' => 'Konfigurert',
         'not_configured' => 'Ikke konfigurert',
         'connected_as' => 'Tilkoblet som @:username',
+        'delivery' => 'Levering',
+        'delivery_sync' => 'Umiddelbart (sync-kø)',
+        'horizon_running' => 'Horizon kjører',
+        'horizon_paused' => 'Horizon satt på pause',
+        'horizon_inactive' => 'Horizon kjører ikke',
+        'horizon_paused_warning' => 'Horizon er satt på pause, så meldinger venter i køen. Kjør php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon kjører ikke, så meldinger venter i køen. Start den med php artisan horizon.',
+        'queue_not_in_horizon' => 'Ingen Horizon-supervisor behandler køen «:queue» på «:connection», så meldingene forlater den aldri. Legg til køen i config/horizon.php.',
+        'queue_stuck' => ':count melding har ligget i køen i over :minutes minutter. Kjører en queue worker?|:count meldinger har ligget i køen i over :minutes minutter. Kjører en queue worker?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Send på nytt',
         'sent' => 'Sendt',
         'not_sent' => 'Ikke sendt',
+        'via_queue' => 'Send gjennom køen',
+        'via_queue_help' => 'Tester også queue workeren. Avslått sendes meldingen med en gang, som bare sjekker token og chat.',
+        'queued' => 'I kø',
+        'queued_body' => 'Den endres til «Sendt» i historikken når en queue worker plukker den opp.',
     ],
 
     'table' => [

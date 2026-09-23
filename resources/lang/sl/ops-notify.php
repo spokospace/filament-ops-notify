@@ -13,6 +13,15 @@ return [
         'configured' => 'Nastavljeno',
         'not_configured' => 'Ni nastavljeno',
         'connected_as' => 'Povezano kot @:username',
+        'delivery' => 'Dostava',
+        'delivery_sync' => 'Takoj (čakalna vrsta sync)',
+        'horizon_running' => 'Horizon teče',
+        'horizon_paused' => 'Horizon začasno ustavljen',
+        'horizon_inactive' => 'Horizon ne teče',
+        'horizon_paused_warning' => 'Horizon je začasno ustavljen, zato sporočila čakajo v čakalni vrsti. Zaženite php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon ne teče, zato sporočila čakajo v čakalni vrsti. Zaženite ga z ukazom php artisan horizon.',
+        'queue_not_in_horizon' => 'Noben supervisor Horizon ne obdeluje čakalne vrste „:queue“ na „:connection“, zato je sporočila nikoli ne bodo zapustila. Dodajte čakalno vrsto v config/horizon.php.',
+        'queue_stuck' => ':count sporočilo čaka v čakalni vrsti več kot :minutes minut. Ali deluje queue worker?|:count sporočili čakata v čakalni vrsti več kot :minutes minut. Ali deluje queue worker?|:count sporočila čakajo v čakalni vrsti več kot :minutes minut. Ali deluje queue worker?|:count sporočil čaka v čakalni vrsti več kot :minutes minut. Ali deluje queue worker?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Pošlji znova',
         'sent' => 'Poslano',
         'not_sent' => 'Ni poslano',
+        'via_queue' => 'Pošlji prek čakalne vrste',
+        'via_queue_help' => 'Preizkusi tudi queue worker. Če je izklopljeno, se sporočilo pošlje takoj, kar preveri le žeton in klepet.',
+        'queued' => 'V čakalni vrsti',
+        'queued_body' => 'V zgodovini se spremeni v „Poslano“, ko ga queue worker prevzame.',
     ],
 
     'table' => [

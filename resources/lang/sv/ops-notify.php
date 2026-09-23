@@ -13,6 +13,15 @@ return [
         'configured' => 'Konfigurerad',
         'not_configured' => 'Inte konfigurerad',
         'connected_as' => 'Ansluten som @:username',
+        'delivery' => 'Leverans',
+        'delivery_sync' => 'Direkt (sync-kö)',
+        'horizon_running' => 'Horizon körs',
+        'horizon_paused' => 'Horizon pausad',
+        'horizon_inactive' => 'Horizon körs inte',
+        'horizon_paused_warning' => 'Horizon är pausad, så meddelanden väntar i kön. Kör php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon körs inte, så meddelanden väntar i kön. Starta den med php artisan horizon.',
+        'queue_not_in_horizon' => 'Ingen Horizon-supervisor hanterar kön ”:queue” på ”:connection”, så meddelandena lämnar den aldrig. Lägg till kön i config/horizon.php.',
+        'queue_stuck' => ':count meddelande har legat i kön i över :minutes minuter. Körs en queue worker?|:count meddelanden har legat i kön i över :minutes minuter. Körs en queue worker?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Skicka igen',
         'sent' => 'Skickat',
         'not_sent' => 'Inte skickat',
+        'via_queue' => 'Skicka via kön',
+        'via_queue_help' => 'Testar även queue workern. Avstängt skickas meddelandet direkt, vilket bara kontrollerar token och chatt.',
+        'queued' => 'I kö',
+        'queued_body' => 'Det ändras till ”Skickad” i historiken när en queue worker plockar upp det.',
     ],
 
     'table' => [
