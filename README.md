@@ -7,7 +7,7 @@
 
 [![Tests](https://github.com/spokospace/filament-ops-notify/actions/workflows/tests.yml/badge.svg)](https://github.com/spokospace/filament-ops-notify/actions/workflows/tests.yml)
 [![Latest release](https://img.shields.io/github/v/release/spokospace/filament-ops-notify)](https://github.com/spokospace/filament-ops-notify/releases)
-![PHP](https://img.shields.io/badge/PHP-8.3%20%7C%208.4-777bb4)
+![PHP](https://img.shields.io/badge/PHP-8.3%20%7C%208.4%20%7C%208.5-777bb4)
 ![Laravel](https://img.shields.io/badge/Laravel-12%20%7C%2013-ff2d20)
 ![Filament](https://img.shields.io/badge/Filament-5-f59e0b)
 
