@@ -2,6 +2,7 @@
 
 namespace Spokospace\OpsNotify;
 
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Notifications\ChannelManager as NotificationChannelManager;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Event;
@@ -10,6 +11,7 @@ use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Spokospace\OpsNotify\Commands\DiscoverTelegramChatsCommand;
 use Spokospace\OpsNotify\Commands\SendTestCommand;
 use Spokospace\OpsNotify\Listeners\ForwardFilamentDatabaseNotification;
+use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\Notifications\OpsChannel;
 use Spokospace\OpsNotify\Settings\SettingsStore;
 
@@ -45,5 +47,15 @@ class OpsNotifyServiceProvider extends PackageServiceProvider
         });
 
         Event::listen(NotificationSent::class, ForwardFilamentDatabaseNotification::class);
+
+        // The package owns the log table and its retention, so it schedules the pruning too.
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
+            if (filled($at = config('ops-notify.log.prune_at'))) {
+                $schedule->command('model:prune', ['--model' => [OpsNotifyLog::class]])
+                    ->dailyAt($at)
+                    ->name('ops-notify:prune-log')
+                    ->withoutOverlapping();
+            }
+        });
     }
 }

@@ -14,6 +14,12 @@ return [
     'enabled' => env('OPS_NOTIFY_ENABLED'),
 
     /*
+    | Never post to the real chat from an app's test suite (the token may well be in .env).
+    | Set to false only in a test that exercises delivery against a faked HTTP client.
+    */
+    'disable_in_tests' => true,
+
+    /*
     | Label that prefixes every message, so one chat can collect several services.
     */
     'service' => env('OPS_NOTIFY_SERVICE', env('APP_NAME', 'Laravel')),
@@ -73,8 +79,10 @@ return [
     'log' => [
         // Store every sent message in ops_notify_logs (shown on the Filament page).
         'enabled' => env('OPS_NOTIFY_LOG_ENABLED', true),
-        // Rows older than this are removed by `php artisan model:prune`.
+        // Rows older than this are removed daily at `prune_at` (scheduled by the package;
+        // needs the app's scheduler running). Set prune_at to null to schedule it yourself.
         'prune_after_days' => 30,
+        'prune_at' => '02:45',
     ],
 
 ];

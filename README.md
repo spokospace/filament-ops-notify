@@ -140,11 +140,15 @@ event (`#inquiry_created`), so every event is searchable in the chat.
 
 ## Log
 
-Every message is stored in `ops_notify_logs`. To remove old rows, schedule:
+Every message is stored in `ops_notify_logs`. The package schedules pruning itself: daily at
+`log.prune_at` (02:45) it deletes rows older than `log.prune_after_days` (30). The app only needs
+its scheduler running. Set `prune_at` to null to schedule it yourself.
 
-```php
-Schedule::command('model:prune', ['--model' => [\Spokospace\OpsNotify\Models\OpsNotifyLog::class]])->daily();
-```
+## Tests in your app
+
+Nothing is sent while the app's test suite runs (`runningUnitTests()`), even when the bot token is
+in `.env`. A test that wants to exercise delivery sets `ops-notify.disable_in_tests` to `false` and
+fakes HTTP.
 
 ## Adding a driver
 
