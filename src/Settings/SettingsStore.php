@@ -27,6 +27,7 @@ class SettingsStore
     /** Setting key => config path it overrides. */
     public const FIELDS = [
         'service' => 'ops-notify.service',
+        'locale' => 'ops-notify.locale',
         'enabled' => 'ops-notify.enabled',
         'telegram_bot_token' => 'ops-notify.channels.telegram.bot_token',
         'telegram_chat_id' => 'ops-notify.channels.telegram.chat_id',

@@ -25,6 +25,13 @@ return [
     */
     'service' => env('OPS_NOTIFY_SERVICE'),
 
+    /*
+    | [panel] Language of the text the package puts into messages (labels, buttons, "and N more
+    | fields"). The chat is read by the team, so it is one language per service rather than the
+    | locale of whoever triggered the message. Null = the app locale.
+    */
+    'locale' => env('OPS_NOTIFY_LOCALE'),
+
     'default_channel' => env('OPS_NOTIFY_CHANNEL', 'telegram'),
 
     'channels' => [

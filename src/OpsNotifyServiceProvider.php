@@ -22,6 +22,7 @@ class OpsNotifyServiceProvider extends PackageServiceProvider
         $package
             ->name('ops-notify')
             ->hasConfigFile()
+            ->hasTranslations()
             // Run straight from the package so every app gets the table on its next deploy, and
             // stay publishable (ops-notify-migrations) for apps that need to adjust them.
             ->discoversMigrations()

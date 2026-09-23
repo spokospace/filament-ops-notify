@@ -5,6 +5,7 @@ namespace Spokospace\OpsNotify\Channels\Telegram;
 use Illuminate\Support\Str;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\Support\Button;
+use Spokospace\OpsNotify\Support\Trans;
 
 /**
  * Renders an OpsMessage as Telegram HTML.
@@ -82,7 +83,7 @@ class TelegramFormatter
 
             if ($length > $budget) {
                 $rest = count($fields) - count($lines);
-                $lines[] = ['…', "and {$rest} more field".($rest === 1 ? '' : 's')];
+                $lines[] = ['…', Trans::choice('message.more_fields', $rest)];
 
                 break;
             }

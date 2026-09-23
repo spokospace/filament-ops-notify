@@ -124,7 +124,7 @@ it('marks the original row resent so it cannot be resent twice', function () {
     $new = OpsNotifyLog::query()->latest('id')->first();
     expect($failed->fresh())
         ->status->toBe(DeliveryStatus::Resent)
-        ->error->toBe("Resent as #{$new->id}");
+        ->error->toBe((string) $new->id);
 });
 
 it('marks a rate-limited message failed on the sync queue instead of losing it', function () {

@@ -4,6 +4,7 @@ namespace Spokospace\OpsNotify\Enums;
 
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
+use Spokospace\OpsNotify\Support\Trans;
 
 enum Level: string implements HasColor, HasLabel
 {
@@ -36,6 +37,6 @@ enum Level: string implements HasColor, HasLabel
 
     public function getLabel(): string
     {
-        return ucfirst($this->value);
+        return Trans::get("level.{$this->value}");
     }
 }

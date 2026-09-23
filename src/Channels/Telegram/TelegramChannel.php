@@ -12,17 +12,18 @@ use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\Support\Button;
 use Spokospace\OpsNotify\Support\Destination;
+use Spokospace\OpsNotify\Support\Trans;
 
 class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
 {
     /** Telegram only accepts these six forum icon colours. */
     public const TOPIC_COLORS = [
-        7322096 => 'Blue',
-        16766590 => 'Yellow',
-        13338331 => 'Violet',
-        9367192 => 'Green',
-        16749490 => 'Pink',
-        16478047 => 'Red',
+        7322096 => 'blue',
+        16766590 => 'yellow',
+        13338331 => 'violet',
+        9367192 => 'green',
+        16749490 => 'pink',
+        16478047 => 'red',
     ];
 
     /**
@@ -61,24 +62,32 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
     public function status(): string
     {
         if (! $this->isConfigured()) {
-            return 'Not configured';
+            return Trans::get('page.not_configured');
         }
 
+        // Cache the raw result, not the sentence, so it follows the viewer's locale.
         $key = 'ops-notify:telegram-status:'.md5((string) $this->config['bot_token']);
+        $result = Cache::get($key);
 
-        if (is_string($cached = Cache::get($key))) {
-            return $cached;
+        if (! is_array($result)) {
+            try {
+                $result = ['username' => (string) ($this->getMe()['username'] ?? '?')];
+                Cache::put($key, $result, now()->addMinutes(10));
+            } catch (ChannelException $e) {
+                $result = ['error' => $e->getMessage()];
+                Cache::put($key, $result, now()->addMinute());
+            }
         }
 
-        try {
-            $status = 'Connected as @'.($this->getMe()['username'] ?? '?');
-            Cache::put($key, $status, now()->addMinutes(10));
-        } catch (ChannelException $e) {
-            $status = $e->getMessage();
-            Cache::put($key, $status, now()->addMinute());
-        }
+        return isset($result['username'])
+            ? Trans::get('page.connected_as', ['username' => $result['username']])
+            : (string) $result['error'];
+    }
 
-        return $status;
+    /** @return array<int, string> Telegram colour => translated name, for pickers. */
+    public static function topicColorOptions(): array
+    {
+        return array_map(fn (string $key): string => Trans::get("colors.{$key}"), self::TOPIC_COLORS);
     }
 
     public function send(OpsMessage $message, Destination $destination): string

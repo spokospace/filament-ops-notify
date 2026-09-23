@@ -1,0 +1,127 @@
+<?php
+
+return [
+
+    'page' => [
+        'title' => 'Ops notifications',
+        'status' => 'Status',
+        'service' => 'Service',
+        'enabled' => 'Enabled',
+        'disabled' => 'Disabled',
+        'channel' => 'Channel',
+        'connection' => 'Connection',
+        'configured' => 'Configured',
+        'not_configured' => 'Not configured',
+        'connected_as' => 'Connected as @:username',
+    ],
+
+    'actions' => [
+        'settings' => 'Settings',
+        'settings_saved' => 'Settings saved',
+        'save' => 'Save',
+        'send_test' => 'Send test',
+        'send' => 'Send',
+        'message' => 'Message',
+        'test_default_text' => 'If you can read this, notifications work.',
+        'resend' => 'Resend',
+        'sent' => 'Sent',
+        'not_sent' => 'Not sent',
+    ],
+
+    'table' => [
+        'when' => 'When',
+        'event' => 'Event',
+        'level' => 'Level',
+        'title' => 'Title',
+        'status' => 'Status',
+        'channel_topic' => 'Channel / topic',
+        'attempts' => 'Attempts',
+        'empty' => 'No notifications sent yet',
+        'resent_as' => 'Resent as #:id',
+    ],
+
+    'level' => [
+        'info' => 'Info',
+        'success' => 'Success',
+        'warning' => 'Warning',
+        'error' => 'Error',
+        'critical' => 'Critical',
+    ],
+
+    'status' => [
+        'queued' => 'Queued',
+        'sent' => 'Sent',
+        'failed' => 'Failed',
+        'resent' => 'Resent',
+    ],
+
+    'settings' => [
+        'locked' => 'Set in .env or config/ops-notify.php, change it there.',
+
+        'telegram' => 'Telegram',
+        'service' => 'Service name',
+        'service_help' => 'Prefixes every message, e.g. [shop.example]. Empty = the app name.',
+        'locale' => 'Message language',
+        'locale_help' => 'Language of the text the package adds to Telegram messages. The chat is read by the team, so it is the same for everyone.',
+        'locale_default' => 'App language (:locale)',
+        'bot_token' => 'Bot token',
+        'bot_token_saved' => 'Saved; leave empty to keep it',
+        'bot_token_unreadable' => 'The saved token cannot be decrypted (APP_KEY changed). Enter it again.',
+        'chat_id' => 'Chat id',
+        'chat_id_help' => 'php artisan ops-notify:telegram-chats lists it.',
+        'default_topic' => 'Default topic',
+        'default_topic_help' => 'For events without a topic of their own. Empty = General.',
+        'general' => 'General',
+        'enabled' => 'Notifications enabled',
+
+        'topics' => 'Topics',
+        'topics_description' => 'Forum topics of the chat. "Create topic" creates it in Telegram (the bot needs the "Manage topics" admin right; save the token and chat id first). Removing a topic here does not delete it in Telegram.',
+        'topic_name' => 'Name',
+        'topic_id' => 'Topic id',
+        'topic' => 'Topic',
+        'add_existing_topic' => 'Add existing topic',
+        'topic_name_placeholder' => 'Comments',
+        'create_topic' => 'Create topic',
+        'icon_colour' => 'Icon colour',
+        'create_in_telegram' => 'Create in Telegram',
+        'topic_created' => 'Topic ":name" created (#:id)',
+        'topic_not_created' => 'Topic not created',
+        'save_to_keep_it' => 'Save the settings to keep it in the list.',
+        'import_topics' => 'Import from Telegram',
+        'imported_topics' => 'Imported :count topic|Imported :count topics',
+        'save_to_keep_them' => 'Save the settings to keep them.',
+        'import_failed' => 'Import failed',
+        'no_new_topics' => 'No new topics seen',
+        'no_new_topics_help' => 'Send /ping@your_bot in each topic, then import again.',
+
+        'routing' => 'Event routing',
+        'routing_description' => 'First matching pattern wins, e.g. inquiry.* or build.failed.',
+        'pattern' => 'Pattern',
+        'add_rule' => 'Add rule',
+
+        'forwarding' => 'Filament notifications',
+        'forwarding_description' => 'Bell notifications forwarded to the ops channel. Rules match the title; first match wins.',
+        'forward_enabled' => 'Forward bell notifications',
+        'forward_title_placeholder' => 'New inquiry*',
+        'forward' => 'Forward',
+    ],
+
+    'colors' => [
+        'blue' => 'Blue',
+        'yellow' => 'Yellow',
+        'violet' => 'Violet',
+        'green' => 'Green',
+        'pink' => 'Pink',
+        'red' => 'Red',
+    ],
+
+    'message' => [
+        'test_title' => 'Test notification',
+        'sent_by' => 'Sent by',
+        'environment' => 'Environment',
+        'host' => 'Host',
+        'open' => 'Open',
+        'more_fields' => 'and :count more field|and :count more fields',
+    ],
+
+];
