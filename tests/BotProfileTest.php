@@ -29,8 +29,8 @@ function sentMethods(): array
 
 it('ships preset avatars as 640x640 jpegs with thumbnails', function () {
     expect(BotAvatars::keys())->toBe([
-        'flat', 'headset', 'helmet', 'mascot', 'pixel', 'round-dark', 'round-light',
-        's-helmet', 's-visor', 'space-headset', 'visor-band',
+        'antenna', 'badge', 'dome-light', 'flat', 'glow-visor', 'headset',
+        'helmet', 'mascot', 'pixel', 'round-dark', 'visor-dark',
     ]);
 
     foreach (BotAvatars::keys() as $key) {
@@ -41,7 +41,7 @@ it('ships preset avatars as 640x640 jpegs with thumbnails', function () {
 });
 
 it('serves preset thumbnails and rejects unknown keys', function () {
-    $this->get(route('ops-notify.avatar', 's-helmet'))
+    $this->get(route('ops-notify.avatar', 'badge'))
         ->assertOk()
         ->assertHeader('Content-Type', 'image/jpeg');
 
@@ -102,7 +102,7 @@ describe('bot profile slide-over', function () {
         Livewire::test(OpsNotifyPage::class)
             ->mountAction('botProfile')
             ->assertSchemaStateSet(['name' => 'Shop Bot', 'short_description' => 'Ops alerts'], 'mountedActionSchema0')
-            ->fillForm(['avatar' => 's-visor', 'name' => 'Shop Ops'], 'mountedActionSchema0')
+            ->fillForm(['avatar' => 'glow-visor', 'name' => 'Shop Ops'], 'mountedActionSchema0')
             ->callMountedAction()
             ->assertHasNoActionErrors()
             ->assertNotified('Bot profile updated');
