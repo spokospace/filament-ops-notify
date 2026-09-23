@@ -84,7 +84,8 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
         }
 
         // Cache the raw result, not the sentence, so it follows the viewer's locale.
-        $key = 'ops-notify:telegram-status:'.md5($this->botToken());
+        // Derived from a secret, so a cryptographic hash: the token must not be guessable from the key.
+        $key = 'ops-notify:telegram-status:'.hash('sha256', $this->botToken());
         $result = Cache::get($key);
 
         if (! is_array($result)) {
@@ -193,7 +194,7 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
      */
     public function seen(): array
     {
-        $key = 'ops-notify:telegram-seen:'.hash('xxh128', (string) ($this->config['bot_token'] ?? ''));
+        $key = 'ops-notify:telegram-seen:'.hash('sha256', (string) ($this->config['bot_token'] ?? ''));
 
         try {
             return Cache::lock($key.':lock', 60)->block(15, function () use ($key): array {

@@ -65,6 +65,6 @@ final class BurstGuard
 
     private static function key(string $event): string
     {
-        return 'ops-notify:burst:'.md5($event);
+        return 'ops-notify:burst:'.hash('xxh128', $event);
     }
 }
