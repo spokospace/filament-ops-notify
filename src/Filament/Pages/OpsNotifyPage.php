@@ -122,7 +122,8 @@ class OpsNotifyPage extends Page implements HasTable
                     $message = app(OpsNotifier::class)->inMessageLocale(fn (): OpsMessage => OpsMessage::make('ops.test')
                         ->title(Trans::get('message.test_title'))
                         ->line($data['text'])
-                        ->field(Trans::get('message.sent_by'), auth()->user()?->email));
+                        // Any Authenticatable: not every user model has an email attribute.
+                        ->field(Trans::get('message.sent_by'), data_get(auth()->user(), 'email')));
 
                     ($data['via_queue'] ?? false) ? $this->queue($message) : $this->deliverNow($message);
                 }),

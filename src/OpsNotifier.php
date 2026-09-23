@@ -73,7 +73,7 @@ class OpsNotifier
      */
     public function inMessageLocale(callable $callback): mixed
     {
-        return $this->withLocale($this->locale(), $callback);
+        return $this->withLocale($this->locale(), $callback(...));
     }
 
     /**

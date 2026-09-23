@@ -11,6 +11,7 @@
         "spatie/laravel-package-tools": "^1.16"
     },
     "require-dev": {
+        "larastan/larastan": "^3.12",
         "laravel/pint": "^1.18",
         "orchestra/testbench": "^10.0|^11.0",
         "pestphp/pest": "^3.7|^4.0",
@@ -28,7 +29,8 @@
     },
     "scripts": {
         "test": "vendor/bin/pest",
-        "format": "vendor/bin/pint"
+        "format": "vendor/bin/pint",
+        "analyse": "vendor/bin/phpstan analyse"
     },
     "extra": {
         "laravel": {

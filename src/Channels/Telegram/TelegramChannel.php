@@ -34,7 +34,7 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
     private const UPDATE_PAGES = 10;
 
     /**
-     * @param  array{bot_token?: ?string, chat_id?: int|string|null, topic?: int|string|null, api_url?: string, timeout?: int, service?: ?string}  $config
+     * @param  array{bot_token?: ?string, chat_id?: int|string|null, topic?: int|string|null, topics?: list<array{id: int|string, name: string}>, api_url?: string, timeout?: int, service?: ?string}  $config
      */
     public function __construct(
         private readonly array $config,
@@ -47,6 +47,17 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
     public function isConfigured(): bool
     {
         return filled($this->config['bot_token'] ?? null) && filled($this->config['chat_id'] ?? null);
+    }
+
+    /** Callers check isConfigured() first; this makes a missing value an explicit error. */
+    private function botToken(): string
+    {
+        return (string) ($this->config['bot_token'] ?? throw new ChannelException('Telegram bot token is not configured.', permanent: true));
+    }
+
+    private function chatId(): int|string
+    {
+        return $this->config['chat_id'] ?? throw new ChannelException('Telegram chat id is not configured.', permanent: true);
     }
 
     public function topicLabel(string $id): string
@@ -73,7 +84,7 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
         }
 
         // Cache the raw result, not the sentence, so it follows the viewer's locale.
-        $key = 'ops-notify:telegram-status:'.md5((string) $this->config['bot_token']);
+        $key = 'ops-notify:telegram-status:'.md5($this->botToken());
         $result = Cache::get($key);
 
         if (! is_array($result)) {
@@ -104,7 +115,7 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
         }
 
         $payload = [
-            'chat_id' => $this->config['chat_id'],
+            'chat_id' => $this->chatId(),
             'text' => $this->formatter->format($message, $this->config['service'] ?? null),
             'parse_mode' => 'HTML',
             'link_preview_options' => ['is_disabled' => true],
@@ -159,7 +170,10 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
      */
     public function getUpdates(?int $offset = null): array
     {
-        return (array) $this->call('getUpdates', $offset === null ? [] : ['offset' => $offset]);
+        $result = $this->call('getUpdates', $offset === null ? [] : ['offset' => $offset]);
+
+        // Telegram returns a list of Update objects; anything else is not an update.
+        return array_values(array_filter(is_array($result) ? $result : [], 'is_array'));
     }
 
     /**
@@ -216,7 +230,7 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
             throw new ChannelException('Save the bot token and chat id first.', permanent: true);
         }
 
-        $payload = ['chat_id' => $this->config['chat_id'], 'name' => $name];
+        $payload = ['chat_id' => $this->chatId(), 'name' => $name];
 
         // Null as an array key is deprecated in PHP 8.5, so check it first.
         if ($iconColor !== null && isset(self::TOPIC_COLORS[$iconColor])) {

@@ -110,7 +110,12 @@ class BotProfileForm
     {
         try {
             $telegram = $this->telegram();
-            $original = is_array($data['original'] ?? null) ? $data['original'] : null;
+            // The profile as loaded when the form opened (a hidden field), so only real changes are sent.
+            $original = is_array($loaded = $data['original'] ?? null) ? [
+                'name' => (string) ($loaded['name'] ?? ''),
+                'short_description' => (string) ($loaded['short_description'] ?? ''),
+                'description' => (string) ($loaded['description'] ?? ''),
+            ] : null;
             $changed = $telegram->updateProfile(Arr::only($data, self::PROFILE_FIELDS), $original);
 
             if (filled($jpeg = $this->avatarJpeg($data['avatar'] ?? null, $data['avatar_upload'] ?? null))) {

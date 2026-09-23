@@ -60,7 +60,7 @@ class SendBurstDigest implements ShouldQueue
             return [];
         }
 
-        return OpsNotifyLog::query()
+        return array_values(OpsNotifyLog::query()
             ->where('event', $this->event)
             ->where('status', DeliveryStatus::Suppressed)
             ->where('created_at', '>=', date('Y-m-d H:i:s', $this->windowStartedAt))
@@ -71,6 +71,6 @@ class SendBurstDigest implements ShouldQueue
             ->limit(self::TOP_TITLES)
             ->get()
             ->map(fn (OpsNotifyLog $row): string => $row->getAttribute('total').'× '.$row->title)
-            ->all();
+            ->all());
     }
 }
