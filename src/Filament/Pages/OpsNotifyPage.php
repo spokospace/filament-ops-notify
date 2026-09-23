@@ -30,6 +30,7 @@ use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\OpsNotifier;
 use Spokospace\OpsNotify\Settings\SettingsStore;
+use Spokospace\OpsNotify\Support\Trans;
 use Throwable;
 use UnitEnum;
 
@@ -39,7 +40,15 @@ class OpsNotifyPage extends Page implements HasTable
 
     protected static ?string $slug = 'ops-notify';
 
-    protected static ?string $title = 'Ops notifications';
+    public static function getNavigationLabel(): string
+    {
+        return Trans::get('page.title');
+    }
+
+    public function getTitle(): string|Htmlable
+    {
+        return Trans::get('page.title');
+    }
 
     public static function getNavigationGroup(): string|UnitEnum|null
     {
@@ -65,34 +74,35 @@ class OpsNotifyPage extends Page implements HasTable
     {
         return [
             Action::make('settings')
-                ->label('Settings')
+                ->label(Trans::get('actions.settings'))
                 ->icon(Heroicon::OutlinedCog6Tooth)
                 ->color('gray')
                 ->slideOver()
+                ->modalSubmitActionLabel(Trans::get('actions.save'))
                 ->fillForm(fn (): array => app(SettingsForm::class)->fill())
                 ->schema(fn (): array => app(SettingsForm::class)->components())
                 ->action(function (array $data): void {
                     app(SettingsStore::class)->save(app(SettingsForm::class)->toSettings($data));
 
-                    Notification::make()->success()->title('Settings saved')->send();
+                    Notification::make()->success()->title(Trans::get('actions.settings_saved'))->send();
                 }),
 
             Action::make('sendTest')
-                ->label('Send test')
+                ->label(Trans::get('actions.send_test'))
                 ->icon(Heroicon::OutlinedPaperAirplane)
                 ->schema([
                     Textarea::make('text')
-                        ->label('Message')
-                        ->default('If you can read this, notifications work.')
+                        ->label(Trans::get('actions.message'))
+                        ->default(Trans::get('actions.test_default_text'))
                         ->required()
                         ->maxLength(1000),
                 ])
-                ->modalSubmitActionLabel('Send')
+                ->modalSubmitActionLabel(Trans::get('actions.send'))
                 ->action(function (array $data): void {
-                    $message = OpsMessage::make('ops.test')
-                        ->title('Test notification')
+                    $message = app(OpsNotifier::class)->inMessageLocale(fn (): OpsMessage => OpsMessage::make('ops.test')
+                        ->title(Trans::get('message.test_title'))
                         ->line($data['text'])
-                        ->field('Sent by', auth()->user()?->email);
+                        ->field(Trans::get('message.sent_by'), auth()->user()?->email));
 
                     $this->deliverNow($message);
                 }),
@@ -102,22 +112,27 @@ class OpsNotifyPage extends Page implements HasTable
     public function content(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Status')
+            Section::make(Trans::get('page.status'))
                 ->columns(4)
                 ->schema([
                     TextEntry::make('service')
+                        ->label(Trans::get('page.service'))
                         ->state(function (): string {
                             app(SettingsStore::class)->apply();
 
                             return (string) config('ops-notify.service');
                         }),
                     TextEntry::make('enabled')
+                        ->label(Trans::get('page.enabled'))
                         ->badge()
-                        ->state(fn (): string => app(OpsNotifier::class)->isEnabled() ? 'Enabled' : 'Disabled')
-                        ->color(fn (string $state): string => $state === 'Enabled' ? 'success' : 'danger'),
+                        ->state(fn (): bool => app(OpsNotifier::class)->isEnabled())
+                        ->formatStateUsing(fn (bool $state): string => Trans::get($state ? 'page.enabled' : 'page.disabled'))
+                        ->color(fn (bool $state): string => $state ? 'success' : 'danger'),
                     TextEntry::make('channel')
+                        ->label(Trans::get('page.channel'))
                         ->state(fn (): string => app(OpsNotifier::class)->channels()->defaultChannel()),
                     TextEntry::make('connection')
+                        ->label(Trans::get('page.connection'))
                         ->state(fn (): string => $this->connectionStatus()),
                 ]),
             EmbeddedTable::make(),
@@ -131,35 +146,43 @@ class OpsNotifyPage extends Page implements HasTable
             ->defaultSort('id', 'desc')
             ->columns([
                 TextColumn::make('created_at')
-                    ->label('When')
+                    ->label(Trans::get('table.when'))
                     ->since()
                     ->dateTimeTooltip()
                     ->sortable(),
                 TextColumn::make('event')
+                    ->label(Trans::get('table.event'))
                     ->searchable(),
                 TextColumn::make('level')
+                    ->label(Trans::get('table.level'))
                     ->badge(),
                 TextColumn::make('title')
+                    ->label(Trans::get('table.title'))
                     ->description(fn (OpsNotifyLog $record): ?string => $record->body ? Str::limit($record->body, 120) : null)
                     ->wrap()
                     ->searchable(),
                 TextColumn::make('status')
+                    ->label(Trans::get('table.status'))
                     ->badge()
-                    ->tooltip(fn (OpsNotifyLog $record): ?string => $record->error),
+                    ->tooltip(fn (OpsNotifyLog $record): ?string => $record->status === DeliveryStatus::Resent && filled($record->error)
+                        ? Trans::get('table.resent_as', ['id' => $record->error])
+                        : $record->error),
                 TextColumn::make('channel')
-                    ->label('Channel / topic')
+                    ->label(Trans::get('table.channel_topic'))
                     ->formatStateUsing(fn (OpsNotifyLog $record): string => $record->channel.($record->topic ? ' · '.$this->topicLabel($record->channel, $record->topic) : ''))
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('attempts')
+                    ->label(Trans::get('table.attempts'))
                     ->numeric()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('status')->options(DeliveryStatus::class),
-                SelectFilter::make('level')->options(Level::class),
+                SelectFilter::make('status')->label(Trans::get('table.status'))->options(DeliveryStatus::class),
+                SelectFilter::make('level')->label(Trans::get('table.level'))->options(Level::class),
             ])
             ->recordActions([
                 Action::make('resend')
+                    ->label(Trans::get('actions.resend'))
                     ->icon(Heroicon::OutlinedArrowPath)
                     ->visible(fn (OpsNotifyLog $record): bool => $record->status === DeliveryStatus::Failed)
                     ->action(function (OpsNotifyLog $record): void {
@@ -167,14 +190,15 @@ class OpsNotifyPage extends Page implements HasTable
                             return;
                         }
 
-                        // Hides Resend on the original row, so it is not sent twice.
+                        // Hides Resend on the original row, so it is not sent twice. The new row's id
+                        // is stored bare and put into words when displayed, in the viewer's language.
                         $record->update([
                             'status' => DeliveryStatus::Resent,
-                            'error' => $resent ? "Resent as #{$resent->id}" : 'Resent',
+                            'error' => $resent ? (string) $resent->id : null,
                         ]);
                     }),
             ])
-            ->emptyStateHeading('No notifications sent yet');
+            ->emptyStateHeading(Trans::get('table.empty'));
     }
 
     /** Shows the outcome as a Filament notification; never throws. */
@@ -183,21 +207,21 @@ class OpsNotifyPage extends Page implements HasTable
         try {
             $log = app(OpsNotifier::class)->sendNow($message);
         } catch (MessageSkipped $e) {
-            Notification::make()->warning()->title('Not sent')->body($e->getMessage())->send();
+            Notification::make()->warning()->title(Trans::get('actions.not_sent'))->body($e->getMessage())->send();
 
             return false;
         } catch (Throwable $e) {
-            Notification::make()->danger()->title('Not sent')->body($e->getMessage())->send();
+            Notification::make()->danger()->title(Trans::get('actions.not_sent'))->body($e->getMessage())->send();
 
             return false;
         }
 
-        Notification::make()->success()->title('Sent')->send();
+        Notification::make()->success()->title(Trans::get('actions.sent'))->send();
 
         return true;
     }
 
-    /** Asks the row's channel for a readable topic name, e.g. "Zapytania #3". */
+    /** Asks the row's channel for a readable topic name, e.g. "Inquiries #3". */
     private function topicLabel(string $channel, string $id): string
     {
         try {
@@ -219,8 +243,8 @@ class OpsNotifyPage extends Page implements HasTable
 
         return match (true) {
             $channel instanceof ReportsStatus => $channel->status(),
-            $channel->isConfigured() => 'Configured',
-            default => 'Not configured',
+            $channel->isConfigured() => Trans::get('page.configured'),
+            default => Trans::get('page.not_configured'),
         };
     }
 }

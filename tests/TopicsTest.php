@@ -100,7 +100,7 @@ describe('settings slide-over', function () {
         Livewire::test(OpsNotifyPage::class)
             ->mountAction('settings')
             ->callAction(TestAction::make('importTopics')->schemaComponent('topics', 'mountedActionSchema0'))
-            ->assertNotified('Imported 1 topic(s)')
+            ->assertNotified('Imported 1 topic')
             ->callMountedAction();
 
         expect(config('ops-notify.channels.telegram.topics'))->toBe([['id' => '3', 'name' => 'Zapytania']]);

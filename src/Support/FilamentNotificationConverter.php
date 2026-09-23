@@ -35,7 +35,7 @@ class FilamentNotificationConverter
             $url = $this->absoluteUrl($action['url'] ?? null);
 
             if ($url !== null) {
-                $message->button($this->plain($action['label'] ?? null) ?: 'Open', $url);
+                $message->button($this->plain($action['label'] ?? null) ?: Trans::get('message.open'), $url);
             }
         }
 

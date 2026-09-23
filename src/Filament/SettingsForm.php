@@ -18,6 +18,8 @@ use Spokospace\OpsNotify\Channels\Telegram\TelegramChannel;
 use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\OpsNotifier;
 use Spokospace\OpsNotify\Settings\SettingsStore;
+use Spokospace\OpsNotify\Support\Locales;
+use Spokospace\OpsNotify\Support\Trans;
 
 /**
  * The settings slide-over on the Ops notifications page. Maps between SettingsStore values
@@ -31,42 +33,50 @@ class SettingsForm
     public function components(): array
     {
         return [
-            Section::make('Telegram')
+            Section::make(Trans::get('settings.telegram'))
                 ->columns(2)
                 ->schema([
                     $this->locked(
                         TextInput::make('service')
-                            ->label('Service name')
+                            ->label(Trans::get('settings.service'))
                             ->placeholder((string) config('app.name'))
                             ->maxLength(60)
                             ->columnSpanFull(),
-                        'Prefixes every message, e.g. [panel.polo.blue]. Empty = the app name.',
+                        Trans::get('settings.service_help'),
+                    ),
+                    $this->locked(
+                        Select::make('locale')
+                            ->label(Trans::get('settings.locale'))
+                            ->options(Locales::options())
+                            ->placeholder(Trans::get('settings.locale_default', ['locale' => config('app.locale')]))
+                            ->columnSpanFull(),
+                        Trans::get('settings.locale_help'),
                     ),
                     $this->locked(
                         TextInput::make('telegram_bot_token')
-                            ->label('Bot token')
+                            ->label(Trans::get('settings.bot_token'))
                             ->password()
                             ->autocomplete('off')
-                            ->placeholder($this->store->hasStored('telegram_bot_token') ? 'Saved; leave empty to keep it' : '123456789:AA...')
+                            ->placeholder($this->store->hasStored('telegram_bot_token') ? Trans::get('settings.bot_token_saved') : '123456789:AA...')
                             ->columnSpanFull(),
                         in_array('telegram_bot_token', $this->store->unreadableSecrets(), true)
-                            ? 'The saved token cannot be decrypted (APP_KEY changed). Enter it again.'
+                            ? Trans::get('settings.bot_token_unreadable')
                             : null,
                     ),
                     $this->locked(
-                        TextInput::make('telegram_chat_id')->label('Chat id')->placeholder('-1001234567890'),
-                        'php artisan ops-notify:telegram-chats lists it.',
+                        TextInput::make('telegram_chat_id')->label(Trans::get('settings.chat_id'))->placeholder('-1001234567890'),
+                        Trans::get('settings.chat_id_help'),
                     ),
                     $this->locked(
-                        $this->topicSelect('telegram_topic', 'telegram_topics')->label('Default topic'),
-                        'For events without a topic of their own. Empty = General.',
+                        $this->topicSelect('telegram_topic', 'telegram_topics')->label(Trans::get('settings.default_topic')),
+                        Trans::get('settings.default_topic_help'),
                     ),
-                    $this->locked(Toggle::make('enabled')->label('Notifications enabled')),
+                    $this->locked(Toggle::make('enabled')->label(Trans::get('settings.enabled'))),
                 ]),
 
-            Section::make('Topics')
+            Section::make(Trans::get('settings.topics'))
                 ->key('topics')
-                ->description('Forum topics of the chat. "Create topic" creates it in Telegram (the bot needs the "Manage topics" admin right; save the token and chat id first). Removing a topic here does not delete it in Telegram.')
+                ->description(Trans::get('settings.topics_description'))
                 ->collapsible()
                 ->headerActions($this->store->isLocked('telegram_topics') ? [] : [
                     $this->createTopicAction(),
@@ -77,51 +87,52 @@ class SettingsForm
                         Repeater::make('telegram_topics')
                             ->hiddenLabel()
                             ->schema([
-                                TextInput::make('name')->required()->maxLength(128),
-                                TextInput::make('id')->label('Topic id')->integer()->required(),
+                                TextInput::make('name')->label(Trans::get('settings.topic_name'))->required()->maxLength(128),
+                                TextInput::make('id')->label(Trans::get('settings.topic_id'))->integer()->required(),
                             ])
                             ->columns(2)
                             ->defaultItems(0)
-                            ->addActionLabel('Add existing topic'),
+                            ->addActionLabel(Trans::get('settings.add_existing_topic')),
                     ),
                 ]),
 
-            Section::make('Event routing')
-                ->description('First matching pattern wins, e.g. inquiry.* or build.failed.')
+            Section::make(Trans::get('settings.routing'))
+                ->description(Trans::get('settings.routing_description'))
                 ->collapsible()
                 ->schema([
                     $this->locked(
                         Repeater::make('events')
                             ->hiddenLabel()
                             ->schema([
-                                TextInput::make('pattern')->required()->placeholder('inquiry.*'),
-                                $this->topicSelect('topic', '../../telegram_topics')->label('Topic'),
-                                Toggle::make('enabled')->default(true)->inline(false),
+                                TextInput::make('pattern')->label(Trans::get('settings.pattern'))->required()->placeholder('inquiry.*'),
+                                $this->topicSelect('topic', '../../telegram_topics')->label(Trans::get('settings.topic')),
+                                Toggle::make('enabled')->label(Trans::get('page.enabled'))->default(true)->inline(false),
                             ])
                             ->columns(3)
                             ->defaultItems(0)
-                            ->addActionLabel('Add rule'),
+                            ->addActionLabel(Trans::get('settings.add_rule')),
                     ),
                 ]),
 
-            Section::make('Filament notifications')
-                ->description('Bell notifications forwarded to the ops channel. Rules match the title; first match wins.')
+            Section::make(Trans::get('settings.forwarding'))
+                ->description(Trans::get('settings.forwarding_description'))
                 ->collapsible()
                 ->schema([
-                    $this->locked(Toggle::make('forward_enabled')->label('Forward bell notifications')),
+                    $this->locked(Toggle::make('forward_enabled')->label(Trans::get('settings.forward_enabled'))),
                     $this->locked(
                         Repeater::make('forward_map')
                             ->hiddenLabel()
                             ->schema([
-                                TextInput::make('title')->required()->placeholder('Nowe zapytanie*'),
+                                TextInput::make('title')->label(Trans::get('table.title'))->required()->placeholder(Trans::get('settings.forward_title_placeholder')),
                                 TextInput::make('event')
+                                    ->label(Trans::get('table.event'))
                                     ->placeholder('inquiry.created')
                                     ->required(fn (Get $get): bool => (bool) $get('forward')),
-                                Toggle::make('forward')->default(true)->inline(false),
+                                Toggle::make('forward')->label(Trans::get('settings.forward'))->default(true)->inline(false),
                             ])
                             ->columns(3)
                             ->defaultItems(0)
-                            ->addActionLabel('Add rule'),
+                            ->addActionLabel(Trans::get('settings.add_rule')),
                     ),
                 ]),
         ];
@@ -197,7 +208,7 @@ class SettingsForm
     private function topicSelect(string $name, string $topicsPath): Select
     {
         return Select::make($name)
-            ->placeholder('General')
+            ->placeholder(Trans::get('settings.general'))
             ->options(function (Get $get, mixed $state) use ($topicsPath): array {
                 $options = collect((array) $get($topicsPath))
                     ->filter(fn (mixed $topic): bool => is_array($topic) && filled($topic['id'] ?? null))
@@ -217,46 +228,49 @@ class SettingsForm
     private function createTopicAction(): Action
     {
         return Action::make('createTopic')
-            ->label('Create topic')
+            ->label(Trans::get('settings.create_topic'))
             ->icon(Heroicon::OutlinedPlus)
             ->schema([
-                TextInput::make('name')->required()->maxLength(128)->placeholder('Komentarze'),
-                Select::make('color')->label('Icon colour')->options(TelegramChannel::TOPIC_COLORS),
+                TextInput::make('name')->label(Trans::get('settings.topic_name'))->required()->maxLength(128)->placeholder(Trans::get('settings.topic_name_placeholder')),
+                Select::make('color')->label(Trans::get('settings.icon_colour'))->options(TelegramChannel::topicColorOptions()),
             ])
-            ->modalSubmitActionLabel('Create in Telegram')
+            ->modalSubmitActionLabel(Trans::get('settings.create_in_telegram'))
             ->action(function (array $data, Get $get, Set $set): void {
                 try {
                     $id = $this->telegram()->createForumTopic($data['name'], filled($data['color'] ?? null) ? (int) $data['color'] : null);
                 } catch (ChannelException $e) {
-                    Notification::make()->danger()->title('Topic not created')->body($e->getMessage())->send();
+                    Notification::make()->danger()->title(Trans::get('settings.topic_not_created'))->body($e->getMessage())->send();
 
                     return;
                 }
 
                 $this->addTopics($get, $set, [$id => $data['name']]);
 
-                Notification::make()->success()->title("Topic \"{$data['name']}\" created (#{$id})")->body('Save the settings to keep it in the list.')->send();
+                Notification::make()->success()
+                    ->title(Trans::get('settings.topic_created', ['name' => $data['name'], 'id' => $id]))
+                    ->body(Trans::get('settings.save_to_keep_it'))
+                    ->send();
             });
     }
 
     private function importTopicsAction(): Action
     {
         return Action::make('importTopics')
-            ->label('Import from Telegram')
+            ->label(Trans::get('settings.import_topics'))
             ->icon(Heroicon::OutlinedArrowDownTray)
             ->color('gray')
             ->action(function (Get $get, Set $set): void {
                 try {
                     $added = $this->addTopics($get, $set, $this->telegram()->seenTopics());
                 } catch (ChannelException $e) {
-                    Notification::make()->danger()->title('Import failed')->body($e->getMessage())->send();
+                    Notification::make()->danger()->title(Trans::get('settings.import_failed'))->body($e->getMessage())->send();
 
                     return;
                 }
 
                 $added > 0
-                    ? Notification::make()->success()->title("Imported {$added} topic(s)")->body('Save the settings to keep them.')->send()
-                    : Notification::make()->warning()->title('No new topics seen')->body('Send /ping@your_bot in each topic, then import again.')->send();
+                    ? Notification::make()->success()->title(Trans::choice('settings.imported_topics', $added))->body(Trans::get('settings.save_to_keep_them'))->send()
+                    : Notification::make()->warning()->title(Trans::get('settings.no_new_topics'))->body(Trans::get('settings.no_new_topics_help'))->send();
             });
     }
 
@@ -302,6 +316,6 @@ class SettingsForm
 
         return $field
             ->disabled($isLocked)
-            ->helperText($isLocked ? 'Set in .env or config/ops-notify.php, change it there.' : $hint);
+            ->helperText($isLocked ? Trans::get('settings.locked') : $hint);
     }
 }

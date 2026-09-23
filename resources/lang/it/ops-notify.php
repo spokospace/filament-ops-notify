@@ -1,0 +1,127 @@
+<?php
+
+return [
+
+    'page' => [
+        'title' => 'Notifiche ops',
+        'status' => 'Stato',
+        'service' => 'Servizio',
+        'enabled' => 'Attive',
+        'disabled' => 'Disattivate',
+        'channel' => 'Canale',
+        'connection' => 'Connessione',
+        'configured' => 'Configurato',
+        'not_configured' => 'Non configurato',
+        'connected_as' => 'Connesso come @:username',
+    ],
+
+    'actions' => [
+        'settings' => 'Impostazioni',
+        'settings_saved' => 'Impostazioni salvate',
+        'save' => 'Salva',
+        'send_test' => 'Invia test',
+        'send' => 'Invia',
+        'message' => 'Messaggio',
+        'test_default_text' => 'Se riesci a leggere questo, le notifiche funzionano.',
+        'resend' => 'Invia di nuovo',
+        'sent' => 'Inviato',
+        'not_sent' => 'Non inviato',
+    ],
+
+    'table' => [
+        'when' => 'Quando',
+        'event' => 'Evento',
+        'level' => 'Livello',
+        'title' => 'Titolo',
+        'status' => 'Stato',
+        'channel_topic' => 'Canale / argomento',
+        'attempts' => 'Tentativi',
+        'empty' => 'Nessuna notifica inviata finora',
+        'resent_as' => 'Inviato di nuovo come #:id',
+    ],
+
+    'level' => [
+        'info' => 'Info',
+        'success' => 'Successo',
+        'warning' => 'Avviso',
+        'error' => 'Errore',
+        'critical' => 'Critico',
+    ],
+
+    'status' => [
+        'queued' => 'In coda',
+        'sent' => 'Inviato',
+        'failed' => 'Non riuscito',
+        'resent' => 'Inviato di nuovo',
+    ],
+
+    'settings' => [
+        'locked' => 'Impostato in .env o config/ops-notify.php: modificalo lì.',
+
+        'telegram' => 'Telegram',
+        'service' => 'Nome del servizio',
+        'service_help' => "Prefisso di ogni messaggio, es. [shop.example]. Vuoto = nome dell'app.",
+        'locale' => 'Lingua dei messaggi',
+        'locale_help' => 'Lingua dei testi che il pacchetto aggiunge ai messaggi Telegram. La chat è letta da tutto il team, quindi è la stessa per tutti.',
+        'locale_default' => "Lingua dell'app (:locale)",
+        'bot_token' => 'Token del bot',
+        'bot_token_saved' => 'Salvato; lascia vuoto per mantenerlo',
+        'bot_token_unreadable' => 'Impossibile decifrare il token salvato (APP_KEY è cambiata). Inseriscilo di nuovo.',
+        'chat_id' => 'ID della chat',
+        'chat_id_help' => 'php artisan ops-notify:telegram-chats lo mostra.',
+        'default_topic' => 'Argomento predefinito',
+        'default_topic_help' => 'Per gli eventi senza un argomento proprio. Vuoto = General.',
+        'general' => 'General',
+        'enabled' => 'Notifiche attive',
+
+        'topics' => 'Argomenti',
+        'topics_description' => "Argomenti del forum della chat. «Crea argomento» lo crea in Telegram (il bot ha bisogno del permesso di amministratore «Gestisci argomenti»; salva prima il token e l'ID della chat). Rimuovere un argomento qui non lo elimina in Telegram.",
+        'topic_name' => 'Nome',
+        'topic_id' => "ID dell'argomento",
+        'topic' => 'Argomento',
+        'add_existing_topic' => 'Aggiungi argomento esistente',
+        'topic_name_placeholder' => 'Commenti',
+        'create_topic' => 'Crea argomento',
+        'icon_colour' => "Colore dell'icona",
+        'create_in_telegram' => 'Crea in Telegram',
+        'topic_created' => 'Argomento «:name» creato (#:id)',
+        'topic_not_created' => 'Argomento non creato',
+        'save_to_keep_it' => 'Salva le impostazioni per mantenerlo nella lista.',
+        'import_topics' => 'Importa da Telegram',
+        'imported_topics' => ':count argomento importato|:count argomenti importati',
+        'save_to_keep_them' => 'Salva le impostazioni per mantenerli.',
+        'import_failed' => 'Importazione non riuscita',
+        'no_new_topics' => 'Nessun nuovo argomento trovato',
+        'no_new_topics_help' => 'Invia /ping@tuo_bot in ogni argomento, poi importa di nuovo.',
+
+        'routing' => 'Instradamento degli eventi',
+        'routing_description' => 'Vince il primo schema corrispondente, es. inquiry.* o build.failed.',
+        'pattern' => 'Schema',
+        'add_rule' => 'Aggiungi regola',
+
+        'forwarding' => 'Notifiche di Filament',
+        'forwarding_description' => 'Notifiche della campanella inoltrate al canale ops. Le regole confrontano il titolo; vince la prima corrispondente.',
+        'forward_enabled' => 'Inoltra le notifiche della campanella',
+        'forward_title_placeholder' => 'Nuova richiesta*',
+        'forward' => 'Inoltra',
+    ],
+
+    'colors' => [
+        'blue' => 'Blu',
+        'yellow' => 'Giallo',
+        'violet' => 'Viola',
+        'green' => 'Verde',
+        'pink' => 'Rosa',
+        'red' => 'Rosso',
+    ],
+
+    'message' => [
+        'test_title' => 'Notifica di prova',
+        'sent_by' => 'Inviato da',
+        'environment' => 'Ambiente',
+        'host' => 'Host',
+        'open' => 'Apri',
+        'more_fields' => 'e :count altro campo|e altri :count campi',
+    ],
+
+];

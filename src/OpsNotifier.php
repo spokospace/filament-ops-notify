@@ -4,6 +4,7 @@ namespace Spokospace\OpsNotify;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Traits\Localizable;
 use Spokospace\OpsNotify\Enums\DeliveryStatus;
 use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\Exceptions\MessageSkipped;
@@ -16,6 +17,8 @@ use Throwable;
 
 class OpsNotifier
 {
+    use Localizable;
+
     public function __construct(
         private readonly ChannelManager $channels,
         private readonly SettingsStore $settings,
@@ -35,6 +38,28 @@ class OpsNotifier
     public function channels(): ChannelManager
     {
         return $this->channels;
+    }
+
+    /** Language of the text the package puts into messages: ops-notify.locale, else the app's. */
+    public function locale(): string
+    {
+        $this->settings->apply();
+
+        return (string) (config('ops-notify.locale') ?: config('app.locale'));
+    }
+
+    /**
+     * Runs $callback in the messages' locale. Use it when building a message from package
+     * strings, so a message is never half in the viewer's language and half in the chat's.
+     *
+     * @template T
+     *
+     * @param  callable(): T  $callback
+     * @return T
+     */
+    public function inMessageLocale(callable $callback): mixed
+    {
+        return $this->withLocale($this->locale(), $callback);
     }
 
     /**
@@ -120,7 +145,11 @@ class OpsNotifier
     public function deliver(OpsMessage $message, Destination $destination, ?OpsNotifyLog $log): void
     {
         try {
-            $externalId = $this->channels->channel($destination->channel)->send($message, $destination);
+            // Rendering adds package text ("and N more fields"): use the chat's language, not
+            // whatever locale this worker or request happens to run in.
+            $externalId = $this->inMessageLocale(
+                fn (): string => $this->channels->channel($destination->channel)->send($message, $destination),
+            );
         } catch (ChannelException $e) {
             $log?->increment('attempts', 1, ['error' => $e->getMessage()]);
 

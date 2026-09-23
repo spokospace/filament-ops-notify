@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Spokospace\OpsNotify\Exceptions\MessageSkipped;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\OpsNotifier;
+use Spokospace\OpsNotify\Support\Trans;
 use Throwable;
 
 class SendTestCommand extends Command
@@ -19,11 +20,11 @@ class SendTestCommand extends Command
 
     public function handle(OpsNotifier $notifier): int
     {
-        $message = OpsMessage::make((string) $this->option('event'))
-            ->title('Test notification')
-            ->line((string) ($this->argument('text') ?? 'If you can read this, notifications work.'))
-            ->field('Environment', app()->environment())
-            ->field('Host', gethostname() ?: null);
+        $message = $notifier->inMessageLocale(fn (): OpsMessage => OpsMessage::make((string) $this->option('event'))
+            ->title(Trans::get('message.test_title'))
+            ->line((string) ($this->argument('text') ?? Trans::get('actions.test_default_text')))
+            ->field(Trans::get('message.environment'), app()->environment())
+            ->field(Trans::get('message.host'), gethostname() ?: null));
 
         if ($this->option('queue')) {
             $notifier->send($message);

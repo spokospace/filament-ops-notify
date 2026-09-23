@@ -1,0 +1,127 @@
+<?php
+
+return [
+
+    'page' => [
+        'title' => 'Notifications ops',
+        'status' => 'Statut',
+        'service' => 'Service',
+        'enabled' => 'Activées',
+        'disabled' => 'Désactivées',
+        'channel' => 'Canal',
+        'connection' => 'Connexion',
+        'configured' => 'Configuré',
+        'not_configured' => 'Non configuré',
+        'connected_as' => 'Connecté en tant que @:username',
+    ],
+
+    'actions' => [
+        'settings' => 'Paramètres',
+        'settings_saved' => 'Paramètres enregistrés',
+        'save' => 'Enregistrer',
+        'send_test' => 'Envoyer un test',
+        'send' => 'Envoyer',
+        'message' => 'Message',
+        'test_default_text' => 'Si vous lisez ceci, les notifications fonctionnent.',
+        'resend' => 'Renvoyer',
+        'sent' => 'Envoyé',
+        'not_sent' => 'Non envoyé',
+    ],
+
+    'table' => [
+        'when' => 'Quand',
+        'event' => 'Événement',
+        'level' => 'Niveau',
+        'title' => 'Titre',
+        'status' => 'Statut',
+        'channel_topic' => 'Canal / sujet',
+        'attempts' => 'Tentatives',
+        'empty' => "Aucune notification envoyée pour l'instant",
+        'resent_as' => 'Renvoyé en tant que #:id',
+    ],
+
+    'level' => [
+        'info' => 'Info',
+        'success' => 'Succès',
+        'warning' => 'Avertissement',
+        'error' => 'Erreur',
+        'critical' => 'Critique',
+    ],
+
+    'status' => [
+        'queued' => "En file d'attente",
+        'sent' => 'Envoyé',
+        'failed' => 'Échec',
+        'resent' => 'Renvoyé',
+    ],
+
+    'settings' => [
+        'locked' => 'Défini dans .env ou config/ops-notify.php, modifiez-le là-bas.',
+
+        'telegram' => 'Telegram',
+        'service' => 'Nom du service',
+        'service_help' => "Préfixe de chaque message, p. ex. [shop.example]. Vide = nom de l'application.",
+        'locale' => 'Langue des messages',
+        'locale_help' => "Langue des textes que le paquet ajoute aux messages Telegram. Le chat est lu par toute l'équipe, elle est donc la même pour tous.",
+        'locale_default' => "Langue de l'application (:locale)",
+        'bot_token' => 'Jeton du bot',
+        'bot_token_saved' => 'Enregistré ; laissez vide pour le conserver',
+        'bot_token_unreadable' => 'Le jeton enregistré ne peut pas être déchiffré (APP_KEY a changé). Saisissez-le à nouveau.',
+        'chat_id' => 'ID du chat',
+        'chat_id_help' => "php artisan ops-notify:telegram-chats l'affiche.",
+        'default_topic' => 'Sujet par défaut',
+        'default_topic_help' => 'Pour les événements sans sujet propre. Vide = General.',
+        'general' => 'General',
+        'enabled' => 'Notifications activées',
+
+        'topics' => 'Sujets',
+        'topics_description' => "Sujets du forum du chat. « Créer un sujet » le crée dans Telegram (le bot a besoin du droit d'administrateur « Gérer les sujets » ; enregistrez d'abord le jeton et l'ID du chat). Retirer un sujet ici ne le supprime pas dans Telegram.",
+        'topic_name' => 'Nom',
+        'topic_id' => 'ID du sujet',
+        'topic' => 'Sujet',
+        'add_existing_topic' => 'Ajouter un sujet existant',
+        'topic_name_placeholder' => 'Commentaires',
+        'create_topic' => 'Créer un sujet',
+        'icon_colour' => "Couleur de l'icône",
+        'create_in_telegram' => 'Créer dans Telegram',
+        'topic_created' => 'Sujet « :name » créé (#:id)',
+        'topic_not_created' => 'Sujet non créé',
+        'save_to_keep_it' => 'Enregistrez les paramètres pour le garder dans la liste.',
+        'import_topics' => 'Importer depuis Telegram',
+        'imported_topics' => ':count sujet importé|:count sujets importés',
+        'save_to_keep_them' => 'Enregistrez les paramètres pour les conserver.',
+        'import_failed' => "Échec de l'import",
+        'no_new_topics' => 'Aucun nouveau sujet trouvé',
+        'no_new_topics_help' => 'Envoyez /ping@votre_bot dans chaque sujet, puis importez à nouveau.',
+
+        'routing' => 'Routage des événements',
+        'routing_description' => "Le premier motif correspondant l'emporte, p. ex. inquiry.* ou build.failed.",
+        'pattern' => 'Motif',
+        'add_rule' => 'Ajouter une règle',
+
+        'forwarding' => 'Notifications Filament',
+        'forwarding_description' => "Notifications de la cloche transférées vers le canal ops. Les règles portent sur le titre ; la première correspondante l'emporte.",
+        'forward_enabled' => 'Transférer les notifications de la cloche',
+        'forward_title_placeholder' => 'Nouvelle demande*',
+        'forward' => 'Transférer',
+    ],
+
+    'colors' => [
+        'blue' => 'Bleu',
+        'yellow' => 'Jaune',
+        'violet' => 'Violet',
+        'green' => 'Vert',
+        'pink' => 'Rose',
+        'red' => 'Rouge',
+    ],
+
+    'message' => [
+        'test_title' => 'Notification de test',
+        'sent_by' => 'Envoyé par',
+        'environment' => 'Environnement',
+        'host' => 'Hôte',
+        'open' => 'Ouvrir',
+        'more_fields' => 'et :count autre champ|et :count autres champs',
+    ],
+
+];
