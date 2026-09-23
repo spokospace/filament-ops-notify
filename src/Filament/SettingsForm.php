@@ -32,6 +32,8 @@ class SettingsForm
     /** @return array<int, mixed> */
     public function components(): array
     {
+        $saved = $this->store->formValues();
+
         return [
             Section::make(Trans::get('settings.telegram'))
                 ->columns(2)
@@ -74,10 +76,12 @@ class SettingsForm
                     $this->locked(Toggle::make('enabled')->label(Trans::get('settings.enabled'))),
                 ]),
 
-            Section::make(Trans::get('settings.topics'))
-                ->key('topics')
-                ->description(Trans::get('settings.topics_description'))
-                ->collapsible()
+            $this->summarized(
+                Section::make(Trans::get('settings.topics'))->key('topics'),
+                $saved,
+                'telegram_topics',
+                fn (array $row): string => trim(($row['name'] ?? '').' #'.($row['id'] ?? '')),
+            )
                 ->headerActions($this->store->isLocked('telegram_topics') ? [] : [
                     $this->createTopicAction(),
                     $this->importTopicsAction(),
@@ -93,12 +97,18 @@ class SettingsForm
                             ->columns(2)
                             ->defaultItems(0)
                             ->addActionLabel(Trans::get('settings.add_existing_topic')),
+                        Trans::get('settings.topics_description'),
                     ),
                 ]),
 
-            Section::make(Trans::get('settings.routing'))
-                ->description(Trans::get('settings.routing_description'))
-                ->collapsible()
+            $this->summarized(
+                Section::make(Trans::get('settings.routing'))->key('routing'),
+                $saved,
+                'events',
+                fn (array $row, array $topics): string => ($row['pattern'] ?? '')
+                    .(filled($row['topic'] ?? null) ? ' → '.($topics[$row['topic']] ?? '#'.$row['topic']) : '')
+                    .(($row['enabled'] ?? true) ? '' : ' ('.Trans::get('page.disabled').')'),
+            )
                 ->schema([
                     $this->locked(
                         Repeater::make('events')
@@ -111,12 +121,17 @@ class SettingsForm
                             ->columns(3)
                             ->defaultItems(0)
                             ->addActionLabel(Trans::get('settings.add_rule')),
+                        Trans::get('settings.routing_description'),
                     ),
                 ]),
 
-            Section::make(Trans::get('settings.forwarding'))
-                ->description(Trans::get('settings.forwarding_description'))
-                ->collapsible()
+            $this->summarized(
+                Section::make(Trans::get('settings.forwarding'))->key('forwarding'),
+                $saved,
+                'forward_map',
+                fn (array $row): string => ($row['title'] ?? '')
+                    .(($row['forward'] ?? true) ? ' → '.($row['event'] ?? '') : ' ('.Trans::get('page.disabled').')'),
+            )
                 ->schema([
                     $this->locked(Toggle::make('forward_enabled')->label(Trans::get('settings.forward_enabled'))),
                     $this->locked(
@@ -133,6 +148,7 @@ class SettingsForm
                             ->columns(3)
                             ->defaultItems(0)
                             ->addActionLabel(Trans::get('settings.add_rule')),
+                        Trans::get('settings.forwarding_description'),
                     ),
                 ]),
         ];
@@ -310,6 +326,29 @@ class SettingsForm
     }
 
     /** Disables a field whose value comes from .env/config, and says so. */
+    /**
+     * A section around one list: collapsed on load once the list has saved items, with the
+     * items summarised in the header so they read without expanding. Empty, it stays open.
+     *
+     * @param  array<string, mixed>  $saved  SettingsStore::formValues()
+     * @param  \Closure(array<string, mixed>, array<string, string>): string  $describe  Row and topic names by id.
+     */
+    private function summarized(Section $section, array $saved, string $list, \Closure $describe): Section
+    {
+        return $section
+            ->collapsible()
+            ->collapsed(filled($saved[$list] ?? null))
+            ->description(function (Get $get) use ($list, $describe): ?string {
+                $rows = array_filter((array) $get($list), 'is_array');
+                $topics = collect((array) $get('telegram_topics'))->filter(fn (mixed $row): bool => is_array($row))->pluck('name', 'id')->all();
+
+                return $rows === [] ? null : Str::limit(
+                    collect($rows)->map(fn (array $row): string => $describe($row, $topics))->filter()->implode(' · '),
+                    240,
+                );
+            });
+    }
+
     private function locked(Field $field, ?string $hint = null): Field
     {
         $isLocked = $this->store->isLocked($field->getName());
