@@ -29,7 +29,7 @@ bot in the shared group.
 It must be a **group**. Channels have no topics.
 
 1. Create a group. Then open it, choose **Add members**, search for `@your_bot` and add it.
-2. Turn on **Topics**. Only the group owner can do this:
+2. Turn on **Topics** (as the group's owner, or an admin allowed to change the group's info):
    - Telegram Desktop: open the group → **⋮** → **Manage group** → **Topics**.
    - iOS and Android: open the group info → **Edit** → **Topics**.
 
