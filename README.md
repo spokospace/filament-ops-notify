@@ -37,8 +37,8 @@ reach Telegram with no code changes.
 
 ## Screenshots
 
-**The Spoko DashBot page:** connection status and the history of every message sent, with
-failed ones ready to resend.
+**The Spoko DashBot page:** the Telegram connection, where messages are delivered (queue and
+Horizon state), and the history of every message sent, with failed ones ready to resend.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/page-dark.png">
