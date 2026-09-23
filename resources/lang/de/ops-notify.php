@@ -50,6 +50,7 @@ return [
         'attempts' => 'Versuche',
         'empty' => 'Noch keine Benachrichtigungen gesendet',
         'resent_as' => 'Erneut gesendet als #:id',
+        'suppressed_help' => 'Während einer Häufung dieses Ereignisses zurückgehalten. Wird in der Zusammenfassung mitgezählt, die nach Ablauf des Zeitfensters gesendet wird.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Gesendet',
         'failed' => 'Fehlgeschlagen',
         'resent' => 'Erneut gesendet',
+        'suppressed' => 'Zurückgehalten',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Host',
         'open' => 'Öffnen',
         'more_fields' => 'und :count weiteres Feld|und :count weitere Felder',
+        'burst_title' => ':count weitere „:event“-Nachricht wurde in :minutes Minuten zurückgehalten|:count weitere „:event“-Nachrichten wurden in :minutes Minuten zurückgehalten',
     ],
 
 ];

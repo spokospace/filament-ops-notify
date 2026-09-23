@@ -9,11 +9,14 @@ use Spokospace\OpsNotify\Channels\Telegram\TelegramChannel;
 use Spokospace\OpsNotify\Enums\DeliveryStatus;
 use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\Exceptions\MessageSkipped;
+use Spokospace\OpsNotify\Jobs\SendBurstDigest;
 use Spokospace\OpsNotify\Jobs\SendOpsMessage;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\Settings\SettingsStore;
+use Spokospace\OpsNotify\Support\BurstGuard;
 use Spokospace\OpsNotify\Support\Destination;
 use Spokospace\OpsNotify\Support\PatternMap;
+use Spokospace\OpsNotify\Support\QueueStatus;
 use Throwable;
 
 class OpsNotifier
@@ -88,16 +91,30 @@ class OpsNotifier
                 return null;
             }
 
+            if ($this->heldBack($message, $destination, $log)) {
+                return $log;
+            }
+
             $log = $this->createLog($message, $destination);
 
             // On the sync queue a failed delivery throws right here; the job has already marked
             // the row failed, so the caller still gets it back.
-            SendOpsMessage::dispatch($message, $destination, $log)
-                ->onConnection(config('ops-notify.queue.connection'))
-                ->onQueue(config('ops-notify.queue.name'));
+            $this->dispatch($message, $destination, $log);
         } catch (Throwable $e) {
             Log::warning('[ops-notify] Could not send "'.$message->event.'": '.$e->getMessage());
         }
+
+        return $log;
+    }
+
+    /**
+     * @internal Queues a message that has already passed routing and the burst guard, such as
+     *           a burst digest. May throw on the sync queue.
+     */
+    public function queue(OpsMessage $message, Destination $destination): ?OpsNotifyLog
+    {
+        $log = $this->createLog($message, $destination);
+        $this->dispatch($message, $destination, $log);
 
         return $log;
     }
@@ -181,7 +198,46 @@ class OpsNotifier
         $log?->update(['status' => DeliveryStatus::Failed, 'error' => $error]);
     }
 
-    private function createLog(OpsMessage $message, Destination $destination): ?OpsNotifyLog
+    /**
+     * During a burst, logs the message as Suppressed instead of sending it, and schedules the
+     * digest for the end of the window. Not on the sync queue, which cannot delay the digest.
+     */
+    private function heldBack(OpsMessage $message, Destination $destination, ?OpsNotifyLog &$log): bool
+    {
+        $guard = app(BurstGuard::class);
+
+        if (! $guard->enabled() || app(QueueStatus::class)->isSync()) {
+            return false;
+        }
+
+        $burst = $guard->hit($message->event);
+
+        if (! $burst['held']) {
+            return false;
+        }
+
+        $log = $this->createLog($message, $destination, DeliveryStatus::Suppressed);
+
+        if ($burst['first']) {
+            $startedAt = $burst['ends_at']->copy()->subMinutes($guard->windowMinutes())->getTimestamp();
+
+            SendBurstDigest::dispatch($message->event, $destination, $message->level, $startedAt)
+                ->delay($burst['ends_at'])
+                ->onConnection(config('ops-notify.queue.connection'))
+                ->onQueue(config('ops-notify.queue.name'));
+        }
+
+        return true;
+    }
+
+    private function dispatch(OpsMessage $message, Destination $destination, ?OpsNotifyLog $log): void
+    {
+        SendOpsMessage::dispatch($message, $destination, $log)
+            ->onConnection(config('ops-notify.queue.connection'))
+            ->onQueue(config('ops-notify.queue.name'));
+    }
+
+    private function createLog(OpsMessage $message, Destination $destination, DeliveryStatus $status = DeliveryStatus::Queued): ?OpsNotifyLog
     {
         if (! config('ops-notify.log.enabled')) {
             return null;
@@ -196,7 +252,7 @@ class OpsNotifier
             // TEXT holds 64 KB; a stack trace could overflow it and fail the whole send.
             'body' => Str::limit($message->body(), 10000) ?: null,
             'payload' => $message->toArray(),
-            'status' => DeliveryStatus::Queued,
+            'status' => $status,
         ]);
     }
 }

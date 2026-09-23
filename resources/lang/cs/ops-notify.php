@@ -50,6 +50,7 @@ return [
         'attempts' => 'Pokusy',
         'empty' => 'Zatím nebyla odeslána žádná oznámení',
         'resent_as' => 'Znovu odesláno jako #:id',
+        'suppressed_help' => 'Zadrženo během série této události. Započítá se do souhrnné zprávy odeslané po skončení okna série.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Odesláno',
         'failed' => 'Selhalo',
         'resent' => 'Odesláno znovu',
+        'suppressed' => 'Zadrženo',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Host',
         'open' => 'Otevřít',
         'more_fields' => 'a ještě :count pole|a ještě :count pole|a ještě :count polí',
+        'burst_title' => ':count další zpráva „:event“ byla zadržena za :minutes minut|:count další zprávy „:event“ byly zadrženy za :minutes minut|:count dalších zpráv „:event“ bylo zadrženo za :minutes minut',
     ],
 
 ];

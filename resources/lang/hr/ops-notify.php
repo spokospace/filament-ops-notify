@@ -50,6 +50,7 @@ return [
         'attempts' => 'Pokušaji',
         'empty' => 'Još nije poslana nijedna obavijest',
         'resent_as' => 'Ponovno poslano kao #:id',
+        'suppressed_help' => 'Zadržano tijekom navale ovog događaja. Uračunava se u sažetak koji se šalje kada završi vremenski prozor navale.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Poslano',
         'failed' => 'Neuspjelo',
         'resent' => 'Ponovno poslano',
+        'suppressed' => 'Zadržano',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Host',
         'open' => 'Otvori',
         'more_fields' => 'i još :count polje|i još :count polja|i još :count polja',
+        'burst_title' => 'Još :count poruka „:event“ zadržana je u :minutes minuta|Još :count poruke „:event“ zadržane su u :minutes minuta|Još :count poruka „:event“ zadržano je u :minutes minuta',
     ],
 
 ];

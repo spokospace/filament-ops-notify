@@ -50,6 +50,7 @@ return [
         'attempts' => 'Intentos',
         'empty' => 'Aún no se ha enviado ninguna notificación',
         'resent_as' => 'Reenviado como #:id',
+        'suppressed_help' => 'Retenido durante una ráfaga de este evento. Se cuenta en el mensaje de resumen que se envía al terminar la ventana de la ráfaga.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Enviado',
         'failed' => 'Fallido',
         'resent' => 'Reenviado',
+        'suppressed' => 'Retenido',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Host',
         'open' => 'Abrir',
         'more_fields' => 'y :count campo más|y :count campos más',
+        'burst_title' => 'Se retuvo :count mensaje más de «:event» en :minutes minutos|Se retuvieron :count mensajes más de «:event» en :minutes minutos',
     ],
 
 ];

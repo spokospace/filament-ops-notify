@@ -50,6 +50,7 @@ return [
         'attempts' => 'Försök',
         'empty' => 'Inga notiser har skickats än',
         'resent_as' => 'Skickad igen som #:id',
+        'suppressed_help' => 'Hölls tillbaka under en topp av den här händelsen. Räknas med i sammanfattningsmeddelandet som skickas när tidsfönstret tar slut.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Skickad',
         'failed' => 'Misslyckad',
         'resent' => 'Skickad igen',
+        'suppressed' => 'Tillbakahållen',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Värd',
         'open' => 'Öppna',
         'more_fields' => 'och :count fält till|och :count fält till',
+        'burst_title' => 'Ytterligare :count ”:event”-meddelande hölls tillbaka under :minutes minuter|Ytterligare :count ”:event”-meddelanden hölls tillbaka under :minutes minuter',
     ],
 
 ];

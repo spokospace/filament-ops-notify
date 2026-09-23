@@ -50,6 +50,7 @@ return [
         'attempts' => 'Tentativas',
         'empty' => 'Nenhuma notificação enviada ainda',
         'resent_as' => 'Reenviado como #:id',
+        'suppressed_help' => 'Retido durante uma rajada deste evento. É contabilizado na mensagem de resumo enviada quando a janela da rajada termina.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Enviado',
         'failed' => 'Falhou',
         'resent' => 'Reenviado',
+        'suppressed' => 'Retido',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Host',
         'open' => 'Abrir',
         'more_fields' => 'e mais :count campo|e mais :count campos',
+        'burst_title' => 'Mais :count mensagem ":event" foi retida em :minutes minutos|Mais :count mensagens ":event" foram retidas em :minutes minutos',
     ],
 
 ];

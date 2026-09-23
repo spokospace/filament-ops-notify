@@ -50,6 +50,7 @@ return [
         'attempts' => 'Deneme',
         'empty' => 'Henüz bildirim gönderilmedi',
         'resent_as' => '#:id olarak yeniden gönderildi',
+        'suppressed_help' => 'Bu olayın yoğun tekrarı sırasında bekletildi. Yoğunluk aralığı sona erdiğinde gönderilen özet mesajda sayılır.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Gönderildi',
         'failed' => 'Başarısız',
         'resent' => 'Yeniden gönderildi',
+        'suppressed' => 'Bekletildi',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Sunucu',
         'open' => 'Aç',
         'more_fields' => 've :count alan daha|ve :count alan daha',
+        'burst_title' => '":event" için :count mesaj daha :minutes dakika içinde bekletildi|":event" için :count mesaj daha :minutes dakika içinde bekletildi',
     ],
 
 ];

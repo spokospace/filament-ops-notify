@@ -118,6 +118,13 @@ Every message becomes a queued `SendOpsMessage` job.
   accepts in one group (`rate_limit.per_second` / `rate_limit.per_minute`, `0` turns one off).
   In a burst the rest wait in the queue instead of being rejected. The limiter uses the cache, so
   it needs a store shared by all workers (redis, database). It is skipped on the `sync` queue.
+- **Bursts:** when one event is sent more than 10 times within 5 minutes (an error loop, for
+  example, whose messages differ only in an id), the rest are not sent. They appear in the
+  history as *Suppressed*, and when the window ends one summary arrives in the same topic:
+  *"37 more "error.thrown" messages were held back in 5 minutes"*, followed by the most frequent
+  titles. Tune it with `burst.max_per_event` and `burst.window_minutes` (`0` turns it off). It
+  is counted per event name, needs a cache shared by the workers, and does not apply to the
+  `sync` queue or to `sendNow()`.
 - **Retries:** up to 5 real failures (timeouts, 5xx), with a backoff of 10 s, 30 s, 2 min and
   5 min. Waiting for the rate limit, or for Telegram's `retry_after` after a 429, does not count.
   A message still undelivered after `rate_limit.give_up_after_minutes` (60) is marked failed.

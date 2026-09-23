@@ -50,6 +50,7 @@ return [
         'attempts' => 'Próbálkozások',
         'empty' => 'Még nincs elküldött értesítés',
         'resent_as' => 'Újraküldve: #:id',
+        'suppressed_help' => 'Az esemény sűrű ismétlődése alatt visszatartva. Beleszámít az összesítő üzenetbe, amely az időablak végén megy ki.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Elküldve',
         'failed' => 'Sikertelen',
         'resent' => 'Újraküldve',
+        'suppressed' => 'Visszatartva',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Kiszolgáló',
         'open' => 'Megnyitás',
         'more_fields' => 'és még :count mező|és még :count mező',
+        'burst_title' => 'További :count „:event” üzenet visszatartva :minutes perc alatt|További :count „:event” üzenet visszatartva :minutes perc alatt',
     ],
 
 ];

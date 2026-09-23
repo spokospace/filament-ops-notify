@@ -50,6 +50,7 @@ return [
         'attempts' => 'Încercări',
         'empty' => 'Nicio notificare trimisă încă',
         'resent_as' => 'Retrimis ca #:id',
+        'suppressed_help' => 'Reținut în timpul unei rafale a acestui eveniment. Este inclus în mesajul de rezumat trimis la încheierea ferestrei rafalei.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Trimis',
         'failed' => 'Eșuat',
         'resent' => 'Retrimis',
+        'suppressed' => 'Reținut',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Gazdă',
         'open' => 'Deschide',
         'more_fields' => 'și încă :count câmp|și încă :count câmpuri|și încă :count de câmpuri',
+        'burst_title' => 'Încă :count mesaj „:event” a fost reținut în :minutes minute|Încă :count mesaje „:event” au fost reținute în :minutes minute|Încă :count de mesaje „:event” au fost reținute în :minutes minute',
     ],
 
 ];

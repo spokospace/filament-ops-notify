@@ -50,6 +50,7 @@ return [
         'attempts' => 'Poskusi',
         'empty' => 'Poslano še ni bilo nobeno obvestilo',
         'resent_as' => 'Znova poslano kot #:id',
+        'suppressed_help' => 'Zadržano med izbruhom tega dogodka. Upošteva se v povzetku, ki je poslan ob koncu časovnega okna izbruha.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Poslano',
         'failed' => 'Neuspešno',
         'resent' => 'Znova poslano',
+        'suppressed' => 'Zadržano',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Gostitelj',
         'open' => 'Odpri',
         'more_fields' => 'in še :count polje|in še :count polji|in še :count polja|in še :count polj',
+        'burst_title' => 'Še :count sporočilo „:event“ je bilo zadržano v :minutes minutah|Še :count sporočili „:event“ sta bili zadržani v :minutes minutah|Še :count sporočila „:event“ so bila zadržana v :minutes minutah|Še :count sporočil „:event“ je bilo zadržanih v :minutes minutah',
     ],
 
 ];
