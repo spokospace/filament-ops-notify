@@ -23,6 +23,10 @@ class OpsNotifier
 
     public function isEnabled(): bool
     {
+        if (config('ops-notify.disable_in_tests', true) && app()->runningUnitTests()) {
+            return false;
+        }
+
         $this->settings->apply();
 
         return (bool) config('ops-notify.enabled');

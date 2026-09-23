@@ -57,6 +57,8 @@ abstract class TestCase extends Orchestra
         $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('k', 32)));
         $app['config']->set('auth.providers.users.model', User::class);
         $app['config']->set('ops-notify.service', 'test-app');
+        // These tests exercise delivery against a faked HTTP client.
+        $app['config']->set('ops-notify.disable_in_tests', false);
         $app['config']->set('ops-notify.channels.telegram.bot_token', '123:SECRET');
         $app['config']->set('ops-notify.channels.telegram.chat_id', '-1001');
     }
