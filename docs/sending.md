@@ -42,7 +42,9 @@ Notification::route('ops', ['topic' => 4])->notify(new BuildFailed);   // or jus
 ```
 
 `Notification::send($admins, new BuildFailed)` sends **one** Telegram message, not one per admin.
-Identical messages within `dedupe_seconds` are sent once. This needs `dedupe_seconds` above `0` and
+Identical messages within `dedupe_seconds` are sent once, whether they come through the `ops`
+channel, Filament forwarding or `OpsMessage::send()` (which then returns `null`). *Send test* and
+*Resend* on the page are never deduped. This needs `dedupe_seconds` above `0` and
 a cache store shared by web and worker processes (see
 [Forwarding](routing-and-topics.md#forwarding-filament-notifications)).
 
@@ -137,25 +139,31 @@ Every message becomes a queued `SendOpsMessage` job.
 - **Length:** a message is capped at 3,900 visible characters, below Telegram's 4,096. The body is
   shortened first, then extra fields are summarised as "…and N more fields".
 - **Log:** every message is stored in `ops_notify_logs` with its status (`queued`, `sent`,
-  `failed`, `resent`), the number of attempts and the Telegram error.
+  `failed`, `resent`, `suppressed`), the number of attempts and the Telegram error.
 
 **Status → Delivery** on the page shows `connection · queue` (or *Immediately (sync queue)*) and,
 with Horizon, its state. A warning appears when Horizon is paused or not running, when no Horizon
 supervisor works the queue, or when messages have been queued for over 5 minutes.
 
-### A custom queue name
+### A queue of its own
 
-With Horizon, add the queue to a supervisor's `queue` list in `config/horizon.php`. Otherwise the
-messages never leave the queue:
+Recommended for busy apps. During a burst, messages wait for the rate limit; on a queue of their
+own they don't hold up the app's other jobs, and the app's jobs don't delay alerts.
+
+With Horizon, give the queue a small supervisor of its own (one process is plenty, since the rate
+limit allows one message a second), or add it to an existing supervisor's `queue` list. Otherwise
+the messages never leave the queue:
 
 ```php
 // .env: OPS_NOTIFY_QUEUE=ops
 'environments' => [
     'production' => [
-        'supervisor-1' => [
+        'supervisor-1' => [/* the app's queues */],
+        'supervisor-ops' => [
             'connection' => 'redis',
-            'queue' => ['default', 'ops'],
-            // ...
+            'queue' => ['ops'],
+            'minProcesses' => 1,
+            'maxProcesses' => 1,
         ],
     ],
 ],
