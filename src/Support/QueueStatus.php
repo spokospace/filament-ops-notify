@@ -51,11 +51,17 @@ final class QueueStatus
             return null;
         }
 
-        return match (true) {
-            $masters === [] => 'inactive',
-            collect($masters)->contains(fn (object $master): bool => ($master->status ?? null) === 'paused') => 'paused',
-            default => 'running',
-        };
+        if ($masters === []) {
+            return 'inactive';
+        }
+
+        foreach ($masters as $master) {
+            if (($master->status ?? null) === 'paused') {
+                return 'paused';
+            }
+        }
+
+        return 'running';
     }
 
     /**

@@ -58,7 +58,7 @@ final class BotAvatars
 
         // Centre-crop to a square on a white background (PNG transparency has no JPEG equivalent).
         $target = imagecreatetruecolor(self::SIZE, self::SIZE);
-        imagefill($target, 0, 0, imagecolorallocate($target, 255, 255, 255));
+        imagefill($target, 0, 0, imagecolorallocate($target, 255, 255, 255) ?: throw new RuntimeException('Could not allocate a colour for the avatar background.'));
         imagecopyresampled(
             $target, $source, 0, 0,
             intdiv(imagesx($source) - $side, 2), intdiv(imagesy($source) - $side, 2),

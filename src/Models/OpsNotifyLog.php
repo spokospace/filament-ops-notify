@@ -52,6 +52,7 @@ class OpsNotifyLog extends Model
         ];
     }
 
+    /** @return Builder<static> */
     public function prunable(): Builder
     {
         return static::query()->where('created_at', '<', now()->subDays((int) config('ops-notify.log.prune_after_days', 30)));
@@ -60,6 +61,7 @@ class OpsNotifyLog extends Model
     /** Rebuild the original message, e.g. to resend a failed one. */
     public function toMessage(): OpsMessage
     {
-        return OpsMessage::fromArray($this->payload);
+        // The payload column is nullable: a row without one (edited by hand) resends its event and title.
+        return OpsMessage::fromArray($this->payload ?? ['event' => $this->event, 'title' => $this->title]);
     }
 }

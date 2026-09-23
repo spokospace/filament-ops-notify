@@ -1,0 +1,11 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 8
+    # config/ is left out: its env() calls are correct there, but Larastan only recognises the
+    # application's config directory, not a package's.
+    paths:
+        - src
+        - database
+    tmpDir: build/phpstan

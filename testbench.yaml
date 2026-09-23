@@ -1,0 +1,3 @@
+# Used by Larastan to boot an app with the package, so it can resolve the package's views.
+providers:
+  - Spokospace\OpsNotify\OpsNotifyServiceProvider

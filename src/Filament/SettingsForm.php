@@ -161,13 +161,13 @@ class SettingsForm
 
         return [
             ...$values,
-            'events' => collect($values['events'] ?? [])
+            'events' => collect(self::rows($values['events'] ?? null))
                 ->map(fn (array $rule, string $pattern): array => [
                     'pattern' => $pattern,
                     'topic' => $rule['topic'] ?? null,
                     'enabled' => $rule['enabled'] ?? true,
                 ])->values()->all(),
-            'forward_map' => collect($values['forward_map'] ?? [])
+            'forward_map' => collect(self::rows($values['forward_map'] ?? null))
                 ->map(fn (string|false $event, string $title): array => [
                     'title' => $title,
                     'event' => $event ?: null,
@@ -183,7 +183,7 @@ class SettingsForm
     public function toSettings(array $data): array
     {
         if (array_key_exists('telegram_topics', $data)) {
-            $data['telegram_topics'] = collect($data['telegram_topics'] ?? [])
+            $data['telegram_topics'] = collect(self::rows($data['telegram_topics'] ?? null))
                 ->filter(fn (array $row): bool => filled($row['id'] ?? null))
                 ->map(fn (array $row): array => ['id' => trim((string) $row['id']), 'name' => trim((string) ($row['name'] ?? ''))])
                 ->unique('id')
@@ -192,7 +192,7 @@ class SettingsForm
         }
 
         if (array_key_exists('events', $data)) {
-            $data['events'] = collect($data['events'] ?? [])
+            $data['events'] = collect(self::rows($data['events'] ?? null))
                 ->mapWithKeys(fn (array $row): array => [trim($row['pattern']) => array_filter([
                     'topic' => filled($row['topic'] ?? null) ? (string) $row['topic'] : null,
                     'enabled' => (bool) ($row['enabled'] ?? true),
@@ -201,7 +201,7 @@ class SettingsForm
         }
 
         if (array_key_exists('forward_map', $data)) {
-            $data['forward_map'] = collect($data['forward_map'] ?? [])
+            $data['forward_map'] = collect(self::rows($data['forward_map'] ?? null))
                 ->mapWithKeys(fn (array $row): array => [
                     trim($row['title']) => ($row['forward'] ?? true) ? trim((string) $row['event']) : false,
                 ])
@@ -347,6 +347,17 @@ class SettingsForm
                     240,
                 );
             });
+    }
+
+    /**
+     * A stored or submitted list as rows. Settings are decoded JSON and form state is loose,
+     * so anything that is not an array (a hand-edited or corrupted value) becomes no rows.
+     *
+     * @return array<array-key, mixed>
+     */
+    private static function rows(mixed $value): array
+    {
+        return is_array($value) ? $value : [];
     }
 
     private function locked(Field $field, ?string $hint = null): Field

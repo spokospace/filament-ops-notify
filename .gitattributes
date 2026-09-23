@@ -5,3 +5,5 @@
 /art export-ignore
 /.github export-ignore
 /.coderabbit.yaml export-ignore
+/phpstan.neon.dist export-ignore
+/testbench.yaml export-ignore
