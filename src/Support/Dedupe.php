@@ -15,6 +15,6 @@ final class Dedupe
     {
         $seconds = (int) config('ops-notify.dedupe_seconds', 60);
 
-        return $seconds <= 0 || Cache::add("ops-notify:dedupe:{$scope}:".md5(serialize($payload)), true, $seconds);
+        return $seconds <= 0 || Cache::add("ops-notify:dedupe:{$scope}:".hash('xxh128', serialize($payload)), true, $seconds);
     }
 }
