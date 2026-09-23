@@ -114,8 +114,13 @@ Every message becomes a queued `SendOpsMessage` job.
   connection and that connection's default queue.
 - **Any Laravel driver works:** Horizon (redis), `queue:work` (database, redis, sqs, beanstalkd),
   or `sync`, which needs no worker and delivers inside the request.
-- **Retries:** 5 attempts, with a backoff of 10 s, 30 s, 2 min and 5 min. When Telegram answers
-  429 with `retry_after`, the job waits that long.
+- **Rate limit:** at most 1 message a second and 20 a minute per channel, the pace Telegram
+  accepts in one group (`rate_limit.per_second` / `rate_limit.per_minute`, `0` turns one off).
+  In a burst the rest wait in the queue instead of being rejected. The limiter uses the cache, so
+  it needs a store shared by all workers (redis, database). It is skipped on the `sync` queue.
+- **Retries:** up to 5 real failures (timeouts, 5xx), with a backoff of 10 s, 30 s, 2 min and
+  5 min. Waiting for the rate limit, or for Telegram's `retry_after` after a 429, does not count.
+  A message still undelivered after `rate_limit.give_up_after_minutes` (60) is marked failed.
 - **Permanent errors** (a bad token, an unknown chat, a malformed message) fail at once. They are
   not retried.
 - **After commit:** the job is dispatched after the surrounding database transaction commits, so a
