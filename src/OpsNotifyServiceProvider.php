@@ -2,16 +2,19 @@
 
 namespace Spokospace\OpsNotify;
 
+use Illuminate\Cache\RateLimiting\Unlimited;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Notifications\ChannelManager as NotificationChannelManager;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Spokospace\OpsNotify\Commands\DiscoverTelegramChatsCommand;
 use Spokospace\OpsNotify\Commands\SendTestCommand;
 use Spokospace\OpsNotify\Http\AvatarThumbnailController;
+use Spokospace\OpsNotify\Jobs\SendOpsMessage;
 use Spokospace\OpsNotify\Listeners\ForwardFilamentDatabaseNotification;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\Notifications\OpsChannel;
@@ -55,6 +58,9 @@ class OpsNotifyServiceProvider extends PackageServiceProvider
         });
 
         Event::listen(NotificationSent::class, ForwardFilamentDatabaseNotification::class);
+
+        // Per-destination send rate for SendOpsMessage (its RateLimited middleware uses this name).
+        RateLimiter::for(SendOpsMessage::RATE_LIMITER, fn (SendOpsMessage $job): array|Unlimited => SendOpsMessage::limits($job));
 
         // Thumbnails for the avatar picker. A controller, not a closure, so route:cache works.
         Route::get('ops-notify/avatars/{key}.jpg', AvatarThumbnailController::class)

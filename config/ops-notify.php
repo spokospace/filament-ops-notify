@@ -87,6 +87,18 @@ return [
         'name' => env('OPS_NOTIFY_QUEUE'),
     ],
 
+    /*
+    | Send rate per channel (each posts to one chat), enforced on the queue: messages over the limit
+    | wait instead of being rejected. Telegram allows about 20 messages a minute in one group and
+    | one a second in a chat. 0 turns a limit off. Needs a cache store shared by the workers.
+    | A message still undelivered after give_up_after_minutes is marked failed.
+    */
+    'rate_limit' => [
+        'per_second' => 1,
+        'per_minute' => 20,
+        'give_up_after_minutes' => 60,
+    ],
+
     // Run the package's migrations from vendor. Turn off only after publishing them
     // (vendor:publish --tag=ops-notify-migrations) to change them.
     'run_migrations' => env('OPS_NOTIFY_RUN_MIGRATIONS', true),
