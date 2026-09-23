@@ -50,6 +50,7 @@ return [
         'attempts' => 'Forsøk',
         'empty' => 'Ingen varsler sendt ennå',
         'resent_as' => 'Sendt på nytt som #:id',
+        'suppressed_help' => 'Holdt tilbake under en serie av denne hendelsen. Den telles med i oppsummeringsmeldingen som sendes når tidsvinduet for serien er over.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Sendt',
         'failed' => 'Mislyktes',
         'resent' => 'Sendt på nytt',
+        'suppressed' => 'Holdt tilbake',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Vert',
         'open' => 'Åpne',
         'more_fields' => 'og :count felt til|og :count felt til',
+        'burst_title' => 'Ytterligere :count «:event»-melding ble holdt tilbake på :minutes minutter|Ytterligere :count «:event»-meldinger ble holdt tilbake på :minutes minutter',
     ],
 
 ];

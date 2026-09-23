@@ -50,6 +50,7 @@ return [
         'attempts' => 'Próby',
         'empty' => 'Nie wysłano jeszcze żadnych powiadomień',
         'resent_as' => 'Wysłano ponownie jako #:id',
+        'suppressed_help' => 'Wstrzymano podczas serii tego zdarzenia. Jest wliczona do wiadomości podsumowującej, wysyłanej po zakończeniu okna serii.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Wysłano',
         'failed' => 'Błąd',
         'resent' => 'Wysłano ponownie',
+        'suppressed' => 'Wstrzymano',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Host',
         'open' => 'Otwórz',
         'more_fields' => 'i jeszcze :count pole|i jeszcze :count pola|i jeszcze :count pól',
+        'burst_title' => ':count kolejna wiadomość „:event” została wstrzymana w ciągu :minutes minut|:count kolejne wiadomości „:event” zostały wstrzymane w ciągu :minutes minut|:count kolejnych wiadomości „:event” zostało wstrzymanych w ciągu :minutes minut',
     ],
 
 ];

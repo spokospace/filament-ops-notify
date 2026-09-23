@@ -50,6 +50,7 @@ return [
         'attempts' => 'Katsed',
         'empty' => 'Teateid pole veel saadetud',
         'resent_as' => 'Uuesti saadetud kui #:id',
+        'suppressed_help' => 'Kinni peetud selle sündmuse tiheda kordumise ajal. Arvestatakse kokkuvõttesse, mis saadetakse ajaakna lõppedes.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Saadetud',
         'failed' => 'Ebaõnnestus',
         'resent' => 'Uuesti saadetud',
+        'suppressed' => 'Kinni peetud',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Host',
         'open' => 'Ava',
         'more_fields' => 'ja veel :count väli|ja veel :count välja',
+        'burst_title' => 'Veel :count „:event“ sõnum peeti :minutes minuti jooksul kinni|Veel :count „:event“ sõnumit peeti :minutes minuti jooksul kinni',
     ],
 
 ];

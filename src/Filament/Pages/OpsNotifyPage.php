@@ -196,9 +196,11 @@ class OpsNotifyPage extends Page implements HasTable
                 TextColumn::make('status')
                     ->label(Trans::get('table.status'))
                     ->badge()
-                    ->tooltip(fn (OpsNotifyLog $record): ?string => $record->status === DeliveryStatus::Resent && filled($record->error)
-                        ? Trans::get('table.resent_as', ['id' => $record->error])
-                        : $record->error),
+                    ->tooltip(fn (OpsNotifyLog $record): ?string => match (true) {
+                        $record->status === DeliveryStatus::Resent && filled($record->error) => Trans::get('table.resent_as', ['id' => $record->error]),
+                        $record->status === DeliveryStatus::Suppressed => Trans::get('table.suppressed_help'),
+                        default => $record->error,
+                    }),
                 TextColumn::make('channel')
                     ->label(Trans::get('table.channel_topic'))
                     ->formatStateUsing(fn (OpsNotifyLog $record): string => $record->channel.($record->topic ? ' · '.$this->topicLabel($record->channel, $record->topic) : ''))

@@ -49,6 +49,9 @@ These are not in the panel. Set them in `.env` where there is a variable, or in 
 | `channels.telegram.api_url` | `OPS_NOTIFY_TELEGRAM_API_URL` | `https://api.telegram.org` | For proxies or a local Bot API server |
 | `channels.telegram.timeout` | | 10 s | HTTP timeout per Telegram call |
 | `dedupe_seconds` | | 60 | Identical messages within this window are sent once. `0` turns it off |
+| `burst.max_per_event` / `burst.window_minutes` | | 10 / 5 | Past this many messages of one event in the window, the rest are held back and summed up in one digest. `0` turns it off. See [Delivery](sending.md#delivery) |
+| `rate_limit.per_second` / `rate_limit.per_minute` | | 1 / 20 | Send rate per channel; the rest wait in the queue. `0` turns a limit off |
+| `rate_limit.give_up_after_minutes` | | 60 | A message still undelivered after this long is marked failed |
 | `forward_database_notifications.default_event` | | `filament.notification` | Event name for titles that no rule matches. `null` forwards only matched titles |
 | `queue.connection` | `OPS_NOTIFY_QUEUE_CONNECTION` | app default | Queue connection for `SendOpsMessage` jobs ([Delivery](sending.md#delivery)) |
 | `queue.name` | `OPS_NOTIFY_QUEUE` | the connection's default queue | Queue name for `SendOpsMessage` jobs |

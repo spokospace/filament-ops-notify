@@ -50,6 +50,7 @@ return [
         'attempts' => 'Tentativi',
         'empty' => 'Nessuna notifica inviata finora',
         'resent_as' => 'Inviato di nuovo come #:id',
+        'suppressed_help' => 'Trattenuto durante una raffica di questo evento. Viene conteggiato nel messaggio di riepilogo inviato al termine della finestra della raffica.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Inviato',
         'failed' => 'Non riuscito',
         'resent' => 'Inviato di nuovo',
+        'suppressed' => 'Trattenuto',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Host',
         'open' => 'Apri',
         'more_fields' => 'e :count altro campo|e altri :count campi',
+        'burst_title' => ':count altro messaggio «:event» è stato trattenuto in :minutes minuti|Altri :count messaggi «:event» sono stati trattenuti in :minutes minuti',
     ],
 
 ];

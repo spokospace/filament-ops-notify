@@ -50,6 +50,7 @@ return [
         'attempts' => 'Pogingen',
         'empty' => 'Nog geen meldingen verstuurd',
         'resent_as' => 'Opnieuw verstuurd als #:id',
+        'suppressed_help' => 'Tegengehouden tijdens een golf van deze gebeurtenis. Wordt meegeteld in het samenvattingsbericht dat wordt verstuurd wanneer het tijdvenster afloopt.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Verstuurd',
         'failed' => 'Mislukt',
         'resent' => 'Opnieuw verstuurd',
+        'suppressed' => 'Tegengehouden',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Host',
         'open' => 'Openen',
         'more_fields' => 'en nog :count veld|en nog :count velden',
+        'burst_title' => 'Nog :count ":event"-bericht is in :minutes minuten tegengehouden|Nog :count ":event"-berichten zijn in :minutes minuten tegengehouden',
     ],
 
 ];

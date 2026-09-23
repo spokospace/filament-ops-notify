@@ -93,6 +93,17 @@ return [
     | one a second in a chat. 0 turns a limit off. Needs a cache store shared by the workers.
     | A message still undelivered after give_up_after_minutes is marked failed.
     */
+    /*
+    | Burst guard. When one event (e.g. error.thrown in a loop) is sent more than max_per_event
+    | times within window_minutes, the rest are logged as "suppressed" and summed up in a single
+    | digest message at the end of the window. 0 turns it off. Not applied on the sync queue,
+    | which cannot delay the digest, nor to sendNow().
+    */
+    'burst' => [
+        'max_per_event' => 10,
+        'window_minutes' => 5,
+    ],
+
     'rate_limit' => [
         'per_second' => 1,
         'per_minute' => 20,

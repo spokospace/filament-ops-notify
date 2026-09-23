@@ -50,6 +50,7 @@ return [
         'attempts' => 'Attempts',
         'empty' => 'No notifications sent yet',
         'resent_as' => 'Resent as #:id',
+        'suppressed_help' => 'Held back during a burst of this event. It is counted in the summary message sent when the burst window ends.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Sent',
         'failed' => 'Failed',
         'resent' => 'Resent',
+        'suppressed' => 'Suppressed',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Host',
         'open' => 'Open',
         'more_fields' => 'and :count more field|and :count more fields',
+        'burst_title' => ':count more ":event" message was held back in :minutes minutes|:count more ":event" messages were held back in :minutes minutes',
     ],
 
 ];

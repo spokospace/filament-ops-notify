@@ -50,6 +50,7 @@ return [
         'attempts' => 'Mēģinājumi',
         'empty' => 'Vēl nav nosūtīts neviens paziņojums',
         'resent_as' => 'Nosūtīts vēlreiz kā #:id',
+        'suppressed_help' => 'Aizturēts šī notikuma uzliesmojuma laikā. Tiek ieskaitīts kopsavilkuma ziņojumā, ko nosūta, kad beidzas uzliesmojuma laika logs.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Nosūtīts',
         'failed' => 'Neizdevās',
         'resent' => 'Nosūtīts vēlreiz',
+        'suppressed' => 'Aizturēts',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Serveris',
         'open' => 'Atvērt',
         'more_fields' => 'un vēl :count lauki|un vēl :count lauks|un vēl :count lauki',
+        'burst_title' => 'Vēl :count „:event” ziņojumi aizturēti :minutes minūtēs|Vēl :count „:event” ziņojums aizturēts :minutes minūtēs|Vēl :count „:event” ziņojumi aizturēti :minutes minūtēs',
     ],
 
 ];

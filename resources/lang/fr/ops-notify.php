@@ -50,6 +50,7 @@ return [
         'attempts' => 'Tentatives',
         'empty' => "Aucune notification envoyée pour l'instant",
         'resent_as' => 'Renvoyé en tant que #:id',
+        'suppressed_help' => 'Retenu pendant une rafale de cet événement. Il est comptabilisé dans le message récapitulatif envoyé à la fin de la fenêtre de rafale.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Envoyé',
         'failed' => 'Échec',
         'resent' => 'Renvoyé',
+        'suppressed' => 'Retenu',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Hôte',
         'open' => 'Ouvrir',
         'more_fields' => 'et :count autre champ|et :count autres champs',
+        'burst_title' => ':count autre message « :event » a été retenu en :minutes minutes|:count autres messages « :event » ont été retenus en :minutes minutes',
     ],
 
 ];

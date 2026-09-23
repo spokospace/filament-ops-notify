@@ -50,6 +50,7 @@ return [
         'attempts' => 'Yrityksiä',
         'empty' => 'Ilmoituksia ei ole vielä lähetetty',
         'resent_as' => 'Lähetetty uudelleen: #:id',
+        'suppressed_help' => 'Pidätetty tämän tapahtuman ryöpyn aikana. Lasketaan mukaan yhteenvetoviestiin, joka lähetetään, kun ryöpyn aikaikkuna päättyy.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Lähetetty',
         'failed' => 'Epäonnistui',
         'resent' => 'Lähetetty uudelleen',
+        'suppressed' => 'Pidätetty',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Isäntä',
         'open' => 'Avaa',
         'more_fields' => 'ja :count kenttä lisää|ja :count kenttää lisää',
+        'burst_title' => 'Vielä :count ”:event”-viesti pidätettiin :minutes minuutin aikana|Vielä :count ”:event”-viestiä pidätettiin :minutes minuutin aikana',
     ],
 
 ];

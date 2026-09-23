@@ -13,6 +13,8 @@ enum DeliveryStatus: string implements HasColor, HasLabel
     case Failed = 'failed';
     /** A failed message that was sent again; the new attempt has its own row. */
     case Resent = 'resent';
+    /** Held back during a burst of one event; counted in the digest message instead. */
+    case Suppressed = 'suppressed';
 
     public function getColor(): string
     {
@@ -21,6 +23,7 @@ enum DeliveryStatus: string implements HasColor, HasLabel
             self::Sent => 'success',
             self::Failed => 'danger',
             self::Resent => 'warning',
+            self::Suppressed => 'gray',
         };
     }
 

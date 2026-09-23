@@ -50,6 +50,7 @@ return [
         'attempts' => 'Bandymai',
         'empty' => 'Dar neišsiųsta jokių pranešimų',
         'resent_as' => 'Pakartotinai išsiųsta kaip #:id',
+        'suppressed_help' => 'Sulaikyta šio įvykio pliūpsnio metu. Įskaičiuojama į suvestinės pranešimą, išsiunčiamą pasibaigus pliūpsnio laiko langui.',
     ],
 
     'level' => [
@@ -65,6 +66,7 @@ return [
         'sent' => 'Išsiųsta',
         'failed' => 'Nepavyko',
         'resent' => 'Išsiųsta pakartotinai',
+        'suppressed' => 'Sulaikyta',
     ],
 
     'settings' => [
@@ -157,6 +159,7 @@ return [
         'host' => 'Serveris',
         'open' => 'Atidaryti',
         'more_fields' => 'ir dar :count laukas|ir dar :count laukai|ir dar :count laukų',
+        'burst_title' => 'Dar :count „:event“ pranešimas sulaikytas per :minutes minutes|Dar :count „:event“ pranešimai sulaikyti per :minutes minutes|Dar :count „:event“ pranešimų sulaikyta per :minutes minutes',
     ],
 
 ];
