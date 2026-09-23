@@ -24,23 +24,31 @@ class SendBurstDigest implements ShouldQueue
     /** Titles listed in the digest. */
     private const TOP_TITLES = 5;
 
+    /**
+     * @param  string|null  $key  The burst counter's key, when it is not just the event name.
+     * @param  string|null  $title  Set when the burst was counted per title (bell notifications
+     *                              without a title rule): the digest names the title instead.
+     */
     public function __construct(
         public string $event,
         public Destination $destination,
         public Level $level,
         public int $windowStartedAt,
+        public ?string $key = null,
+        public ?string $title = null,
     ) {}
 
     public function handle(OpsNotifier $notifier, BurstGuard $guard): void
     {
-        if (($held = $guard->pullHeld($this->event)) === 0) {
+        if (($held = $guard->pullHeld($this->key ?? $this->event)) === 0) {
             return;
         }
 
         $message = $notifier->inMessageLocale(fn (): OpsMessage => OpsMessage::make($this->event)
             ->level($this->level)
-            ->title(Trans::choice('message.burst_title', $held, ['event' => $this->event, 'minutes' => $guard->windowMinutes()]))
-            ->lines($this->topTitles()));
+            ->title(Trans::choice('message.burst_title', $held, ['event' => $this->title ?? $this->event, 'minutes' => $guard->windowMinutes()]))
+            // Counted per title, every held message had this title: no breakdown to list.
+            ->lines($this->title === null ? $this->topTitles() : []));
 
         $notifier->queue($message, $this->destination);
     }
