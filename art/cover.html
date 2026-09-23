@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Filament Ops Notify cover</title>
+<!--
+  README cover. Render at 1600x900 CSS px, device scale 2 (3200x1800):
+  msedge --headless --hide-scrollbars --window-size=1600,900 --force-device-scale-factor=2 \
+    --screenshot=art/cover-light.png "file:///…/art/cover.html"
+  Add ?theme=dark for the dark variant.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbfaf7;
+    --grid: rgba(15, 23, 42, .045);
+    --glow: rgba(42, 171, 238, .16);
+    --ink: #0f172a;
+    --muted: #475569;
+    --faint: #94a3b8;
+    --chip-bg: #ffffff;
+    --chip-border: #e2e8f0;
+    --accent: #229ed9;
+    --accent-2: #2aabee;
+    --window: #ffffff;
+    --window-border: rgba(15, 23, 42, .08);
+    --shadow: 0 40px 80px -30px rgba(15, 23, 42, .35), 0 12px 30px -12px rgba(15, 23, 42, .18);
+    --titlebar: #f8fafc;
+    --sidebar: #ffffff;
+    --sidebar-active: #e8f4fc;
+    --chat: #dbe6ee;
+    --bubble: #ffffff;
+    --bubble-ink: #111827;
+    --hashtag: #168acd;
+    --button: rgba(255, 255, 255, .72);
+    --button-ink: #0f5f8f;
+    --sep: #eef2f6;
+  }
+  .dark {
+    --bg: #0b0f16;
+    --grid: rgba(148, 163, 184, .06);
+    --glow: rgba(42, 171, 238, .18);
+    --ink: #f1f5f9;
+    --muted: #a3b1c2;
+    --faint: #64748b;
+    --chip-bg: #121926;
+    --chip-border: #1f2a3a;
+    --window: #17212b;
+    --window-border: rgba(255, 255, 255, .06);
+    --shadow: 0 40px 90px -30px rgba(0, 0, 0, .8), 0 12px 30px -12px rgba(0, 0, 0, .6);
+    --titlebar: #1c2733;
+    --sidebar: #17212b;
+    --sidebar-active: #2b5278;
+    --chat: #0e1621;
+    --bubble: #182533;
+    --bubble-ink: #e8eef5;
+    --hashtag: #6ab2f2;
+    --button: rgba(24, 37, 51, .85);
+    --button-ink: #8cc8f5;
+    --sep: #0f1822;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1600px; height: 900px; overflow: hidden; }
+  body {
+    font-family: Inter, "Segoe UI", sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(900px 600px at 88% 8%, var(--glow), transparent 60%),
+      radial-gradient(700px 500px at 10% 100%, var(--glow), transparent 65%),
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 40px 40px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px 40px,
+      var(--bg);
+    position: relative;
+  }
+
+  /* Left column */
+  .intro { position: absolute; left: 96px; top: 150px; width: 680px; }
+  .eyebrow {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 17px; font-weight: 700; letter-spacing: .32em; color: var(--muted);
+  }
+  .eyebrow .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 0 6px rgba(42, 171, 238, .18); }
+  h1 { margin-top: 30px; font-weight: 900; letter-spacing: -.035em; line-height: .95; }
+  h1 .top { display: block; font-size: 92px; }
+  h1 .bottom {
+    display: block; font-size: 112px;
+    background: linear-gradient(95deg, #2aabee 0%, #1f8fd6 55%, #1565a8 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    padding-bottom: 6px;
+  }
+  .tagline { margin-top: 34px; font-size: 27px; line-height: 1.5; color: var(--muted); font-weight: 400; }
+  .tagline strong { color: var(--ink); font-weight: 600; }
+  .chips { margin-top: 38px; display: flex; gap: 12px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 9px; white-space: nowrap;
+    padding: 12px 18px; border-radius: 999px;
+    background: var(--chip-bg); border: 1px solid var(--chip-border);
+    font-size: 17px; font-weight: 600;
+  }
+  .chip i { font-style: normal; color: var(--accent-2); font-weight: 800; }
+  .install { margin-top: 40px; font-family: "JetBrains Mono", monospace; font-size: 20px; color: var(--muted); }
+  .install b { color: var(--accent-2); font-weight: 500; margin-right: 12px; }
+
+  /* Telegram window */
+  .stage { position: absolute; left: 790px; top: 92px; perspective: 2200px; }
+  .window {
+    width: 900px; height: 720px;
+    background: var(--window); border: 1px solid var(--window-border);
+    border-radius: 22px; overflow: hidden;
+    box-shadow: var(--shadow);
+    transform: rotateY(-9deg) rotateX(3deg);
+    transform-origin: left center;
+    display: grid; grid-template-rows: 56px 1fr;
+  }
+  .titlebar {
+    display: flex; align-items: center; gap: 12px; padding: 0 22px;
+    background: var(--titlebar); border-bottom: 1px solid var(--window-border);
+    font-weight: 700; font-size: 18px;
+  }
+  .lights { display: flex; gap: 9px; margin-right: 10px; }
+  .lights span { width: 14px; height: 14px; border-radius: 50%; }
+  .titlebar small { color: var(--faint); font-weight: 500; font-size: 15px; margin-left: 6px; }
+  .body { display: grid; grid-template-columns: 250px 1fr; min-height: 0; }
+
+  .topics { background: var(--sidebar); border-right: 1px solid var(--window-border); padding: 14px 10px; }
+  .topic { display: flex; align-items: center; gap: 12px; padding: 12px 12px; border-radius: 12px; font-size: 16px; font-weight: 600; }
+  .topic.active { background: var(--sidebar-active); }
+  .topic .ic {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 15px; font-weight: 800; color: #fff; flex: none;
+  }
+  .topic .meta { min-width: 0; }
+  .topic .meta small { display: block; color: var(--faint); font-weight: 500; font-size: 13px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topic .badge { margin-left: auto; background: var(--accent-2); color: #fff; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 8px; }
+
+  .chat { background: var(--chat); padding: 26px 30px; display: flex; flex-direction: column; gap: 18px; overflow: hidden; }
+  .msg { display: flex; gap: 12px; align-items: flex-end; }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%; flex: none;
+    background: linear-gradient(135deg, #2aabee, #1565a8);
+    display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 15px;
+  }
+  .stack { width: 470px; }
+  .bubble {
+    background: var(--bubble); color: var(--bubble-ink);
+    border-radius: 16px 16px 16px 6px; padding: 14px 18px 12px;
+    font-size: 15.5px; line-height: 1.45;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .06);
+  }
+  .bubble .from { color: #e17076; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .bubble .title { font-weight: 700; }
+  .bubble .svc { color: var(--hashtag); }
+  .bubble p { margin-top: 8px; }
+  .bubble .field b { font-weight: 700; }
+  .bubble .tag { color: var(--hashtag); margin-top: 10px; display: flex; justify-content: space-between; }
+  .bubble .tag time { color: var(--faint); font-size: 12.5px; align-self: flex-end; }
+  .btn {
+    margin-top: 5px; text-align: center; padding: 10px; border-radius: 12px;
+    background: var(--button); color: var(--button-ink); font-weight: 600; font-size: 15px;
+    backdrop-filter: blur(6px);
+  }
+</style>
+</head>
+<body>
+  <section class="intro">
+    <div class="eyebrow"><span class="dot"></span>FILAMENT PLUGIN</div>
+    <h1><span class="top">Filament</span><span class="bottom">Ops Notify</span></h1>
+    <p class="tagline">Inquiries, errors and builds from your panel, straight to <strong>Telegram</strong>. Existing bell notifications need <strong>no code</strong>.</p>
+    <div class="chips">
+      <span class="chip"><i>›</i> Bell → Telegram</span>
+      <span class="chip"><i>›</i> Topics &amp; routing</span>
+      <span class="chip"><i>›</i> Queued &amp; logged</span>
+    </div>
+    <p class="install"><b>$</b>composer require spokospace/filament-ops-notify</p>
+  </section>
+
+  <div class="stage">
+    <div class="window">
+      <div class="titlebar">
+        <div class="lights"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div>
+        Ops <small>Telegram forum</small>
+      </div>
+      <div class="body">
+        <aside class="topics">
+          <div class="topic active"><span class="ic" style="background:#2aabee">I</span><span class="meta">Inquiries<small>New product inquiry</small></span><span class="badge">2</span></div>
+          <div class="topic"><span class="ic" style="background:#6fb05a">B</span><span class="meta">Builds<small>catalog build completed</small></span></div>
+          <div class="topic"><span class="ic" style="background:#e5574f">E</span><span class="meta">Errors<small>Application Error</small></span><span class="badge" style="background:#e5574f">1</span></div>
+          <div class="topic"><span class="ic" style="background:#a47fd6">C</span><span class="meta">Comments<small>New blog comment</small></span></div>
+          <div class="topic"><span class="ic" style="background:#8a96a8">#</span><span class="meta">General<small>Test notification</small></span></div>
+        </aside>
+        <main class="chat">
+          <div class="msg">
+            <div class="avatar">OP</div>
+            <div class="stack">
+              <div class="bubble">
+                <div class="from">Ops Bot</div>
+                <div class="title">ℹ️ <span class="svc">[shop.example]</span> New product inquiry</div>
+                <p>Anna asks about: Front lamp, left (OE 6R0 941 007)</p>
+                <p class="field"><b>Email:</b> anna@example.com</p>
+                <div class="tag"><span>#inquiry_created</span><time>09:41</time></div>
+              </div>
+              <div class="btn">Reply ↗</div>
+            </div>
+          </div>
+          <div class="msg">
+            <div class="avatar">OP</div>
+            <div class="stack">
+              <div class="bubble">
+                <div class="title">✅ <span class="svc">[shop.example]</span> catalog build completed</div>
+                <p>Build finished successfully in 4m 12s.</p>
+                <p class="field"><b>Triggered by:</b> deploy</p>
+                <div class="tag"><span>#build_completed</span><time>09:44</time></div>
+              </div>
+              <div class="btn">View build ↗</div>
+            </div>
+          </div>
+          <div class="msg">
+            <div class="avatar">OP</div>
+            <div class="stack">
+              <div class="bubble">
+                <div class="title">🚨 <span class="svc">[shop.example]</span> Application Error</div>
+                <p>SQLSTATE[HY000] [2002] Connection refused</p>
+                <div class="tag"><span>#error_app</span><time>09:52</time></div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (new URLSearchParams(location.search).get('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+</body>
+</html>
