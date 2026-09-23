@@ -306,7 +306,7 @@ class SettingsForm
 
     private function telegram(): TelegramChannel
     {
-        return app(OpsNotifier::class)->channels()->telegram('telegram');
+        return app(OpsNotifier::class)->telegram();
     }
 
     /** Disables a field whose value comes from .env/config, and says so. */

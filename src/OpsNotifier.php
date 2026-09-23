@@ -5,6 +5,7 @@ namespace Spokospace\OpsNotify;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Localizable;
+use Spokospace\OpsNotify\Channels\Telegram\TelegramChannel;
 use Spokospace\OpsNotify\Enums\DeliveryStatus;
 use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\Exceptions\MessageSkipped;
@@ -38,6 +39,16 @@ class OpsNotifier
     public function channels(): ChannelManager
     {
         return $this->channels;
+    }
+
+    /**
+     * The default channel as a Telegram channel, for Telegram-only features (topics, bot profile).
+     *
+     * @throws ChannelException when the default channel is not a Telegram driver.
+     */
+    public function telegram(): TelegramChannel
+    {
+        return $this->channels->telegram();
     }
 
     /** Language of the text the package puts into messages: ops-notify.locale, else the app's. */
