@@ -3,7 +3,6 @@
 return [
 
     'page' => [
-        'title' => 'Ylläpitoilmoitukset',
         'status' => 'Tila',
         'service' => 'Palvelu',
         'enabled' => 'Käytössä',

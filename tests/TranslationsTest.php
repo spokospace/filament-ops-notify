@@ -65,8 +65,9 @@ it('renders the page in the app locale', function () {
     $this->actingAs($this->admin());
     Http::fake(['*/getMe' => Http::response(['ok' => true, 'result' => ['username' => 'shop_bot']])]);
 
+    // The page name is a product name and stays the same in every locale.
     Livewire::test(OpsNotifyPage::class)
-        ->assertSee('Powiadomienia ops')
+        ->assertSee('Spoko DashBot')
         ->assertSee('Połączono jako @shop_bot')
         ->assertSee('Wyślij test')
         ->assertSee('Nie wysłano jeszcze żadnych powiadomień');

@@ -3,7 +3,6 @@
 return [
 
     'page' => [
-        'title' => 'Ops-meldingen',
         'status' => 'Status',
         'service' => 'Dienst',
         'enabled' => 'Ingeschakeld',

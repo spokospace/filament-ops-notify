@@ -3,7 +3,6 @@
 return [
 
     'page' => [
-        'title' => 'Operatiivteated',
         'status' => 'Olek',
         'service' => 'Teenus',
         'enabled' => 'Lubatud',

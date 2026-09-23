@@ -17,7 +17,7 @@ Later, `/mybots` in BotFather lists your bots, and `/revoke` issues a new token.
 `/setprivacy`: the bot will be an admin, and privacy mode does not apply to admins.
 
 Keep the token out of git, `.env.example`, chats and PR descriptions. Paste it only into
-**Ops notifications → Settings**. If it leaks, send `/revoke` to BotFather and enter the new token
+**Spoko DashBot → Settings**. If it leaks, send `/revoke` to BotFather and enter the new token
 in the panel.
 
 **One bot per service** (for example `shop_panel_bot`, `warehouse_panel_bot`). Messages are then
@@ -50,7 +50,7 @@ titles, and topic ids and names, in the cache. It stores no message text.
 
 ## 3. Find the chat id
 
-Save the token in **Ops notifications → Settings** first. Then send `/ping@your_bot` in the group,
+Save the token in **Spoko DashBot → Settings** first. Then send `/ping@your_bot` in the group,
 and in every topic whose id you want. Within 24 hours, run:
 
 ```bash
@@ -107,7 +107,7 @@ php artisan ops-notify:test "Hello from the panel"
 
 ## 5. Bot profile
 
-**Ops notifications → Bot profile** edits what Telegram shows for the bot, so you don't need to go
+**Spoko DashBot → Bot profile** edits what Telegram shows for the bot, so you don't need to go
 back to BotFather:
 
 | Field | Limit | Where Telegram shows it |

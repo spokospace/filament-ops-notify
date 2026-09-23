@@ -3,7 +3,6 @@
 return [
 
     'page' => [
-        'title' => 'Üzemeltetési értesítések',
         'status' => 'Állapot',
         'service' => 'Szolgáltatás',
         'enabled' => 'Bekapcsolva',

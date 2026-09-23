@@ -3,7 +3,6 @@
 return [
 
     'page' => [
-        'title' => 'Driftsnotifikationer',
         'status' => 'Status',
         'service' => 'Tjeneste',
         'enabled' => 'Aktiveret',

@@ -22,7 +22,7 @@ use Spokospace\OpsNotify\Support\Locales;
 use Spokospace\OpsNotify\Support\Trans;
 
 /**
- * The settings slide-over on the Ops notifications page. Maps between SettingsStore values
+ * The settings slide-over on the plugin's page. Maps between SettingsStore values
  * (config-shaped: pattern-keyed arrays) and form state (repeater rows).
  */
 class SettingsForm

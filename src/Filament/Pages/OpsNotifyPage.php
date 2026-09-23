@@ -45,12 +45,12 @@ class OpsNotifyPage extends Page implements HasTable
 
     public static function getNavigationLabel(): string
     {
-        return Trans::get('page.title');
+        return OpsNotifyPlugin::get()->getNavigationLabel();
     }
 
     public function getTitle(): string|Htmlable
     {
-        return Trans::get('page.title');
+        return OpsNotifyPlugin::get()->getNavigationLabel();
     }
 
     public static function getNavigationGroup(): string|UnitEnum|null

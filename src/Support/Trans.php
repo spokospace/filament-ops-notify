@@ -4,7 +4,7 @@ namespace Spokospace\OpsNotify\Support;
 
 /**
  * Shortcut for the package's translations (resources/lang/{locale}/ops-notify.php), so call
- * sites read Trans::get('page.title') instead of __('ops-notify::ops-notify.page.title').
+ * sites read Trans::get('page.status') instead of __('ops-notify::ops-notify.page.status').
  * Apps override strings by publishing them: vendor:publish --tag=ops-notify-translations.
  */
 final class Trans
