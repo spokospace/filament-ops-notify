@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    - "!art/**"
+    - "!resources/avatars/**"
+    - "!composer.lock"
+  path_instructions:
+    - path: "src/**/*.php"
+      instructions: >-
+        Filament 5 and Laravel 12/13 package. OpsNotifier::send() must never throw: a broken
+        notification setup must not break the request that sent it. Never suggest putting the
+        Telegram bot token in .env, logs, exception messages or URLs that get logged. Check Filament 5
+        APIs against the vendor source rather than older Filament versions.
+    - path: "database/migrations/**"
+      instructions: >-
+        Every Schema::create needs an early-return Schema::hasTable guard. DDL must work on MySQL 8
+        and MariaDB 10.11 (no functional key parts, no JSON_TABLE, no INVISIBLE columns).
+    - path: "resources/lang/**"
+      instructions: >-
+        Every locale must have exactly the keys of resources/lang/en, keep every :placeholder, and
+        use the number of plural segments Laravel's MessageSelector expects for that locale.
+        Terminology should match Filament's own translations for the locale.
+    - path: "docs/**"
+      instructions: >-
+        Docs must match the code: command names and options, config keys, env variable names,
+        publish tags and defaults. Flag any claim about Telegram behaviour that is not accurate.
+
+chat:
+  auto_reply: true
