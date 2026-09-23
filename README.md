@@ -28,7 +28,7 @@ reach Telegram with no code changes.
 - **Reliable delivery.** Queued, retried, rate-limit aware, and never breaks the request that sent it.
 - **Bot profile.** Pick an avatar (a preset or your own) and set the display name and
   descriptions from the panel.
-- **Translated.** The panel ships in nine languages, and a separate setting controls the
+- **Translated.** The panel ships in 25 languages, and a separate setting controls the
   language of the messages.
 - **History.** Every message is logged with its status and Telegram error, and failed ones can be
   resent.
