@@ -11,7 +11,7 @@ final class UpdateParser
     /**
      * @param  list<array<string, mixed>>  $updates
      * @return array{
-     *     chats: array<string, array{id: string, type: string, title: string}>,
+     *     chats: array<string, array{id: string, type: string, title: string, forum: bool}>,
      *     topics: array<string, array{chat_id: string, id: string, name: string}>
      * }
      */
@@ -33,6 +33,8 @@ final class UpdateParser
                 'id' => $chatId,
                 'type' => (string) ($chat['type'] ?? ''),
                 'title' => (string) ($chat['title'] ?? $chat['username'] ?? $chat['first_name'] ?? ''),
+                // Telegram sets is_forum on supergroups with Topics turned on.
+                'forum' => (bool) ($chat['is_forum'] ?? false) || ($chats[$chatId]['forum'] ?? false),
             ];
 
             if (! isset($message['message_thread_id']) || ! ($message['is_topic_message'] ?? false)) {

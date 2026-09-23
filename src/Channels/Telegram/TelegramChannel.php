@@ -26,6 +26,12 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
         16478047 => 'red',
     ];
 
+    /** getUpdates returns at most this many per call. */
+    private const UPDATES_PER_PAGE = 100;
+
+    /** Upper bound on getUpdates calls in one discovery, so a flooded group cannot loop for long. */
+    private const UPDATE_PAGES = 10;
+
     /**
      * @param  array{bot_token?: ?string, chat_id?: int|string|null, topic?: int|string|null, api_url?: string, timeout?: int, service?: ?string}  $config
      */
@@ -142,6 +148,11 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
     }
 
     /**
+     * Pending updates, oldest first. Telegram returns at most 100 per call and keeps them for
+     * 24 hours, so in a busy group a /ping can sit behind 100 other messages; full pages are
+     * therefore followed with an offset. Fetching with an offset confirms (deletes) the pages
+     * before it, which is why seen() remembers what it found.
+     *
      * Never pass allowed_updates here: Telegram stores it as the bot's filter for all later
      * getUpdates and webhook deliveries.
      *
@@ -149,7 +160,53 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
      */
     public function getUpdates(): array
     {
-        return $this->call('getUpdates');
+        $updates = [];
+        $payload = [];
+
+        for ($page = 0; $page < self::UPDATE_PAGES; $page++) {
+            $batch = (array) $this->call('getUpdates', $payload);
+            $updates = [...$updates, ...$batch];
+
+            if (count($batch) < self::UPDATES_PER_PAGE) {
+                break;
+            }
+
+            $payload = ['offset' => (int) end($batch)['update_id'] + 1];
+        }
+
+        return $updates;
+    }
+
+    /**
+     * Chats and forum topics the bot has seen, merged with what earlier calls found: paging
+     * through getUpdates confirms older updates, so they would not come back on the next call.
+     *
+     * @return array{
+     *     chats: array<string, array{id: string, type: string, title: string, forum: bool}>,
+     *     topics: array<string, array{chat_id: string, id: string, name: string}>
+     * }
+     */
+    public function seen(): array
+    {
+        $key = 'ops-notify:telegram-seen:'.hash('xxh128', (string) ($this->config['bot_token'] ?? ''));
+        $found = UpdateParser::parse($this->getUpdates());
+        $known = (array) Cache::get($key, []);
+
+        // array_replace, not spread: chat ids such as "-1001234" are integer keys and would be renumbered.
+        $seen = [
+            'chats' => array_replace($known['chats'] ?? [], $found['chats']),
+            'topics' => array_replace($known['topics'] ?? [], array_map(
+                // A topic seen again without its header keeps the name found earlier.
+                fn (array $topic): array => $topic['name'] === ''
+                    ? [...$topic, 'name' => $known['topics'][$topic['chat_id'].':'.$topic['id']]['name'] ?? '']
+                    : $topic,
+                $found['topics'],
+            )),
+        ];
+
+        Cache::put($key, $seen, now()->addDays(30));
+
+        return $seen;
     }
 
     /**
@@ -182,7 +239,7 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
     {
         $chatId = (string) ($this->config['chat_id'] ?? '');
 
-        return collect(UpdateParser::parse($this->getUpdates())['topics'])
+        return collect($this->seen()['topics'])
             ->where('chat_id', $chatId)
             ->mapWithKeys(fn (array $topic): array => [$topic['id'] => $topic['name']])
             ->all();
