@@ -189,10 +189,70 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
     }
 
     /**
+     * The bot's own profile: display name, short description (profile page) and description
+     * (the empty-chat screen). Bot API: getMy* / setMy*.
+     *
+     * @return array{name: string, short_description: string, description: string}
+     */
+    public function getProfile(): array
+    {
+        return [
+            'name' => (string) ($this->call('getMyName')['name'] ?? ''),
+            'short_description' => (string) ($this->call('getMyShortDescription')['short_description'] ?? ''),
+            'description' => (string) ($this->call('getMyDescription')['description'] ?? ''),
+        ];
+    }
+
+    /**
+     * Sends only the fields that differ from Telegram's current values: setMyName in particular
+     * is rate-limited, so re-sending unchanged values would waste the quota.
+     *
+     * Pass $current when the caller already has Telegram's values (the form loaded them when it
+     * opened); otherwise they are fetched, which costs three extra calls.
+     *
+     * @param  array{name?: ?string, short_description?: ?string, description?: ?string}  $profile
+     * @param  array{name: string, short_description: string, description: string}|null  $current
+     * @return list<string> The fields that were changed.
+     */
+    public function updateProfile(array $profile, ?array $current = null): array
+    {
+        $methods = ['name' => 'setMyName', 'short_description' => 'setMyShortDescription', 'description' => 'setMyDescription'];
+        $current ??= $this->getProfile();
+        $changed = [];
+
+        foreach ($methods as $field => $method) {
+            $value = trim((string) ($profile[$field] ?? ''));
+
+            if (array_key_exists($field, $profile) && $value !== $current[$field]) {
+                $this->call($method, [$field => $value]);
+                $changed[] = $field;
+            }
+        }
+
+        return $changed;
+    }
+
+    /** Sets the bot's profile photo (Bot API 9.4). Telegram accepts only JPEG for static photos. */
+    public function setProfilePhoto(string $jpeg): void
+    {
+        $this->call(
+            'setMyProfilePhoto',
+            ['photo' => json_encode(['type' => 'static', 'photo' => 'attach://avatar'])],
+            ['avatar' => $jpeg],
+        );
+    }
+
+    public function removeProfilePhoto(): void
+    {
+        $this->call('removeMyProfilePhoto');
+    }
+
+    /**
      * @param  array<string, mixed>  $payload
+     * @param  array<string, string>  $files  Multipart attachments: name => raw contents.
      * @return mixed The API's "result" field.
      */
-    private function call(string $method, array $payload = []): mixed
+    private function call(string $method, array $payload = [], array $files = []): mixed
     {
         $token = $this->config['bot_token'] ?? null;
 
@@ -203,9 +263,13 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
         $url = rtrim($this->config['api_url'] ?? 'https://api.telegram.org', '/').'/bot'.$token.'/'.$method;
 
         try {
-            $response = Http::acceptJson()
-                ->timeout($this->config['timeout'] ?? 10)
-                ->post($url, $payload);
+            $request = Http::acceptJson()->timeout($this->config['timeout'] ?? 10);
+
+            foreach ($files as $name => $contents) {
+                $request = $request->attach($name, $contents, "{$name}.jpg");
+            }
+
+            $response = $request->post($url, $payload);
         } catch (ConnectionException $e) {
             // Guzzle puts the full URL, bot token included, into the message.
             throw new ChannelException('Telegram API unreachable: '.str_replace($token, '***', $e->getMessage()));

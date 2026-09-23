@@ -6,10 +6,12 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Notifications\ChannelManager as NotificationChannelManager;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Route;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Spokospace\OpsNotify\Commands\DiscoverTelegramChatsCommand;
 use Spokospace\OpsNotify\Commands\SendTestCommand;
+use Spokospace\OpsNotify\Http\AvatarThumbnailController;
 use Spokospace\OpsNotify\Listeners\ForwardFilamentDatabaseNotification;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\Notifications\OpsChannel;
@@ -23,6 +25,7 @@ class OpsNotifyServiceProvider extends PackageServiceProvider
             ->name('ops-notify')
             ->hasConfigFile()
             ->hasTranslations()
+            ->hasViews()
             // Run straight from the package so every app gets the table on its next deploy, and
             // stay publishable (ops-notify-migrations) for apps that need to adjust them.
             ->discoversMigrations()
@@ -48,6 +51,11 @@ class OpsNotifyServiceProvider extends PackageServiceProvider
         });
 
         Event::listen(NotificationSent::class, ForwardFilamentDatabaseNotification::class);
+
+        // Thumbnails for the avatar picker. A controller, not a closure, so route:cache works.
+        Route::get('ops-notify/avatars/{key}.jpg', AvatarThumbnailController::class)
+            ->where('key', '[a-z0-9-]+')
+            ->name('ops-notify.avatar');
 
         // The package owns the log table and its retention, so it schedules the pruning too.
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {

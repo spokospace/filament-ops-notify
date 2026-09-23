@@ -24,6 +24,7 @@ use Spokospace\OpsNotify\Contracts\ReportsStatus;
 use Spokospace\OpsNotify\Enums\DeliveryStatus;
 use Spokospace\OpsNotify\Enums\Level;
 use Spokospace\OpsNotify\Exceptions\MessageSkipped;
+use Spokospace\OpsNotify\Filament\BotProfileForm;
 use Spokospace\OpsNotify\Filament\OpsNotifyPlugin;
 use Spokospace\OpsNotify\Filament\SettingsForm;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
@@ -86,6 +87,17 @@ class OpsNotifyPage extends Page implements HasTable
 
                     Notification::make()->success()->title(Trans::get('actions.settings_saved'))->send();
                 }),
+
+            Action::make('botProfile')
+                ->label(Trans::get('profile.title'))
+                ->icon(Heroicon::OutlinedUserCircle)
+                ->color('gray')
+                ->slideOver()
+                ->visible(fn (): bool => $this->telegramIsConfigured())
+                ->modalSubmitActionLabel(Trans::get('profile.apply'))
+                ->fillForm(fn (): array => app(BotProfileForm::class)->fill())
+                ->schema(fn (): array => app(BotProfileForm::class)->components())
+                ->action(fn (array $data) => app(BotProfileForm::class)->apply($data)),
 
             Action::make('sendTest')
                 ->label(Trans::get('actions.send_test'))
@@ -231,6 +243,16 @@ class OpsNotifyPage extends Page implements HasTable
         }
 
         return $resolved instanceof LabelsTopics ? $resolved->topicLabel($id) : "#{$id}";
+    }
+
+    /** The bot profile can only be edited when the Telegram channel has a token and chat. */
+    private function telegramIsConfigured(): bool
+    {
+        try {
+            return app(OpsNotifier::class)->telegram()->isConfigured();
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     private function connectionStatus(): string
