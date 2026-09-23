@@ -76,3 +76,27 @@ jobs:
       - run: composer install --prefer-dist --no-interaction --no-progress
 
       - run: vendor/bin/phpstan analyse --no-progress --error-format=github
+
+  package:
+    name: Package health
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Validate composer.json
+        run: composer validate --strict --no-check-lock
+
+      - run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Security advisories
+        run: composer audit
+
+      - name: Duplicated code
+        run: npx --yes jscpd@4

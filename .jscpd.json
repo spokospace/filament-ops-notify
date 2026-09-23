@@ -1,0 +1,7 @@
+{
+  "path": ["src", "resources/views"],
+  "minTokens": 50,
+  "threshold": 1,
+  "reporters": ["console"],
+  "absolute": false
+}

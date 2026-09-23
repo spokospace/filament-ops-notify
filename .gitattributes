@@ -7,3 +7,4 @@
 /.coderabbit.yaml export-ignore
 /phpstan.neon.dist export-ignore
 /testbench.yaml export-ignore
+/.jscpd.json export-ignore
