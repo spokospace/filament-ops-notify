@@ -3,7 +3,6 @@
 return [
 
     'page' => [
-        'title' => 'Operatīvie paziņojumi',
         'status' => 'Statuss',
         'service' => 'Pakalpojums',
         'enabled' => 'Ieslēgts',

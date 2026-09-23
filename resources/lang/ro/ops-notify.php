@@ -3,7 +3,6 @@
 return [
 
     'page' => [
-        'title' => 'Notificări operaționale',
         'status' => 'Stare',
         'service' => 'Serviciu',
         'enabled' => 'Activat',

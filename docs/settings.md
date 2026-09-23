@@ -1,6 +1,6 @@
 # Settings
 
-Open **Ops notifications → Settings** in the panel. The page is at `{panel path}/ops-notify`, for
+Open **Spoko DashBot → Settings** in the panel. The page is at `{panel path}/ops-notify`, for
 example `/admin/ops-notify`. The values are stored in `ops_notify_settings` and overlaid on
 `config('ops-notify.*')`.
 

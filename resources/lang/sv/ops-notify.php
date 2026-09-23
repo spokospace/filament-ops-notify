@@ -3,7 +3,6 @@
 return [
 
     'page' => [
-        'title' => 'Driftnotiser',
         'status' => 'Status',
         'service' => 'Tjänst',
         'enabled' => 'Aktiverad',

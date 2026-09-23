@@ -3,7 +3,6 @@
 return [
 
     'page' => [
-        'title' => 'Ops notifications',
         'status' => 'Status',
         'service' => 'Service',
         'enabled' => 'Enabled',

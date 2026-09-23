@@ -3,7 +3,6 @@
 return [
 
     'page' => [
-        'title' => 'Operasyon bildirimleri',
         'status' => 'Durum',
         'service' => 'Hizmet',
         'enabled' => 'Etkin',

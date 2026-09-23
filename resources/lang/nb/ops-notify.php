@@ -3,7 +3,6 @@
 return [
 
     'page' => [
-        'title' => 'Driftsvarsler',
         'status' => 'Status',
         'service' => 'Tjeneste',
         'enabled' => 'Aktivert',

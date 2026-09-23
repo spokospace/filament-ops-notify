@@ -3,7 +3,6 @@
 return [
 
     'page' => [
-        'title' => 'Provozní oznámení',
         'status' => 'Stav',
         'service' => 'Služba',
         'enabled' => 'Zapnuto',

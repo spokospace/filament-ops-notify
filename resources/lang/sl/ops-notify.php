@@ -3,7 +3,6 @@
 return [
 
     'page' => [
-        'title' => 'Operativna obvestila',
         'status' => 'Stanje',
         'service' => 'Storitev',
         'enabled' => 'Omogočeno',

@@ -5,6 +5,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 use Spokospace\OpsNotify\Enums\DeliveryStatus;
+use Spokospace\OpsNotify\Filament\OpsNotifyPlugin;
 use Spokospace\OpsNotify\Filament\Pages\OpsNotifyPage;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\OpsMessage;
@@ -71,6 +72,16 @@ it('resends a failed message', function () {
         ->assertNotified('Sent');
 
     expect(OpsNotifyLog::query()->latest('id')->first()->status)->toBe(DeliveryStatus::Sent);
+});
+
+it('is called Spoko DashBot unless the app renames it', function () {
+    expect(OpsNotifyPage::getNavigationLabel())->toBe('Spoko DashBot');
+
+    OpsNotifyPlugin::get()->navigationLabel('Alerts');
+    expect(OpsNotifyPage::getNavigationLabel())->toBe('Alerts');
+
+    OpsNotifyPlugin::get()->navigationLabel(null);
+    expect(OpsNotifyPage::getNavigationLabel())->toBe('Spoko DashBot');
 });
 
 it('is hidden from users the plugin does not authorize', function () {
