@@ -97,17 +97,54 @@ it('remembers topics from earlier runs, since paging confirms old updates', func
     expect(Artisan::output())->toMatch('/-1001\s+\|\s+3\s+\|\s+Inquiries/');
 });
 
-it('points at the supergroup id when the pre-Topics group id is also listed', function () {
+it('points from a group to the supergroup it became when Topics were turned on', function () {
     Http::fake([
         '*/getMe' => Http::response(['ok' => true, 'result' => ['username' => 'polo_ops_bot']]),
         '*/getUpdates' => Http::response(['ok' => true, 'result' => [
             ['update_id' => 1, 'my_chat_member' => ['chat' => ['id' => -4512, 'type' => 'group', 'title' => 'Ops']]],
-            ['update_id' => 2, 'message' => ['chat' => ['id' => -1001, 'type' => 'supergroup', 'title' => 'Ops', 'is_forum' => true]]],
+            ['update_id' => 2, 'message' => ['chat' => ['id' => -4512, 'type' => 'group', 'title' => 'Ops'], 'migrate_to_chat_id' => -1001]],
+            ['update_id' => 3, 'message' => ['chat' => ['id' => -1001, 'type' => 'supergroup', 'title' => 'Ops', 'is_forum' => true], 'migrate_from_chat_id' => -4512]],
         ]]),
     ]);
 
     expect(Artisan::call('ops-notify:telegram-chats'))->toBe(0)
         ->and(Artisan::output())
-        ->toContain('Use the supergroup id (starts with -100)')
+        ->toContain('Chat -4512 ("Ops") became supergroup -1001 when Topics were turned on. Use -1001.')
         ->toContain('/ping@polo_ops_bot');
+});
+
+it('does not call an unrelated group outdated', function () {
+    Http::fake([
+        '*/getMe' => Http::response(['ok' => true, 'result' => ['username' => 'polo_ops_bot']]),
+        '*/getUpdates' => Http::response(['ok' => true, 'result' => [
+            ['update_id' => 1, 'message' => ['chat' => ['id' => -4512, 'type' => 'group', 'title' => 'Family']]],
+            ['update_id' => 2, 'message' => ['chat' => ['id' => -1001, 'type' => 'supergroup', 'title' => 'Ops', 'is_forum' => true]]],
+        ]]),
+    ]);
+
+    Artisan::call('ops-notify:telegram-chats');
+
+    expect(Artisan::output())->not->toContain('became supergroup');
+});
+
+it('keeps the pages it read when a later page fails', function () {
+    $page = array_map(fn (int $id): array => ['update_id' => $id, 'message' => [
+        'chat' => ['id' => -1001, 'type' => 'supergroup', 'title' => 'Ops'],
+        'message_thread_id' => 3,
+        'is_topic_message' => true,
+        'reply_to_message' => ['forum_topic_created' => ['name' => 'Inquiries']],
+    ]], range(1, 100));
+
+    Http::fake([
+        '*/getMe' => Http::response(['ok' => true, 'result' => ['username' => 'polo_ops_bot']]),
+        '*/getUpdates' => Http::sequence()
+            ->push(['ok' => true, 'result' => $page])
+            ->push(['ok' => false, 'description' => 'Bad Gateway'], 502)
+            ->push(['ok' => true, 'result' => []]),
+    ]);
+
+    // The failed second request already confirmed page one on Telegram's side.
+    expect(Artisan::call('ops-notify:telegram-chats'))->toBe(1)
+        ->and(Artisan::call('ops-notify:telegram-chats'))->toBe(0)
+        ->and(Artisan::output())->toMatch('/-1001\s+\|\s+3\s+\|\s+Inquiries/');
 });

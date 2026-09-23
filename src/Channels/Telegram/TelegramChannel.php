@@ -2,6 +2,7 @@
 
 namespace Spokospace\OpsNotify\Channels\Telegram;
 
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -148,65 +149,60 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
     }
 
     /**
-     * Pending updates, oldest first. Telegram returns at most 100 per call and keeps them for
-     * 24 hours, so in a busy group a /ping can sit behind 100 other messages; full pages are
-     * therefore followed with an offset. Fetching with an offset confirms (deletes) the pages
-     * before it, which is why seen() remembers what it found.
+     * One page of pending updates, oldest first: at most 100, kept by Telegram for 24 hours.
+     * Passing an offset confirms (deletes) every update before it. Use seen() to discover chats.
      *
      * Never pass allowed_updates here: Telegram stores it as the bot's filter for all later
      * getUpdates and webhook deliveries.
      *
      * @return list<array<string, mixed>>
      */
-    public function getUpdates(): array
+    public function getUpdates(?int $offset = null): array
     {
-        $updates = [];
-        $payload = [];
-
-        for ($page = 0; $page < self::UPDATE_PAGES; $page++) {
-            $batch = (array) $this->call('getUpdates', $payload);
-            $updates = [...$updates, ...$batch];
-
-            if (count($batch) < self::UPDATES_PER_PAGE) {
-                break;
-            }
-
-            $payload = ['offset' => (int) end($batch)['update_id'] + 1];
-        }
-
-        return $updates;
+        return (array) $this->call('getUpdates', $offset === null ? [] : ['offset' => $offset]);
     }
 
     /**
-     * Chats and forum topics the bot has seen, merged with what earlier calls found: paging
-     * through getUpdates confirms older updates, so they would not come back on the next call.
+     * Chats, forum topics and group-to-supergroup migrations the bot has seen, including what
+     * earlier calls found. In a busy group a /ping can sit behind 100 other messages, so full
+     * pages are followed with an offset; that confirms the page before it on Telegram's side,
+     * so every page is saved before the next one is requested. A lock per bot keeps two
+     * discoveries from overwriting each other's findings.
      *
      * @return array{
      *     chats: array<string, array{id: string, type: string, title: string, forum: bool}>,
-     *     topics: array<string, array{chat_id: string, id: string, name: string}>
+     *     topics: array<string, array{chat_id: string, id: string, name: string}>,
+     *     migrations: array<string, string>
      * }
+     *
+     * @throws ChannelException
      */
     public function seen(): array
     {
         $key = 'ops-notify:telegram-seen:'.hash('xxh128', (string) ($this->config['bot_token'] ?? ''));
-        $found = UpdateParser::parse($this->getUpdates());
-        $known = (array) Cache::get($key, []);
 
-        // array_replace, not spread: chat ids such as "-1001234" are integer keys and would be renumbered.
-        $seen = [
-            'chats' => array_replace($known['chats'] ?? [], $found['chats']),
-            'topics' => array_replace($known['topics'] ?? [], array_map(
-                // A topic seen again without its header keeps the name found earlier.
-                fn (array $topic): array => $topic['name'] === ''
-                    ? [...$topic, 'name' => $known['topics'][$topic['chat_id'].':'.$topic['id']]['name'] ?? '']
-                    : $topic,
-                $found['topics'],
-            )),
-        ];
+        try {
+            return Cache::lock($key.':lock', 60)->block(15, function () use ($key): array {
+                $seen = UpdateParser::merge((array) Cache::get($key, []), ['chats' => [], 'topics' => [], 'migrations' => []]);
+                $offset = null;
 
-        Cache::put($key, $seen, now()->addDays(30));
+                for ($page = 0; $page < self::UPDATE_PAGES; $page++) {
+                    $batch = $this->getUpdates($offset);
+                    $seen = UpdateParser::merge($seen, UpdateParser::parse($batch));
+                    Cache::put($key, $seen, now()->addDays(30));
 
-        return $seen;
+                    if (count($batch) < self::UPDATES_PER_PAGE) {
+                        break;
+                    }
+
+                    $offset = (int) end($batch)['update_id'] + 1;
+                }
+
+                return $seen;
+            });
+        } catch (LockTimeoutException) {
+            throw new ChannelException('Another chat discovery for this bot is still running. Try again in a moment.');
+        }
     }
 
     /**

@@ -21,7 +21,7 @@ class DiscoverTelegramChatsCommand extends Command
         try {
             $channel = $channels->telegram($this->option('channel') ?: null);
             $bot = $channel->getMe();
-            ['chats' => $chats, 'topics' => $topics] = $channel->seen();
+            ['chats' => $chats, 'topics' => $topics, 'migrations' => $migrations] = $channel->seen();
         } catch (ChannelException $e) {
             // Also 409 when a webhook is set; getUpdates is unavailable until it is removed.
             $this->components->error($e->getMessage());
@@ -43,11 +43,11 @@ class DiscoverTelegramChatsCommand extends Command
             array_map(fn (array $chat): array => [$chat['id'], $chat['type'], $chat['title'], $chat['forum'] ? 'yes' : 'no'], array_values($chats)),
         );
 
-        $types = array_column($chats, 'type');
-
         // Turning on Topics upgrades a group to a supergroup with a new id; the old one stays listed.
-        if (in_array('group', $types, true) && in_array('supergroup', $types, true)) {
-            $this->components->warn('Use the supergroup id (starts with -100). A "group" row is the id from before Topics was turned on.');
+        foreach ($migrations as $old => $new) {
+            if (isset($chats[$old])) {
+                $this->components->warn("Chat {$old} (\"{$chats[$old]['title']}\") became supergroup {$new} when Topics were turned on. Use {$new}.");
+            }
         }
 
         if ($topics === []) {
