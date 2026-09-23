@@ -210,7 +210,11 @@ class OpsNotifier
             return false;
         }
 
-        $burst = $guard->hit($message->event);
+        // Bell notifications without a title rule all share the default event name, so a build
+        // notification and a new comment would count as one burst. Count those per title.
+        $perTitle = $message->event === config('ops-notify.forward_database_notifications.default_event') && filled($message->title);
+        $key = $perTitle ? $message->event.'|'.$message->title : $message->event;
+        $burst = $guard->hit($key);
 
         if (! $burst['held']) {
             return false;
@@ -221,7 +225,7 @@ class OpsNotifier
         if ($burst['first']) {
             $startedAt = $burst['ends_at']->copy()->subMinutes($guard->windowMinutes())->getTimestamp();
 
-            SendBurstDigest::dispatch($message->event, $destination, $message->level, $startedAt)
+            SendBurstDigest::dispatch($message->event, $destination, $message->level, $startedAt, $key, $perTitle ? $message->title : null)
                 ->delay($burst['ends_at'])
                 ->onConnection(config('ops-notify.queue.connection'))
                 ->onQueue(config('ops-notify.queue.name'));
