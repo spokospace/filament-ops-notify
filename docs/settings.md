@@ -6,6 +6,7 @@ Open **Ops notifications → Settings** in the panel. The values are stored in
 | Field | Config key | `.env` |
 |---|---|---|
 | Service name (message prefix, defaults to the app name) | `service` | `OPS_NOTIFY_SERVICE` |
+| Message language (defaults to the app locale) | `locale` | `OPS_NOTIFY_LOCALE` |
 | Bot token (encrypted) | `channels.telegram.bot_token` | `OPS_NOTIFY_TELEGRAM_BOT_TOKEN` |
 | Chat id | `channels.telegram.chat_id` | `OPS_NOTIFY_TELEGRAM_CHAT_ID` |
 | Default topic | `channels.telegram.topic` | `OPS_NOTIFY_TELEGRAM_TOPIC` |
@@ -14,6 +15,12 @@ Open **Ops notifications → Settings** in the panel. The values are stored in
 | Event routing | `events` | |
 | Forward bell notifications | `forward_database_notifications.enabled` | `OPS_NOTIFY_FORWARD_DATABASE` |
 | Filament forwarding rules | `forward_database_notifications.map` | |
+
+New to the package? Start with the [setup checklist](setup-checklist.md).
+
+Once **Topics**, **Event routing** and **Filament notifications** have saved items, they start
+collapsed and their header lists what is inside (`Inquiries #3 · Errors #2`). You can check the
+setup without expanding them.
 
 ## Panel or `.env`?
 
@@ -41,10 +48,27 @@ These live only in `config/ops-notify.php`:
 | `log.prune_after_days` / `log.prune_at` | 30 / `02:45` | Daily pruning scheduled by the package. `prune_at: null` lets you schedule it yourself |
 | `disable_in_tests` | `true` | Send nothing while the app's test suite runs |
 
+## Languages
+
+The panel follows the viewer's locale. Translations ship for English, Polish, German, French,
+Spanish, Italian, Dutch, Brazilian Portuguese and Ukrainian. Any other locale falls back to
+English.
+
+**Message language** is a separate setting. It sets the language of the text the package adds to
+Telegram messages (for example *and 3 more fields*), so every message in a chat is in the same
+language, whoever triggered it. Titles and bodies you write are sent unchanged.
+
+To change a string or add a language, publish the translation files:
+
+```bash
+php artisan vendor:publish --tag=ops-notify-translations
+```
+
 ## The page
 
 - **Status:** service name, enabled flag, channel and connection. The connection check calls
   `getMe` and is cached for 10 minutes; errors are cached for 1 minute.
+- **Bot profile:** avatar, display name and descriptions ([details](telegram-setup.md#5-bot-profile)).
 - **Send test:** delivers immediately and shows the result or the Telegram error.
 - **History:** every message with its event, level, status, attempts, channel and topic. Filter by
   status or level. A failed row has **Resend**; after a resend it is marked *Resent* with a link to
