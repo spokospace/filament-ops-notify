@@ -13,6 +13,15 @@ return [
         'configured' => 'Sukonfigūruota',
         'not_configured' => 'Nesukonfigūruota',
         'connected_as' => 'Prisijungta kaip @:username',
+        'delivery' => 'Pristatymas',
+        'delivery_sync' => 'Iš karto (sync eilė)',
+        'horizon_running' => 'Horizon veikia',
+        'horizon_paused' => 'Horizon pristabdytas',
+        'horizon_inactive' => 'Horizon neveikia',
+        'horizon_paused_warning' => 'Horizon pristabdytas, todėl pranešimai laukia eilėje. Paleiskite php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon neveikia, todėl pranešimai laukia eilėje. Paleiskite jį komanda php artisan horizon.',
+        'queue_not_in_horizon' => 'Joks Horizon supervisor neapdoroja eilės „:queue“ jungtyje „:connection“, todėl pranešimai iš jos niekada neišeis. Įtraukite eilę į config/horizon.php.',
+        'queue_stuck' => ':count pranešimas eilėje laukia ilgiau nei :minutes minutes. Ar veikia queue worker?|:count pranešimai eilėje laukia ilgiau nei :minutes minutes. Ar veikia queue worker?|:count pranešimų eilėje laukia ilgiau nei :minutes minutes. Ar veikia queue worker?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Siųsti dar kartą',
         'sent' => 'Išsiųsta',
         'not_sent' => 'Neišsiųsta',
+        'via_queue' => 'Siųsti per eilę',
+        'via_queue_help' => 'Taip pat patikrina queue worker. Išjungus pranešimas siunčiamas iš karto, todėl tikrinami tik raktas ir pokalbis.',
+        'queued' => 'Eilėje',
+        'queued_body' => 'Istorijoje būsena pasikeis į „Išsiųsta“, kai queue worker jį paims.',
     ],
 
     'table' => [

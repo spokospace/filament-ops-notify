@@ -13,6 +13,15 @@ return [
         'configured' => 'Налаштовано',
         'not_configured' => 'Не налаштовано',
         'connected_as' => 'Підключено як @:username',
+        'delivery' => 'Доставка',
+        'delivery_sync' => 'Одразу (черга sync)',
+        'horizon_running' => 'Horizon працює',
+        'horizon_paused' => 'Horizon призупинено',
+        'horizon_inactive' => 'Horizon не працює',
+        'horizon_paused_warning' => 'Horizon призупинено, тому повідомлення чекають у черзі. Виконайте php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon не працює, тому повідомлення чекають у черзі. Запустіть його командою php artisan horizon.',
+        'queue_not_in_horizon' => 'Жоден supervisor Horizon не обробляє чергу «:queue» на «:connection», тому повідомлення ніколи її не залишать. Додайте цю чергу до config/horizon.php.',
+        'queue_stuck' => ':count повідомлення чекає в черзі понад :minutes хвилин. Чи працює воркер черги?|:count повідомлення чекають в черзі понад :minutes хвилин. Чи працює воркер черги?|:count повідомлень чекають в черзі понад :minutes хвилин. Чи працює воркер черги?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Надіслати знову',
         'sent' => 'Надіслано',
         'not_sent' => 'Не надіслано',
+        'via_queue' => 'Надіслати через чергу',
+        'via_queue_help' => 'Також перевіряє воркер черги. Якщо вимкнено, повідомлення надсилається одразу — це перевіряє лише токен і чат.',
+        'queued' => 'У черзі',
+        'queued_body' => 'В історії статус зміниться на «Надіслано», щойно воркер черги його обробить.',
     ],
 
     'table' => [

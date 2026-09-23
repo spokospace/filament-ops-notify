@@ -13,6 +13,15 @@ return [
         'configured' => 'Ρυθμισμένο',
         'not_configured' => 'Μη ρυθμισμένο',
         'connected_as' => 'Συνδεδεμένο ως @:username',
+        'delivery' => 'Παράδοση',
+        'delivery_sync' => 'Άμεσα (ουρά sync)',
+        'horizon_running' => 'Horizon σε λειτουργία',
+        'horizon_paused' => 'Horizon σε παύση',
+        'horizon_inactive' => 'Horizon εκτός λειτουργίας',
+        'horizon_paused_warning' => 'Το Horizon είναι σε παύση, οπότε τα μηνύματα περιμένουν στην ουρά. Εκτελέστε php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Το Horizon δεν εκτελείται, οπότε τα μηνύματα περιμένουν στην ουρά. Ξεκινήστε το με php artisan horizon.',
+        'queue_not_in_horizon' => 'Κανένας supervisor του Horizon δεν επεξεργάζεται την ουρά «:queue» στο «:connection», οπότε τα μηνύματα δεν θα φύγουν ποτέ από αυτήν. Προσθέστε την ουρά στο config/horizon.php.',
+        'queue_stuck' => ':count μήνυμα βρίσκεται στην ουρά πάνω από :minutes λεπτά. Εκτελείται κάποιος queue worker;|:count μηνύματα βρίσκονται στην ουρά πάνω από :minutes λεπτά. Εκτελείται κάποιος queue worker;',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Επαναποστολή',
         'sent' => 'Στάλθηκε',
         'not_sent' => 'Δεν στάλθηκε',
+        'via_queue' => 'Αποστολή μέσω ουράς',
+        'via_queue_help' => 'Ελέγχει και τον queue worker. Όταν είναι απενεργοποιημένο, το μήνυμα στέλνεται αμέσως, κάτι που ελέγχει μόνο το token και τη συνομιλία.',
+        'queued' => 'Σε αναμονή',
+        'queued_body' => 'Στο ιστορικό αλλάζει σε «Στάλθηκε» μόλις το παραλάβει ένας queue worker.',
     ],
 
     'table' => [

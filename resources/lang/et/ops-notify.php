@@ -13,6 +13,15 @@ return [
         'configured' => 'Seadistatud',
         'not_configured' => 'Seadistamata',
         'connected_as' => 'Ühendatud kui @:username',
+        'delivery' => 'Edastamine',
+        'delivery_sync' => 'Kohe (sync-järjekord)',
+        'horizon_running' => 'Horizon töötab',
+        'horizon_paused' => 'Horizon peatatud',
+        'horizon_inactive' => 'Horizon ei tööta',
+        'horizon_paused_warning' => 'Horizon on peatatud, seega sõnumid ootavad järjekorras. Käivitage php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon ei tööta, seega sõnumid ootavad järjekorras. Käivitage see käsuga php artisan horizon.',
+        'queue_not_in_horizon' => 'Ükski Horizoni supervisor ei töötle järjekorda „:queue“ ühendusel „:connection“, seega sõnumid ei lahku sealt kunagi. Lisage järjekord faili config/horizon.php.',
+        'queue_stuck' => ':count sõnum on olnud järjekorras üle :minutes minuti. Kas queue worker töötab?|:count sõnumit on olnud järjekorras üle :minutes minuti. Kas queue worker töötab?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Saada uuesti',
         'sent' => 'Saadetud',
         'not_sent' => 'Ei saadetud',
+        'via_queue' => 'Saada järjekorra kaudu',
+        'via_queue_help' => 'Testib ka queue workerit. Välja lülitatuna saadetakse sõnum kohe, mis kontrollib ainult tokenit ja vestlust.',
+        'queued' => 'Järjekorras',
+        'queued_body' => 'Ajaloos muutub see olekuks „Saadetud“, kui queue worker selle kätte võtab.',
     ],
 
     'table' => [

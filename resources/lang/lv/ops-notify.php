@@ -13,6 +13,15 @@ return [
         'configured' => 'Konfigurēts',
         'not_configured' => 'Nav konfigurēts',
         'connected_as' => 'Savienots kā @:username',
+        'delivery' => 'Piegāde',
+        'delivery_sync' => 'Uzreiz (sync rinda)',
+        'horizon_running' => 'Horizon darbojas',
+        'horizon_paused' => 'Horizon pauzēts',
+        'horizon_inactive' => 'Horizon nedarbojas',
+        'horizon_paused_warning' => 'Horizon ir pauzēts, tāpēc ziņojumi gaida rindā. Palaidiet php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon nedarbojas, tāpēc ziņojumi gaida rindā. Palaidiet to ar php artisan horizon.',
+        'queue_not_in_horizon' => 'Neviens Horizon supervisor neapstrādā rindu „:queue” savienojumā „:connection”, tāpēc ziņojumi to nekad nepametīs. Pievienojiet rindu config/horizon.php.',
+        'queue_stuck' => ':count ziņojumi rindā gaida ilgāk par :minutes minūtēm. Vai darbojas queue worker?|:count ziņojums rindā gaida ilgāk par :minutes minūtēm. Vai darbojas queue worker?|:count ziņojumi rindā gaida ilgāk par :minutes minūtēm. Vai darbojas queue worker?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Sūtīt vēlreiz',
         'sent' => 'Nosūtīts',
         'not_sent' => 'Nav nosūtīts',
+        'via_queue' => 'Sūtīt caur rindu',
+        'via_queue_help' => 'Pārbauda arī queue worker. Ja izslēgts, ziņojums tiek nosūtīts uzreiz, kas pārbauda tikai tokenu un tērzēšanu.',
+        'queued' => 'Rindā',
+        'queued_body' => 'Vēsturē tas mainīsies uz „Nosūtīts”, tiklīdz queue worker to apstrādās.',
     ],
 
     'table' => [

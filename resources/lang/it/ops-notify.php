@@ -13,6 +13,15 @@ return [
         'configured' => 'Configurato',
         'not_configured' => 'Non configurato',
         'connected_as' => 'Connesso come @:username',
+        'delivery' => 'Consegna',
+        'delivery_sync' => 'Immediata (coda sync)',
+        'horizon_running' => 'Horizon in esecuzione',
+        'horizon_paused' => 'Horizon in pausa',
+        'horizon_inactive' => 'Horizon non in esecuzione',
+        'horizon_paused_warning' => 'Horizon è in pausa, quindi i messaggi restano in coda. Esegui php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon non è in esecuzione, quindi i messaggi restano in coda. Avvialo con php artisan horizon.',
+        'queue_not_in_horizon' => 'Nessun supervisor di Horizon elabora la coda «:queue» su «:connection», quindi i messaggi non ne usciranno mai. Aggiungi la coda a config/horizon.php.',
+        'queue_stuck' => ":count messaggio è in coda da oltre :minutes minuti. C'è un worker della coda in esecuzione?|:count messaggi sono in coda da oltre :minutes minuti. C'è un worker della coda in esecuzione?",
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Invia di nuovo',
         'sent' => 'Inviato',
         'not_sent' => 'Non inviato',
+        'via_queue' => 'Invia tramite la coda',
+        'via_queue_help' => 'Verifica anche il worker della coda. Se disattivato, il messaggio viene inviato subito e si controllano solo il token e la chat.',
+        'queued' => 'In coda',
+        'queued_body' => 'Diventa «Inviato» nella cronologia appena un worker della coda lo prende in carico.',
     ],
 
     'table' => [

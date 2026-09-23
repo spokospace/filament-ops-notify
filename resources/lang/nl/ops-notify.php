@@ -13,6 +13,15 @@ return [
         'configured' => 'Geconfigureerd',
         'not_configured' => 'Niet geconfigureerd',
         'connected_as' => 'Verbonden als @:username',
+        'delivery' => 'Bezorging',
+        'delivery_sync' => 'Direct (sync-wachtrij)',
+        'horizon_running' => 'Horizon actief',
+        'horizon_paused' => 'Horizon gepauzeerd',
+        'horizon_inactive' => 'Horizon draait niet',
+        'horizon_paused_warning' => 'Horizon is gepauzeerd, dus berichten wachten in de wachtrij. Voer php artisan horizon:continue uit.',
+        'horizon_inactive_warning' => 'Horizon draait niet, dus berichten wachten in de wachtrij. Start het met php artisan horizon.',
+        'queue_not_in_horizon' => 'Geen enkele Horizon-supervisor verwerkt de wachtrij ":queue" op ":connection", dus berichten verlaten die nooit. Voeg de wachtrij toe aan config/horizon.php.',
+        'queue_stuck' => ':count bericht staat al meer dan :minutes minuten in de wachtrij. Draait er een queue-worker?|:count berichten staan al meer dan :minutes minuten in de wachtrij. Draait er een queue-worker?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Opnieuw versturen',
         'sent' => 'Verstuurd',
         'not_sent' => 'Niet verstuurd',
+        'via_queue' => 'Versturen via de wachtrij',
+        'via_queue_help' => 'Test ook de queue-worker. Uitgeschakeld wordt het bericht direct verstuurd, wat alleen het token en de chat controleert.',
+        'queued' => 'In wachtrij',
+        'queued_body' => 'Het verandert in de geschiedenis naar "Verstuurd" zodra een queue-worker het oppakt.',
     ],
 
     'table' => [

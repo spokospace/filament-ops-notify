@@ -13,6 +13,15 @@ return [
         'configured' => 'Konfigureret',
         'not_configured' => 'Ikke konfigureret',
         'connected_as' => 'Forbundet som @:username',
+        'delivery' => 'Levering',
+        'delivery_sync' => 'Med det samme (sync-kø)',
+        'horizon_running' => 'Horizon kører',
+        'horizon_paused' => 'Horizon sat på pause',
+        'horizon_inactive' => 'Horizon kører ikke',
+        'horizon_paused_warning' => 'Horizon er sat på pause, så beskeder venter i køen. Kør php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon kører ikke, så beskeder venter i køen. Start den med php artisan horizon.',
+        'queue_not_in_horizon' => 'Ingen Horizon-supervisor behandler køen ":queue" på ":connection", så beskederne forlader den aldrig. Tilføj køen i config/horizon.php.',
+        'queue_stuck' => ':count besked har ventet i køen i over :minutes minutter. Kører der en queue worker?|:count beskeder har ventet i køen i over :minutes minutter. Kører der en queue worker?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Send igen',
         'sent' => 'Sendt',
         'not_sent' => 'Ikke sendt',
+        'via_queue' => 'Send gennem køen',
+        'via_queue_help' => 'Tester også queue workeren. Slået fra sendes beskeden med det samme, hvilket kun tjekker token og chat.',
+        'queued' => 'I kø',
+        'queued_body' => 'Den skifter til "Sendt" i historikken, når en queue worker samler den op.',
     ],
 
     'table' => [

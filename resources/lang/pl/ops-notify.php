@@ -13,6 +13,15 @@ return [
         'configured' => 'Skonfigurowany',
         'not_configured' => 'Nieskonfigurowany',
         'connected_as' => 'Połączono jako @:username',
+        'delivery' => 'Dostarczanie',
+        'delivery_sync' => 'Od razu (kolejka sync)',
+        'horizon_running' => 'Horizon działa',
+        'horizon_paused' => 'Horizon wstrzymany',
+        'horizon_inactive' => 'Horizon nie działa',
+        'horizon_paused_warning' => 'Horizon jest wstrzymany, więc wiadomości czekają w kolejce. Uruchom php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon nie działa, więc wiadomości czekają w kolejce. Uruchom go poleceniem php artisan horizon.',
+        'queue_not_in_horizon' => 'Żaden supervisor Horizon nie obsługuje kolejki „:queue” na „:connection”, więc wiadomości nigdy jej nie opuszczą. Dodaj tę kolejkę do config/horizon.php.',
+        'queue_stuck' => ':count wiadomość czeka w kolejce dłużej niż :minutes minut. Czy działa worker kolejki?|:count wiadomości czekają w kolejce dłużej niż :minutes minut. Czy działa worker kolejki?|:count wiadomości czeka w kolejce dłużej niż :minutes minut. Czy działa worker kolejki?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Wyślij ponownie',
         'sent' => 'Wysłano',
         'not_sent' => 'Nie wysłano',
+        'via_queue' => 'Wyślij przez kolejkę',
+        'via_queue_help' => 'Sprawdza też worker kolejki. Po wyłączeniu wiadomość idzie od razu, co sprawdza tylko token i czat.',
+        'queued' => 'W kolejce',
+        'queued_body' => 'W historii zmieni się na „Wysłano”, gdy worker kolejki ją przetworzy.',
     ],
 
     'table' => [

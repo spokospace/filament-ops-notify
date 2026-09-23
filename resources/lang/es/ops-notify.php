@@ -13,6 +13,15 @@ return [
         'configured' => 'Configurado',
         'not_configured' => 'Sin configurar',
         'connected_as' => 'Conectado como @:username',
+        'delivery' => 'Entrega',
+        'delivery_sync' => 'Inmediata (cola sync)',
+        'horizon_running' => 'Horizon en ejecución',
+        'horizon_paused' => 'Horizon en pausa',
+        'horizon_inactive' => 'Horizon detenido',
+        'horizon_paused_warning' => 'Horizon está en pausa, así que los mensajes esperan en la cola. Ejecuta php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon no se está ejecutando, así que los mensajes esperan en la cola. Inícialo con php artisan horizon.',
+        'queue_not_in_horizon' => 'Ningún supervisor de Horizon procesa la cola «:queue» en «:connection», así que los mensajes nunca saldrán de ella. Añade la cola a config/horizon.php.',
+        'queue_stuck' => ':count mensaje lleva más de :minutes minutos en la cola. ¿Hay un worker de colas en ejecución?|:count mensajes llevan más de :minutes minutos en la cola. ¿Hay un worker de colas en ejecución?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Reenviar',
         'sent' => 'Enviado',
         'not_sent' => 'No enviado',
+        'via_queue' => 'Enviar a través de la cola',
+        'via_queue_help' => 'También prueba el worker de colas. Si está desactivado, el mensaje se envía al instante, lo que solo comprueba el token y el chat.',
+        'queued' => 'En cola',
+        'queued_body' => 'Cambia a «Enviado» en el historial en cuanto un worker de colas lo procesa.',
     ],
 
     'table' => [

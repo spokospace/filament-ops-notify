@@ -13,6 +13,15 @@ return [
         'configured' => 'Configuré',
         'not_configured' => 'Non configuré',
         'connected_as' => 'Connecté en tant que @:username',
+        'delivery' => 'Envoi',
+        'delivery_sync' => 'Immédiat (file sync)',
+        'horizon_running' => 'Horizon actif',
+        'horizon_paused' => 'Horizon en pause',
+        'horizon_inactive' => 'Horizon arrêté',
+        'horizon_paused_warning' => "Horizon est en pause, les messages attendent donc dans la file d'attente. Exécutez php artisan horizon:continue.",
+        'horizon_inactive_warning' => "Horizon ne tourne pas, les messages attendent donc dans la file d'attente. Démarrez-le avec php artisan horizon.",
+        'queue_not_in_horizon' => "Aucun superviseur Horizon ne traite la file « :queue » sur « :connection », les messages n'en sortiront donc jamais. Ajoutez la file à config/horizon.php.",
+        'queue_stuck' => ":count message est en file d'attente depuis plus de :minutes minutes. Un worker de file d'attente tourne-t-il ?|:count messages sont en file d'attente depuis plus de :minutes minutes. Un worker de file d'attente tourne-t-il ?",
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Renvoyer',
         'sent' => 'Envoyé',
         'not_sent' => 'Non envoyé',
+        'via_queue' => "Envoyer via la file d'attente",
+        'via_queue_help' => "Teste aussi le worker de file d'attente. Désactivé, le message est envoyé immédiatement, ce qui ne vérifie que le jeton et le chat.",
+        'queued' => "En file d'attente",
+        'queued_body' => "Il passe à « Envoyé » dans l'historique dès qu'un worker de file d'attente le prend en charge.",
     ],
 
     'table' => [

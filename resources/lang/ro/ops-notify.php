@@ -13,6 +13,15 @@ return [
         'configured' => 'Configurat',
         'not_configured' => 'Neconfigurat',
         'connected_as' => 'Conectat ca @:username',
+        'delivery' => 'Livrare',
+        'delivery_sync' => 'Imediat (coadă sync)',
+        'horizon_running' => 'Horizon rulează',
+        'horizon_paused' => 'Horizon în pauză',
+        'horizon_inactive' => 'Horizon nu rulează',
+        'horizon_paused_warning' => 'Horizon este în pauză, așa că mesajele așteaptă în coadă. Rulați php artisan horizon:continue.',
+        'horizon_inactive_warning' => 'Horizon nu rulează, așa că mesajele așteaptă în coadă. Porniți-l cu php artisan horizon.',
+        'queue_not_in_horizon' => 'Niciun supervisor Horizon nu procesează coada „:queue” pe „:connection”, așa că mesajele nu o vor părăsi niciodată. Adăugați coada în config/horizon.php.',
+        'queue_stuck' => ':count mesaj așteaptă în coadă de peste :minutes minute. Rulează un queue worker?|:count mesaje așteaptă în coadă de peste :minutes minute. Rulează un queue worker?|:count de mesaje așteaptă în coadă de peste :minutes minute. Rulează un queue worker?',
     ],
 
     'actions' => [
@@ -26,6 +35,10 @@ return [
         'resend' => 'Retrimitere',
         'sent' => 'Trimis',
         'not_sent' => 'Netrimis',
+        'via_queue' => 'Trimitere prin coadă',
+        'via_queue_help' => 'Testează și queue worker-ul. Dezactivat, mesajul este trimis imediat, ceea ce verifică doar tokenul și chatul.',
+        'queued' => 'În coadă',
+        'queued_body' => 'În istoric se schimbă în „Trimis” imediat ce un queue worker îl preia.',
     ],
 
     'table' => [
