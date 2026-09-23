@@ -28,7 +28,7 @@ function sentMethods(): array
 }
 
 it('ships preset avatars as 640x640 jpegs with thumbnails', function () {
-    expect(BotAvatars::keys())->toBe(['dome-light', 'flat', 'headset', 'mascot', 'pixel', 'round-dark', 'visor-dark']);
+    expect(BotAvatars::keys())->toBe(['dome-light', 'flat', 'headset', 'pixel', 'round-dark', 'visor-dark']);
 
     foreach (BotAvatars::keys() as $key) {
         [$width, $height, $type] = getimagesize(BotAvatars::path($key));
