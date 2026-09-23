@@ -7,22 +7,37 @@
 
 [![Tests](https://github.com/spokospace/filament-ops-notify/actions/workflows/tests.yml/badge.svg)](https://github.com/spokospace/filament-ops-notify/actions/workflows/tests.yml)
 [![Latest release](https://img.shields.io/github/v/release/spokospace/filament-ops-notify)](https://github.com/spokospace/filament-ops-notify/releases)
-![PHP](https://img.shields.io/badge/PHP-8.3%20%7C%208.4-777bb4)
-![Laravel](https://img.shields.io/badge/Laravel-12%20%7C%2013-ff2d20)
-![Filament](https://img.shields.io/badge/Filament-5-f59e0b)
+[![PHP](https://img.shields.io/badge/PHP-8.3%20%7C%208.4%20%7C%208.5-777bb4)](https://www.php.net)
+[![Laravel](https://img.shields.io/badge/Laravel-12%20%7C%2013-ff2d20)](https://laravel.com)
+[![Filament](https://img.shields.io/badge/Filament-5-f59e0b)](https://filamentphp.com)
 
-Operational notifications for Laravel + Filament panels: inquiries, errors and builds, delivered to
-Telegram. Built on Laravel notifications, so existing Filament bell notifications
-(`Notification::make()->sendToDatabase($users)`) reach Telegram with no code changes.
+Operational notifications for [Laravel](https://laravel.com) + [Filament](https://filamentphp.com)
+panels: inquiries, errors and builds, delivered to [Telegram](https://core.telegram.org/bots/api)
+forum topics. Built on [Laravel notifications](https://laravel.com/docs/notifications), so existing
+[Filament database notifications](https://filamentphp.com/docs/5.x/notifications/database-notifications)
+reach Telegram with no code changes.
 
-- Laravel 12/13, Filament 5, PHP 8.3+
-- Telegram driver (a channel-agnostic core, so other drivers such as WhatsApp can be added)
-- Queued delivery with retries, rate-limit handling and a log of every message
-- Filament page: connection status, "Send test", history, resend failed
+## Features
 
-## Install
+- **Bell notifications → Telegram, no code.** Every `sendToDatabase()` notification is forwarded
+  once, however many users receive it.
+- **Topics and routing.** Create forum topics from the panel and route events to them by pattern
+  (`inquiry.*` → *Inquiries*). Filament notifications are routed by title.
+- **Settings in the panel.** Token (encrypted), chat id, service name, topics and rules, all without
+  touching `.env`.
+- **Reliable delivery.** Queued, retried, rate-limit aware, and never breaks the request that sent it.
+- **History.** Every message is logged with its status and Telegram error, and failed ones can be
+  resent.
+- **`ops` notification channel and a fluent `OpsMessage`** for events that are not bell notifications.
+- **Channel-agnostic core.** Telegram today; other drivers plug in.
 
-The package is private, so add the repository to the app's `composer.json`:
+## Requirements
+
+- PHP 8.3 / 8.4 / 8.5
+- Laravel 12 / 13
+- Filament 5
+
+## Installation
 
 ```json
 "repositories": [
@@ -32,160 +47,50 @@ The package is private, so add the repository to the app's `composer.json`:
 
 ```bash
 composer require spokospace/filament-ops-notify
-php artisan migrate          # creates ops_notify_logs
+php artisan migrate
 ```
-
-Register the plugin in the panel provider:
 
 ```php
 use Spokospace\OpsNotify\Filament\OpsNotifyPlugin;
 
-->plugin(OpsNotifyPlugin::make()
-    ->navigationGroup('System')
-    ->authorize(fn () => auth()->user()?->is_admin))
+$panel->plugin(
+    OpsNotifyPlugin::make()
+        ->navigationGroup('System')
+        ->authorize(fn (): bool => (bool) auth()->user()?->isAdmin()),
+);
 ```
 
-## Telegram setup
+## Quick start
 
-1. Create a bot with [@BotFather](https://t.me/BotFather) (`/newbot`) and copy the token.
-2. Create a group, enable **Topics** in its settings, add the bot and make it an admin.
-3. Send `/ping` in every topic you want to use, then run:
+1. Create a bot with [@BotFather](https://t.me/BotFather) and a Telegram group with **Topics**
+   turned on. Add the bot as an admin.
+2. In the panel, open **Ops notifications → Settings** and enter the bot token and chat id.
+3. Press **Send test**.
 
-```bash
-php artisan ops-notify:telegram-chats   # prints the chat id and topic ids
-```
-
-4. Open **Ops notifications → Settings** in the panel and enter the bot token, chat id and
-   default topic. Or put them in `.env`:
-
-```env
-OPS_NOTIFY_SERVICE=panel.polo.blue          # prefix of every message
-OPS_NOTIFY_TELEGRAM_BOT_TOKEN=123456:ABC...
-OPS_NOTIFY_TELEGRAM_CHAT_ID=-1001234567890
-OPS_NOTIFY_TELEGRAM_TOPIC=                  # optional default topic
-```
-
-5. `php artisan ops-notify:test` or the page's **Send test** button sends a test message.
-
-### Settings in the panel vs .env
-
-The Settings slide-over edits the service name (message prefix, defaults to the app name), the
-token, chat id, default topic, the on/off switch, event routing rules and the Filament forwarding
-rules. They are stored in `ops_notify_settings`:
-
-- **.env wins.** A value set in `.env`/config locks its field in the panel.
-- **The token is encrypted** with `APP_KEY`, in the database and in the cache, and never shown
-  back in the form. Leave the field empty to keep the saved token. After an `APP_KEY` change,
-  the page asks you to enter it again.
-- **Settings are cached forever** (cleared on save), so alerts still go out when the database is
-  down, and queue workers (Horizon) pick up changes without a restart.
-
-`ops-notify:telegram-chats` needs the token: save it first, then run the command to find the
-chat and topic ids.
-
-### Topics
-
-**Settings → Topics** keeps the forum topics of the chat. Routing rules and the default topic pick
-from it by name, and the log shows "Zapytania #3" instead of a bare id.
-
-- **Create topic** creates the topic in Telegram (`createForumTopic`) and adds it with its id.
-  The bot needs the *Manage topics* admin right, and the token and chat id must be saved first.
-- **Import from Telegram** adds topics the bot has seen. The Bot API cannot list topics, so send
-  `/ping@your_bot` in a topic first.
-- **Add existing topic** takes a name and id by hand. The id is the number after `_` in a Telegram
-  Web link such as `…/#-1004487775854_3`.
-
-Removing a topic from the list does not delete it in Telegram.
-
-Use one bot per service and one topic per kind of event (inquiries, errors, builds), all in the
-same group.
-
-## Sending
-
-### Filament bell notifications (automatic)
-
-Every Filament database notification is forwarded once, however many users receive it. Route or
-drop them by title in `config/ops-notify.php`:
-
-```php
-'forward_database_notifications' => [
-    'enabled' => true,
-    'default_event' => 'filament.notification',   // null = forward only mapped titles
-    'map' => [
-        'Nowe zapytanie*' => 'inquiry.created',
-        'Export completed*' => false,              // don't forward
-    ],
-],
-
-'events' => [
-    'inquiry.*' => ['topic' => env('OPS_NOTIFY_TOPIC_INQUIRIES')],
-],
-```
-
-### Laravel notifications
-
-Return `'ops'` from `via()` and add `toOps()`, which returns an `OpsMessage` or a Filament `Notification`:
-
-```php
-public function via($notifiable): array
-{
-    return ['database', 'ops'];
-}
-
-public function toOps($notifiable): OpsMessage
-{
-    return OpsMessage::make('build.failed')->error()->title('Build failed');
-}
-```
-
-Without a user: `Notification::route('ops', ['topic' => 12])->notify(new BuildFailed);`
-
-Sending the same notification to several users (`Notification::send($admins, ...)`) produces one
-message: identical messages within `dedupe_seconds` (default 60) are sent once. The same applies to
-forwarded Filament notifications.
-
-### Directly
+Your existing Filament notifications now reach Telegram. To send something yourself:
 
 ```php
 use Spokospace\OpsNotify\OpsMessage;
 
-OpsMessage::make('build.finished')
+OpsMessage::make('build.completed')
     ->success()
-    ->title('Frontend build finished')
-    ->line('Deployed release 2026.09.23')
+    ->title('Frontend build completed')
     ->field('Duration', '4m 12s')
-    ->button('Open site', 'https://catalog.polo.blue')
-    ->send();          // queued, never throws; ->sendNow() delivers synchronously and throws
+    ->button('Open site', 'https://shop.example')
+    ->send();
 ```
 
-## Events and routing
+## Documentation
 
-`events` keys are `Str::is()` patterns (first match wins) with `enabled`, `channel` and `topic`.
-The message's own `->topic()` / `->channel()` override them. Each message ends with a hashtag of the
-event (`#inquiry_created`), so every event is searchable in the chat.
+- [Installation](docs/installation.md): requirements, migrations, plugin options
+- [Telegram setup](docs/telegram-setup.md): bot, group, topics, finding the chat id
+- [Settings](docs/settings.md): panel vs `.env`, every option, the Ops notifications page
+- [Routing and topics](docs/routing-and-topics.md): topics, event rules, forwarding Filament notifications
+- [Sending messages](docs/sending.md): the `ops` channel, the `OpsMessage` API, delivery, tests
+- [Drivers](docs/drivers.md): adding a channel such as WhatsApp
+- [Troubleshooting](docs/troubleshooting.md): common Telegram errors and fixes
 
-## Log
-
-Every message is stored in `ops_notify_logs`. The package schedules pruning itself: daily at
-`log.prune_at` (02:45) it deletes rows older than `log.prune_after_days` (30). The app only needs
-its scheduler running. Set `prune_at` to null to schedule it yourself.
-
-## Tests in your app
-
-Nothing is sent while the app's test suite runs (`runningUnitTests()`), even when the bot token is
-in `.env`. A test that wants to exercise delivery sets `ops-notify.disable_in_tests` to `false` and
-fakes HTTP.
-
-## Adding a driver
-
-```php
-app(\Spokospace\OpsNotify\ChannelManager::class)
-    ->extend('whatsapp', fn ($app, array $config) => new WhatsAppChannel($config));
-```
-
-A driver implements `Spokospace\OpsNotify\Contracts\Channel`.
-
-## Tests
+## Testing
 
 ```bash
 composer test
