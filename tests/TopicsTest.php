@@ -2,6 +2,7 @@
 
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
+use Filament\Schemas\Components\Section;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
@@ -94,6 +95,22 @@ describe('settings slide-over', function () {
             ->assertHasNoActionErrors();
 
         expect(config('ops-notify.channels.telegram.topics'))->toBe([['id' => '9', 'name' => 'Komentarze']]);
+    });
+
+    it('collapses saved lists and summarises them in the section header', function () {
+        app(SettingsStore::class)->save([
+            'telegram_topics' => [['id' => '3', 'name' => 'Zapytania'], ['id' => '2', 'name' => 'Błędy']],
+            'events' => ['inquiry.*' => ['topic' => '3'], 'build.*' => ['enabled' => false]],
+        ]);
+
+        $section = fn (bool $collapsed, ?string $summary): Closure => fn (Section $section): bool => $section->isCollapsed() === $collapsed && $section->getDescription() === $summary;
+
+        // Lists with items start collapsed and summarised; the empty forwarding list stays open.
+        Livewire::test(OpsNotifyPage::class)
+            ->mountAction('settings')
+            ->assertSchemaComponentExists('topics', checkComponentUsing: $section(true, 'Zapytania #3 · Błędy #2'))
+            ->assertSchemaComponentExists('routing', checkComponentUsing: $section(true, 'inquiry.* → Zapytania · build.* (Disabled)'))
+            ->assertSchemaComponentExists('forwarding', checkComponentUsing: $section(false, null));
     });
 
     it('imports topics the bot has seen', function () {
