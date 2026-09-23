@@ -1,4 +1,15 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="art/cover-dark.jpg">
+  <img alt="Filament Ops Notify: inquiries, errors and builds from your Filament panel, delivered to Telegram forum topics" src="art/cover-light.jpg">
+</picture>
+
 # Filament Ops Notify
+
+[![Tests](https://github.com/spokospace/filament-ops-notify/actions/workflows/tests.yml/badge.svg)](https://github.com/spokospace/filament-ops-notify/actions/workflows/tests.yml)
+[![Latest release](https://img.shields.io/github/v/release/spokospace/filament-ops-notify)](https://github.com/spokospace/filament-ops-notify/releases)
+![PHP](https://img.shields.io/badge/PHP-8.3%20%7C%208.4-777bb4)
+![Laravel](https://img.shields.io/badge/Laravel-12%20%7C%2013-ff2d20)
+![Filament](https://img.shields.io/badge/Filament-5-f59e0b)
 
 Operational notifications for Laravel + Filament panels: inquiries, errors and builds, delivered to
 Telegram. Built on Laravel notifications, so existing Filament bell notifications
