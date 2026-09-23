@@ -20,9 +20,10 @@ return [
     'disable_in_tests' => true,
 
     /*
-    | Label that prefixes every message, so one chat can collect several services.
+    | [panel] Label that prefixes every message, so one chat can collect several services.
+    | Null = the app name (config('app.name')).
     */
-    'service' => env('OPS_NOTIFY_SERVICE', env('APP_NAME', 'Laravel')),
+    'service' => env('OPS_NOTIFY_SERVICE'),
 
     'default_channel' => env('OPS_NOTIFY_CHANNEL', 'telegram'),
 

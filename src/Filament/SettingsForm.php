@@ -26,6 +26,14 @@ class SettingsForm
                 ->columns(2)
                 ->schema([
                     $this->locked(
+                        TextInput::make('service')
+                            ->label('Service name')
+                            ->placeholder((string) config('app.name'))
+                            ->maxLength(60)
+                            ->columnSpanFull(),
+                        'Prefixes every message, e.g. [panel.polo.blue]. Empty = the app name.',
+                    ),
+                    $this->locked(
                         TextInput::make('telegram_bot_token')
                             ->label('Bot token')
                             ->password()

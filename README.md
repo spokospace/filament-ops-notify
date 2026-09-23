@@ -58,8 +58,9 @@ OPS_NOTIFY_TELEGRAM_TOPIC=                  # optional default topic
 
 ### Settings in the panel vs .env
 
-The Settings slide-over edits the token, chat id, default topic, the on/off switch, event
-routing rules and the Filament forwarding rules. They are stored in `ops_notify_settings`:
+The Settings slide-over edits the service name (message prefix, defaults to the app name), the
+token, chat id, default topic, the on/off switch, event routing rules and the Filament forwarding
+rules. They are stored in `ops_notify_settings`:
 
 - **.env wins.** A value set in `.env`/config locks its field in the panel.
 - **The token is encrypted** with `APP_KEY`, in the database and in the cache, and never shown

@@ -105,7 +105,11 @@ class OpsNotifyPage extends Page implements HasTable
                 ->columns(4)
                 ->schema([
                     TextEntry::make('service')
-                        ->state(fn (): string => (string) config('ops-notify.service')),
+                        ->state(function (): string {
+                            app(SettingsStore::class)->apply();
+
+                            return (string) config('ops-notify.service');
+                        }),
                     TextEntry::make('enabled')
                         ->badge()
                         ->state(fn (): string => app(OpsNotifier::class)->isEnabled() ? 'Enabled' : 'Disabled')
