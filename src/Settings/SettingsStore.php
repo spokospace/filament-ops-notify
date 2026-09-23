@@ -26,16 +26,18 @@ class SettingsStore
 
     /** Setting key => config path it overrides. */
     public const FIELDS = [
+        'service' => 'ops-notify.service',
         'enabled' => 'ops-notify.enabled',
         'telegram_bot_token' => 'ops-notify.channels.telegram.bot_token',
         'telegram_chat_id' => 'ops-notify.channels.telegram.chat_id',
         'telegram_topic' => 'ops-notify.channels.telegram.topic',
+        'telegram_topics' => 'ops-notify.channels.telegram.topics',
         'events' => 'ops-notify.events',
         'forward_enabled' => 'ops-notify.forward_database_notifications.enabled',
         'forward_map' => 'ops-notify.forward_database_notifications.map',
     ];
 
-    /** Used when neither config/.env nor the panel sets a value. */
+    /** Static defaults; see defaultFor() for the dynamic ones. */
     public const DEFAULTS = [
         'enabled' => true,
         'forward_enabled' => true,
@@ -83,7 +85,7 @@ class SettingsStore
 
             $value = array_key_exists($key, $this->rows) ? $this->decode($key, $this->rows[$key]) : null;
 
-            config()->set($path, $value ?? $this->baseline()[$key] ?? self::DEFAULTS[$key] ?? null);
+            config()->set($path, $value ?? $this->baseline()[$key] ?? $this->defaultFor($key));
         }
     }
 
@@ -135,7 +137,7 @@ class SettingsStore
 
             $values[$key] = $this->isLocked($key)
                 ? $this->baseline()[$key]
-                : $stored ?? (self::DEFAULTS[$key] ?? null);
+                : $stored ?? $this->defaultFor($key);
         }
 
         return $values;
@@ -215,6 +217,12 @@ class SettingsStore
     private function baseline(): array
     {
         return $this->baseline ??= array_map(fn (string $path): mixed => config($path), self::FIELDS);
+    }
+
+    /** Used when neither config/.env nor the panel sets a value. */
+    private function defaultFor(string $key): mixed
+    {
+        return $key === 'service' ? config('app.name') : (self::DEFAULTS[$key] ?? null);
     }
 
     private function isSecret(string $key): bool

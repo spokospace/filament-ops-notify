@@ -6,14 +6,25 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Spokospace\OpsNotify\Contracts\Channel;
+use Spokospace\OpsNotify\Contracts\LabelsTopics;
 use Spokospace\OpsNotify\Contracts\ReportsStatus;
 use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\Support\Button;
 use Spokospace\OpsNotify\Support\Destination;
 
-class TelegramChannel implements Channel, ReportsStatus
+class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
 {
+    /** Telegram only accepts these six forum icon colours. */
+    public const TOPIC_COLORS = [
+        7322096 => 'Blue',
+        16766590 => 'Yellow',
+        13338331 => 'Violet',
+        9367192 => 'Green',
+        16749490 => 'Pink',
+        16478047 => 'Red',
+    ];
+
     /**
      * @param  array{bot_token?: ?string, chat_id?: int|string|null, topic?: int|string|null, api_url?: string, timeout?: int, service?: ?string}  $config
      */
@@ -22,9 +33,25 @@ class TelegramChannel implements Channel, ReportsStatus
         private readonly TelegramFormatter $formatter = new TelegramFormatter,
     ) {}
 
+    /** @var array<string, string>|null id => name, from config('ops-notify.channels.telegram.topics') */
+    private ?array $topicNames = null;
+
     public function isConfigured(): bool
     {
         return filled($this->config['bot_token'] ?? null) && filled($this->config['chat_id'] ?? null);
+    }
+
+    public function topicLabel(string $id): string
+    {
+        $this->topicNames ??= collect($this->config['topics'] ?? [])->pluck('name', 'id')->map(fn ($name): string => (string) $name)->all();
+
+        return self::formatTopic($id, $this->topicNames[$id] ?? null);
+    }
+
+    /** The one topic label format, shared by the log table and the settings pickers. */
+    public static function formatTopic(string $id, ?string $name): string
+    {
+        return filled($name) ? "{$name} #{$id}" : "#{$id}";
     }
 
     /**
@@ -114,6 +141,42 @@ class TelegramChannel implements Channel, ReportsStatus
     public function getUpdates(): array
     {
         return $this->call('getUpdates');
+    }
+
+    /**
+     * Creates a forum topic in the configured chat. The bot needs the "Manage topics" admin right.
+     *
+     * @return string The new topic's id (message_thread_id).
+     */
+    public function createForumTopic(string $name, ?int $iconColor = null): string
+    {
+        if (! $this->isConfigured()) {
+            throw new ChannelException('Save the bot token and chat id first.', permanent: true);
+        }
+
+        $payload = ['chat_id' => $this->config['chat_id'], 'name' => $name];
+
+        // Null as an array key is deprecated in PHP 8.5, so check it first.
+        if ($iconColor !== null && isset(self::TOPIC_COLORS[$iconColor])) {
+            $payload['icon_color'] = $iconColor;
+        }
+
+        return (string) $this->call('createForumTopic', $payload)['message_thread_id'];
+    }
+
+    /**
+     * Topics of the configured chat that the bot has seen recently (the API cannot list them).
+     *
+     * @return array<string, string> id => name
+     */
+    public function seenTopics(): array
+    {
+        $chatId = (string) ($this->config['chat_id'] ?? '');
+
+        return collect(UpdateParser::parse($this->getUpdates())['topics'])
+            ->where('chat_id', $chatId)
+            ->mapWithKeys(fn (array $topic): array => [$topic['id'] => $topic['name']])
+            ->all();
     }
 
     /**

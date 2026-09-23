@@ -87,6 +87,29 @@ it('lets .env win and ignores the stored value', function () {
         ->and(config('ops-notify.channels.telegram.bot_token'))->toBe('111:ENV');
 });
 
+it('prefixes messages with the service name saved in the panel', function () {
+    config(['ops-notify.service' => null, 'app.name' => 'Panel']);
+    freshProcess();
+
+    expect(store()->formValues()['service'])->toBe('Panel');
+
+    store()->save(['telegram_bot_token' => '999:PANEL', 'telegram_chat_id' => '-1', 'service' => 'panel.polo.blue']);
+    OpsMessage::make('x')->title('Hello')->sendNow();
+
+    Http::assertSent(fn (Request $request) => str_contains($request['text'], '<b>[panel.polo.blue] Hello</b>'));
+    expect(store()->formValues()['service'])->toBe('panel.polo.blue');
+});
+
+it('falls back to the app name when no service name is set', function () {
+    config(['ops-notify.service' => null, 'app.name' => 'Panel']);
+    freshProcess();
+    store()->save(['telegram_bot_token' => '999:PANEL', 'telegram_chat_id' => '-1']);
+
+    OpsMessage::make('x')->title('Hello')->sendNow();
+
+    Http::assertSent(fn (Request $request) => str_contains($request['text'], '<b>[Panel] Hello</b>'));
+});
+
 it('can disable notifications from the panel', function () {
     store()->save(['telegram_bot_token' => '999:PANEL', 'telegram_chat_id' => '-1', 'enabled' => false]);
 

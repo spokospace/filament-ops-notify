@@ -7,6 +7,7 @@ use Illuminate\Contracts\Container\Container;
 use InvalidArgumentException;
 use Spokospace\OpsNotify\Channels\Telegram\TelegramChannel;
 use Spokospace\OpsNotify\Contracts\Channel;
+use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\Settings\SettingsStore;
 
 /**
@@ -47,6 +48,18 @@ class ChannelManager
         $name ??= $this->defaultChannel();
 
         return $this->channels[$name] ??= $this->resolve($name);
+    }
+
+    /** @throws ChannelException when the channel is not a Telegram driver. */
+    public function telegram(?string $name = null): TelegramChannel
+    {
+        $channel = $this->channel($name);
+
+        if (! $channel instanceof TelegramChannel) {
+            throw new ChannelException('The "'.($name ?? $this->defaultChannel()).'" channel is not a Telegram driver.', permanent: true);
+        }
+
+        return $channel;
     }
 
     public function defaultChannel(): string
