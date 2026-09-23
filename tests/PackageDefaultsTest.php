@@ -6,6 +6,16 @@ use Illuminate\Support\Facades\Http;
 use Spokospace\OpsNotify\Exceptions\MessageSkipped;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\OpsMessage;
+use Spokospace\OpsNotify\OpsNotifyServiceProvider;
+
+it('runs its migrations from vendor unless the app turns them off', function (bool $setting) {
+    config(['ops-notify.run_migrations' => $setting]);
+
+    $provider = new OpsNotifyServiceProvider(app());
+    $provider->register();
+
+    expect((fn () => $this->package->runsMigrations)->call($provider))->toBe($setting);
+})->with([true, false]);
 
 it('sends nothing from an app test suite unless it opts in', function () {
     Http::fake();

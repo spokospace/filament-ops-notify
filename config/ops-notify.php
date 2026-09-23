@@ -87,6 +87,10 @@ return [
         'name' => env('OPS_NOTIFY_QUEUE'),
     ],
 
+    // Run the package's migrations from vendor. Turn off only after publishing them
+    // (vendor:publish --tag=ops-notify-migrations) to change them.
+    'run_migrations' => env('OPS_NOTIFY_RUN_MIGRATIONS', true),
+
     'log' => [
         // Store every sent message in ops_notify_logs (shown on the Filament page).
         'enabled' => env('OPS_NOTIFY_LOG_ENABLED', true),

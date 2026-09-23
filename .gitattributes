@@ -4,3 +4,4 @@
 /phpunit.xml.dist export-ignore
 /art export-ignore
 /.github export-ignore
+/.coderabbit.yaml export-ignore

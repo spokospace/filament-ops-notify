@@ -26,10 +26,10 @@ class OpsNotifyServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasTranslations()
             ->hasViews()
-            // Run straight from the package so every app gets the table on its next deploy, and
-            // stay publishable (ops-notify-migrations) for apps that need to adjust them.
+            // Run straight from the package so every app gets the tables on its next deploy.
+            // Apps that publish and edit them turn this off with ops-notify.run_migrations
+            // (see packageRegistered), or the package copy would run first and win.
             ->discoversMigrations()
-            ->runsMigrations()
             ->hasCommands([
                 SendTestCommand::class,
                 DiscoverTelegramChatsCommand::class,
@@ -38,6 +38,10 @@ class OpsNotifyServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
+        // Here, not in configurePackage(): only now is the package config merged, so the .env
+        // value applies even when the app has not published the config file.
+        $this->package->runsMigrations((bool) config('ops-notify.run_migrations', true));
+
         $this->app->singleton(SettingsStore::class);
         $this->app->singleton(ChannelManager::class);
         $this->app->singleton(OpsNotifier::class);
