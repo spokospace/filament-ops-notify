@@ -48,6 +48,8 @@ abstract class TestCase extends Orchestra
 
     protected function defineEnvironment($app): void
     {
+        TestPanelProvider::$authorized = true;
+
         $app['config']->set('database.default', 'testing');
         $app['config']->set('queue.default', 'sync');
         $app['config']->set('cache.default', 'array');

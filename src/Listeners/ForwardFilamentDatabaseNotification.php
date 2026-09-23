@@ -7,6 +7,7 @@ use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Spokospace\OpsNotify\OpsNotifier;
+use Spokospace\OpsNotify\Settings\SettingsStore;
 use Spokospace\OpsNotify\Support\FilamentNotificationConverter;
 use Spokospace\OpsNotify\Support\PatternMap;
 use Throwable;
@@ -24,6 +25,7 @@ class ForwardFilamentDatabaseNotification
     public function __construct(
         private readonly OpsNotifier $notifier,
         private readonly FilamentNotificationConverter $converter,
+        private readonly SettingsStore $settings,
     ) {}
 
     public function handle(NotificationSent $event): void
@@ -32,15 +34,16 @@ class ForwardFilamentDatabaseNotification
             return;
         }
 
-        $config = (array) config('ops-notify.forward_database_notifications', []);
-
-        if (! ($config['enabled'] ?? false)) {
-            return;
-        }
-
         $data = $event->notification->data;
 
         if (($data['format'] ?? null) !== 'filament') {
+            return;
+        }
+
+        $this->settings->apply();
+        $config = (array) config('ops-notify.forward_database_notifications', []);
+
+        if (! ($config['enabled'] ?? false)) {
             return;
         }
 

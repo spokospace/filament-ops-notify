@@ -44,7 +44,8 @@ use Spokospace\OpsNotify\Filament\OpsNotifyPlugin;
 php artisan ops-notify:telegram-chats   # prints the chat id and topic ids
 ```
 
-4. Put them in `.env`:
+4. Open **Ops notifications → Settings** in the panel and enter the bot token, chat id and
+   default topic. Or put them in `.env`:
 
 ```env
 OPS_NOTIFY_SERVICE=panel.polo.blue          # prefix of every message
@@ -53,7 +54,22 @@ OPS_NOTIFY_TELEGRAM_CHAT_ID=-1001234567890
 OPS_NOTIFY_TELEGRAM_TOPIC=                  # optional default topic
 ```
 
-5. `php artisan ops-notify:test` sends a test message.
+5. `php artisan ops-notify:test` or the page's **Send test** button sends a test message.
+
+### Settings in the panel vs .env
+
+The Settings slide-over edits the token, chat id, default topic, the on/off switch, event
+routing rules and the Filament forwarding rules. They are stored in `ops_notify_settings`:
+
+- **.env wins.** A value set in `.env`/config locks its field in the panel.
+- **The token is encrypted** with `APP_KEY`, in the database and in the cache, and never shown
+  back in the form. Leave the field empty to keep the saved token. After an `APP_KEY` change,
+  the page asks you to enter it again.
+- **Settings are cached forever** (cleared on save), so alerts still go out when the database is
+  down, and queue workers (Horizon) pick up changes without a restart.
+
+`ops-notify:telegram-chats` needs the token: save it first, then run the command to find the
+chat and topic ids.
 
 Use one bot per service and one topic per kind of event (inquiries, errors, builds), all in the
 same group.

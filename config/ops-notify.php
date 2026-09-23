@@ -1,11 +1,17 @@
 <?php
 
+/*
+| Values marked [panel] can also be edited on the Filament "Ops notifications" page (stored
+| in ops_notify_settings, the bot token encrypted). A value set here or in .env wins and locks
+| the field in the panel; leave it null/empty to manage it from the panel.
+*/
+
 return [
 
     /*
-    | Master switch. When false, nothing is sent or logged.
+    | [panel] Master switch. When false, nothing is sent or logged. Null = enabled.
     */
-    'enabled' => env('OPS_NOTIFY_ENABLED', true),
+    'enabled' => env('OPS_NOTIFY_ENABLED'),
 
     /*
     | Label that prefixes every message, so one chat can collect several services.
@@ -17,9 +23,9 @@ return [
     'channels' => [
         'telegram' => [
             'driver' => 'telegram',
-            'bot_token' => env('OPS_NOTIFY_TELEGRAM_BOT_TOKEN'),
-            'chat_id' => env('OPS_NOTIFY_TELEGRAM_CHAT_ID'),
-            // Forum topic (message_thread_id) used when an event has no topic of its own.
+            'bot_token' => env('OPS_NOTIFY_TELEGRAM_BOT_TOKEN'),   // [panel]
+            'chat_id' => env('OPS_NOTIFY_TELEGRAM_CHAT_ID'),       // [panel]
+            // [panel] Forum topic (message_thread_id) used when an event has no topic of its own.
             'topic' => env('OPS_NOTIFY_TELEGRAM_TOPIC'),
             'api_url' => env('OPS_NOTIFY_TELEGRAM_API_URL', 'https://api.telegram.org'),
             'timeout' => 10,
@@ -27,14 +33,12 @@ return [
     ],
 
     /*
-    | Per-event routing. Keys are patterns matched with Str::is(), first match wins.
-    | Options: enabled (bool), channel (name from `channels`), topic (forum topic id).
-    | Events that match nothing are sent to the default channel and topic.
+    | [panel] Per-event routing. Keys are patterns matched with Str::is(), first match wins.
+    | Options: enabled (bool), channel (name from `channels`), topic (driver sub-target;
+    | Telegram: forum topic id). Events that match nothing use the default channel and topic.
     */
     'events' => [
         // 'inquiry.*' => ['topic' => env('OPS_NOTIFY_TOPIC_INQUIRIES')],
-        // 'build.*' => ['topic' => env('OPS_NOTIFY_TOPIC_BUILDS')],
-        // 'error.*' => ['topic' => env('OPS_NOTIFY_TOPIC_ERRORS')],
         // 'noisy.event' => ['enabled' => false],
     ],
 
@@ -48,10 +52,10 @@ return [
     | Unmatched titles use `default_event`; set it to null to forward only mapped titles.
     */
     'forward_database_notifications' => [
-        'enabled' => env('OPS_NOTIFY_FORWARD_DATABASE', true),
+        'enabled' => env('OPS_NOTIFY_FORWARD_DATABASE'),  // [panel] null = enabled
         'default_event' => 'filament.notification',
         'dedupe_seconds' => 60,
-        'map' => [
+        'map' => [                                        // [panel]
             // 'Nowe zapytanie*' => 'inquiry.created',
             // 'Export completed*' => false,
         ],

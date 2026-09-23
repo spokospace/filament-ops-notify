@@ -7,6 +7,7 @@ use Illuminate\Contracts\Container\Container;
 use InvalidArgumentException;
 use Spokospace\OpsNotify\Channels\Telegram\TelegramChannel;
 use Spokospace\OpsNotify\Contracts\Channel;
+use Spokospace\OpsNotify\Settings\SettingsStore;
 
 /**
  * Resolves named channels from config('ops-notify.channels'). Every driver, built-in or not,
@@ -23,8 +24,13 @@ class ChannelManager
     /** @var array<string, Closure(Container, array<string, mixed>): Channel> */
     private array $creators;
 
-    public function __construct(private readonly Container $app)
-    {
+    /** Settings version the resolved channels were built with. */
+    private ?string $settingsVersion = null;
+
+    public function __construct(
+        private readonly Container $app,
+        private readonly SettingsStore $settings,
+    ) {
         $this->creators = [
             'telegram' => fn (Container $app, array $config): Channel => new TelegramChannel($config),
         ];
@@ -32,6 +38,12 @@ class ChannelManager
 
     public function channel(?string $name = null): Channel
     {
+        // Rebuild channels when the token or chat id was changed in the panel.
+        if ($this->settingsVersion !== ($version = $this->settings->version())) {
+            $this->channels = [];
+            $this->settingsVersion = $version;
+        }
+
         $name ??= $this->defaultChannel();
 
         return $this->channels[$name] ??= $this->resolve($name);

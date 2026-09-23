@@ -11,6 +11,7 @@ use Spokospace\OpsNotify\Commands\DiscoverTelegramChatsCommand;
 use Spokospace\OpsNotify\Commands\SendTestCommand;
 use Spokospace\OpsNotify\Listeners\ForwardFilamentDatabaseNotification;
 use Spokospace\OpsNotify\Notifications\OpsChannel;
+use Spokospace\OpsNotify\Settings\SettingsStore;
 
 class OpsNotifyServiceProvider extends PackageServiceProvider
 {
@@ -31,6 +32,7 @@ class OpsNotifyServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
+        $this->app->singleton(SettingsStore::class);
         $this->app->singleton(ChannelManager::class);
         $this->app->singleton(OpsNotifier::class);
     }

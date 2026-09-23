@@ -25,9 +25,11 @@ use Spokospace\OpsNotify\Enums\Level;
 use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\Exceptions\MessageSkipped;
 use Spokospace\OpsNotify\Filament\OpsNotifyPlugin;
+use Spokospace\OpsNotify\Filament\SettingsForm;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\OpsNotifier;
+use Spokospace\OpsNotify\Settings\SettingsStore;
 use Throwable;
 use UnitEnum;
 
@@ -62,6 +64,19 @@ class OpsNotifyPage extends Page implements HasTable
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('settings')
+                ->label('Settings')
+                ->icon(Heroicon::OutlinedCog6Tooth)
+                ->color('gray')
+                ->slideOver()
+                ->fillForm(fn (): array => app(SettingsForm::class)->fill())
+                ->schema(fn (): array => app(SettingsForm::class)->components())
+                ->action(function (array $data): void {
+                    app(SettingsStore::class)->save(app(SettingsForm::class)->toSettings($data));
+
+                    Notification::make()->success()->title('Settings saved')->send();
+                }),
+
             Action::make('sendTest')
                 ->label('Send test')
                 ->icon(Heroicon::OutlinedPaperAirplane)
@@ -94,7 +109,7 @@ class OpsNotifyPage extends Page implements HasTable
                         ->state(fn (): string => (string) config('ops-notify.service')),
                     TextEntry::make('enabled')
                         ->badge()
-                        ->state(fn (): string => config('ops-notify.enabled') ? 'Enabled' : 'Disabled')
+                        ->state(fn (): string => app(OpsNotifier::class)->isEnabled() ? 'Enabled' : 'Disabled')
                         ->color(fn (string $state): string => $state === 'Enabled' ? 'success' : 'danger'),
                     TextEntry::make('channel')
                         ->state(fn (): string => app(OpsNotifier::class)->channels()->defaultChannel()),

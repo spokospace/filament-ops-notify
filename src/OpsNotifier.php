@@ -9,13 +9,24 @@ use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\Exceptions\MessageSkipped;
 use Spokospace\OpsNotify\Jobs\SendOpsMessage;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
+use Spokospace\OpsNotify\Settings\SettingsStore;
 use Spokospace\OpsNotify\Support\Destination;
 use Spokospace\OpsNotify\Support\PatternMap;
 use Throwable;
 
 class OpsNotifier
 {
-    public function __construct(private readonly ChannelManager $channels) {}
+    public function __construct(
+        private readonly ChannelManager $channels,
+        private readonly SettingsStore $settings,
+    ) {}
+
+    public function isEnabled(): bool
+    {
+        $this->settings->apply();
+
+        return (bool) config('ops-notify.enabled');
+    }
 
     public function channels(): ChannelManager
     {
@@ -80,7 +91,7 @@ class OpsNotifier
      */
     public function destinationFor(OpsMessage $message): ?Destination
     {
-        if (! config('ops-notify.enabled')) {
+        if (! $this->isEnabled()) {
             return null;
         }
 
