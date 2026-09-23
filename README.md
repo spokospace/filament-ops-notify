@@ -114,6 +114,10 @@ public function toOps($notifiable): OpsMessage
 
 Without a user: `Notification::route('ops', ['topic' => 12])->notify(new BuildFailed);`
 
+Sending the same notification to several users (`Notification::send($admins, ...)`) produces one
+message: identical messages within `dedupe_seconds` (default 60) are sent once. The same applies to
+forwarded Filament notifications.
+
 ### Directly
 
 ```php

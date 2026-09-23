@@ -67,6 +67,7 @@ class OpsNotifier
      *
      * @throws MessageSkipped when notifications are disabled globally or for this event.
      * @throws ChannelException when the channel rejects the message.
+     * @throws Throwable on misconfiguration (unknown channel or driver); the log row is marked failed.
      */
     public function sendNow(OpsMessage $message): ?OpsNotifyLog
     {
@@ -76,7 +77,7 @@ class OpsNotifier
 
         try {
             $this->deliver($message, $destination, $log);
-        } catch (ChannelException $e) {
+        } catch (Throwable $e) {
             $this->markFailed($log, $e->getMessage());
 
             throw $e;
@@ -148,7 +149,8 @@ class OpsNotifier
             'event' => Str::limit($message->event, 120, ''),
             'level' => $message->level,
             'title' => filled($message->title) ? Str::limit($message->title, 250) : null,
-            'body' => $message->body() ?: null,
+            // TEXT holds 64 KB; a stack trace could overflow it and fail the whole send.
+            'body' => Str::limit($message->body(), 10000) ?: null,
             'payload' => $message->toArray(),
             'status' => DeliveryStatus::Queued,
         ]);

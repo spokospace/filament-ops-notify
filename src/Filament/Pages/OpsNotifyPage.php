@@ -22,7 +22,6 @@ use Illuminate\Support\Str;
 use Spokospace\OpsNotify\Contracts\ReportsStatus;
 use Spokospace\OpsNotify\Enums\DeliveryStatus;
 use Spokospace\OpsNotify\Enums\Level;
-use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\Exceptions\MessageSkipped;
 use Spokospace\OpsNotify\Filament\OpsNotifyPlugin;
 use Spokospace\OpsNotify\Filament\SettingsForm;
@@ -157,26 +156,39 @@ class OpsNotifyPage extends Page implements HasTable
                 Action::make('resend')
                     ->icon(Heroicon::OutlinedArrowPath)
                     ->visible(fn (OpsNotifyLog $record): bool => $record->status === DeliveryStatus::Failed)
-                    ->action(fn (OpsNotifyLog $record) => $this->deliverNow($record->toMessage())),
+                    ->action(function (OpsNotifyLog $record): void {
+                        if (! $this->deliverNow($record->toMessage(), $resent)) {
+                            return;
+                        }
+
+                        // Hides Resend on the original row, so it is not sent twice.
+                        $record->update([
+                            'status' => DeliveryStatus::Resent,
+                            'error' => $resent ? "Resent as #{$resent->id}" : 'Resent',
+                        ]);
+                    }),
             ])
             ->emptyStateHeading('No notifications sent yet');
     }
 
-    private function deliverNow(OpsMessage $message): void
+    /** Shows the outcome as a Filament notification; never throws. */
+    private function deliverNow(OpsMessage $message, ?OpsNotifyLog &$log = null): bool
     {
         try {
-            app(OpsNotifier::class)->sendNow($message);
+            $log = app(OpsNotifier::class)->sendNow($message);
         } catch (MessageSkipped $e) {
             Notification::make()->warning()->title('Not sent')->body($e->getMessage())->send();
 
-            return;
-        } catch (ChannelException $e) {
+            return false;
+        } catch (Throwable $e) {
             Notification::make()->danger()->title('Not sent')->body($e->getMessage())->send();
 
-            return;
+            return false;
         }
 
         Notification::make()->success()->title('Sent')->send();
+
+        return true;
     }
 
     private function connectionStatus(): string

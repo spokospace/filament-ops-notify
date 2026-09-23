@@ -3,10 +3,10 @@
 namespace Spokospace\OpsNotify\Commands;
 
 use Illuminate\Console\Command;
-use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\Exceptions\MessageSkipped;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\OpsNotifier;
+use Throwable;
 
 class SendTestCommand extends Command
 {
@@ -38,7 +38,7 @@ class SendTestCommand extends Command
             $this->components->warn('Nothing sent: '.$e->getMessage());
 
             return self::FAILURE;
-        } catch (ChannelException $e) {
+        } catch (Throwable $e) {
             $this->components->error($e->getMessage());
 
             return self::FAILURE;

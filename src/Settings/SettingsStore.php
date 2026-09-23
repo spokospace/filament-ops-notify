@@ -122,11 +122,20 @@ class SettingsStore
         $values = [];
 
         foreach (array_keys(self::FIELDS) as $key) {
-            $stored = ! $this->isSecret($key) && array_key_exists($key, $this->rows)
+            if ($this->isSecret($key)) {
+                $values[$key] = null;
+
+                continue;
+            }
+
+            // A locked field shows what is really in effect: the .env/config value.
+            $stored = ! $this->isLocked($key) && array_key_exists($key, $this->rows)
                 ? $this->decode($key, $this->rows[$key])
                 : null;
 
-            $values[$key] = $stored ?? (self::DEFAULTS[$key] ?? null);
+            $values[$key] = $this->isLocked($key)
+                ? $this->baseline()[$key]
+                : $stored ?? (self::DEFAULTS[$key] ?? null);
         }
 
         return $values;

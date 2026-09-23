@@ -43,9 +43,14 @@ return [
     ],
 
     /*
+    | A notification sent to N users is delivered once per user. Identical messages within this
+    | many seconds are sent once (Filament forwarding and the "ops" notification channel).
+    | 0 disables it.
+    */
+    'dedupe_seconds' => 60,
+
+    /*
     | Mirror Filament bell notifications (Notification::make()->sendToDatabase($users)).
-    | One notification sent to N users produces one message; identical payloads within
-    | `dedupe_seconds` are collapsed.
     |
     | `map` matches the notification TITLE with Str::is(), first match wins:
     |   a string = event name (route it with `events` above), false = don't forward.
@@ -54,7 +59,6 @@ return [
     'forward_database_notifications' => [
         'enabled' => env('OPS_NOTIFY_FORWARD_DATABASE'),  // [panel] null = enabled
         'default_event' => 'filament.notification',
-        'dedupe_seconds' => 60,
         'map' => [                                        // [panel]
             // 'Nowe zapytanie*' => 'inquiry.created',
             // 'Export completed*' => false,

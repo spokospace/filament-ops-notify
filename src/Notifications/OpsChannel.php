@@ -7,6 +7,7 @@ use Illuminate\Notifications\Notification;
 use LogicException;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\OpsNotifier;
+use Spokospace\OpsNotify\Support\Dedupe;
 use Spokospace\OpsNotify\Support\FilamentNotificationConverter;
 
 /**
@@ -51,7 +52,10 @@ class OpsChannel
         $message->channel ??= $route['channel'] ?? null;
         $message->topic ??= isset($route['topic']) ? (string) $route['topic'] : null;
 
-        $this->notifier->send($message);
+        // Notification::send($admins, ...) calls this once per admin; send one message.
+        if (Dedupe::isFirst('channel', $message->toArray())) {
+            $this->notifier->send($message);
+        }
     }
 
     /** App\Notifications\BuildFailed → "build_failed". */

@@ -71,16 +71,30 @@ class TelegramChannel implements Channel, ReportsStatus
             $payload['message_thread_id'] = (int) $topic;
         }
 
-        if ($message->buttons !== []) {
-            $payload['reply_markup'] = [
-                'inline_keyboard' => array_map(
-                    fn (Button $button): array => [['text' => $button->label, 'url' => $button->url]],
-                    $message->buttons,
-                ),
-            ];
+        if ($message->buttons === []) {
+            return (string) $this->call('sendMessage', $payload)['message_id'];
         }
 
-        return (string) $this->call('sendMessage', $payload)['message_id'];
+        try {
+            return (string) $this->call('sendMessage', $payload + [
+                'reply_markup' => [
+                    'inline_keyboard' => array_map(
+                        fn (Button $button): array => [['text' => $button->label, 'url' => $button->url]],
+                        $message->buttons,
+                    ),
+                ],
+            ])['message_id'];
+        } catch (ChannelException $e) {
+            // One URL Telegram won't accept (localhost, a .test domain) rejects the whole message.
+            // Better to deliver it with the links as plain text than to lose it.
+            if (! preg_match('/BUTTON_URL_INVALID|wrong http url|button/i', $e->getMessage())) {
+                throw $e;
+            }
+
+            $payload['text'] = $this->formatter->format($message, $this->config['service'] ?? null, linksAsText: true);
+
+            return (string) $this->call('sendMessage', $payload)['message_id'];
+        }
     }
 
     /**
@@ -92,12 +106,14 @@ class TelegramChannel implements Channel, ReportsStatus
     }
 
     /**
-     * @param  array<string, mixed>  $query
+     * Never pass allowed_updates here: Telegram stores it as the bot's filter for all later
+     * getUpdates and webhook deliveries.
+     *
      * @return list<array<string, mixed>>
      */
-    public function getUpdates(array $query = []): array
+    public function getUpdates(): array
     {
-        return $this->call('getUpdates', $query);
+        return $this->call('getUpdates');
     }
 
     /**

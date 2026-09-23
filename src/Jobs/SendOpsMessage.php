@@ -4,6 +4,7 @@ namespace Spokospace\OpsNotify\Jobs;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Jobs\SyncJob;
 use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\OpsMessage;
@@ -45,7 +46,8 @@ class SendOpsMessage implements ShouldQueue
                 return;
             }
 
-            if ($e->retryAfter !== null) {
+            // release() is a no-op on the sync queue; there the exception below marks the row failed.
+            if ($e->retryAfter !== null && ! $this->job instanceof SyncJob) {
                 $this->release($e->retryAfter);
 
                 return;

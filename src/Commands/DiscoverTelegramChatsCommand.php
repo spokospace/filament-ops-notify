@@ -30,7 +30,7 @@ class DiscoverTelegramChatsCommand extends Command
 
         try {
             $bot = $channel->getMe();
-            $updates = $channel->getUpdates(['allowed_updates' => ['message', 'my_chat_member', 'channel_post']]);
+            $updates = $channel->getUpdates();
         } catch (ChannelException $e) {
             // 409 means a webhook is set; getUpdates is unavailable until it is removed.
             $this->components->error($e->getMessage());

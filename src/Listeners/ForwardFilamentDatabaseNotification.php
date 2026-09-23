@@ -4,10 +4,10 @@ namespace Spokospace\OpsNotify\Listeners;
 
 use Filament\Notifications\DatabaseNotification;
 use Illuminate\Notifications\Events\NotificationSent;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Spokospace\OpsNotify\OpsNotifier;
 use Spokospace\OpsNotify\Settings\SettingsStore;
+use Spokospace\OpsNotify\Support\Dedupe;
 use Spokospace\OpsNotify\Support\FilamentNotificationConverter;
 use Spokospace\OpsNotify\Support\PatternMap;
 use Throwable;
@@ -16,9 +16,8 @@ use Throwable;
  * Mirrors Filament bell notifications (Notification::make()->sendToDatabase($users)) to the
  * ops channel, so apps need no code changes.
  *
- * Filament calls $user->notify() once per recipient with an identical payload and no shared id,
- * so N admins would mean N copies. A cache lock keyed by the payload lets only the first one
- * through; Cache::add is atomic, so this also holds across queue workers.
+ * Filament calls $user->notify() once per recipient with an identical payload and no shared id;
+ * Dedupe lets only the first copy through.
  */
 class ForwardFilamentDatabaseNotification
 {
@@ -55,13 +54,9 @@ class ForwardFilamentDatabaseNotification
 
         // A forwarding problem (cache down, bad payload) must not fail the bell notification itself.
         try {
-            $window = (int) ($config['dedupe_seconds'] ?? 60);
-
-            if ($window > 0 && ! Cache::add('ops-notify:forwarded:'.md5(serialize($data)), true, $window)) {
-                return;
+            if (Dedupe::isFirst('filament', $data)) {
+                $this->notifier->send($this->converter->fromArray($data, $opsEvent));
             }
-
-            $this->notifier->send($this->converter->fromArray($data, $opsEvent));
         } catch (Throwable $e) {
             Log::warning('[ops-notify] Could not forward Filament notification: '.$e->getMessage());
         }
