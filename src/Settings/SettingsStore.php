@@ -31,6 +31,7 @@ class SettingsStore
         'telegram_bot_token' => 'ops-notify.channels.telegram.bot_token',
         'telegram_chat_id' => 'ops-notify.channels.telegram.chat_id',
         'telegram_topic' => 'ops-notify.channels.telegram.topic',
+        'telegram_topics' => 'ops-notify.channels.telegram.topics',
         'events' => 'ops-notify.events',
         'forward_enabled' => 'ops-notify.forward_database_notifications.enabled',
         'forward_map' => 'ops-notify.forward_database_notifications.map',

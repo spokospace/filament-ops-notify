@@ -72,6 +72,20 @@ rules. They are stored in `ops_notify_settings`:
 `ops-notify:telegram-chats` needs the token: save it first, then run the command to find the
 chat and topic ids.
 
+### Topics
+
+**Settings → Topics** keeps the forum topics of the chat. Routing rules and the default topic pick
+from it by name, and the log shows "Zapytania #3" instead of a bare id.
+
+- **Create topic** creates the topic in Telegram (`createForumTopic`) and adds it with its id.
+  The bot needs the *Manage topics* admin right, and the token and chat id must be saved first.
+- **Import from Telegram** adds topics the bot has seen. The Bot API cannot list topics, so send
+  `/ping@your_bot` in a topic first.
+- **Add existing topic** takes a name and id by hand. The id is the number after `_` in a Telegram
+  Web link such as `…/#-1004487775854_3`.
+
+Removing a topic from the list does not delete it in Telegram.
+
 Use one bot per service and one topic per kind of event (inquiries, errors, builds), all in the
 same group.
 

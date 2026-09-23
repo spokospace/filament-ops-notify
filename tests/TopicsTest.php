@@ -1,0 +1,108 @@
+<?php
+
+use Filament\Actions\Testing\TestAction;
+use Filament\Facades\Filament;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
+use Livewire\Livewire;
+use Spokospace\OpsNotify\ChannelManager;
+use Spokospace\OpsNotify\Channels\Telegram\TelegramChannel;
+use Spokospace\OpsNotify\Filament\Pages\OpsNotifyPage;
+use Spokospace\OpsNotify\Filament\SettingsForm;
+use Spokospace\OpsNotify\Settings\SettingsStore;
+
+function telegramChannel(): TelegramChannel
+{
+    return app(ChannelManager::class)->channel('telegram');
+}
+
+it('creates a forum topic and returns its id', function () {
+    Http::fake(['*/createForumTopic' => Http::response(['ok' => true, 'result' => ['message_thread_id' => 12, 'name' => 'Komentarze']])]);
+
+    expect(telegramChannel()->createForumTopic('Komentarze', 7322096))->toBe('12');
+
+    Http::assertSent(fn (Request $request) => $request['chat_id'] === '-1001'
+        && $request['name'] === 'Komentarze'
+        && $request['icon_color'] === 7322096);
+});
+
+it('drops an icon colour telegram would reject', function () {
+    Http::fake(['*/createForumTopic' => Http::response(['ok' => true, 'result' => ['message_thread_id' => 5]])]);
+
+    telegramChannel()->createForumTopic('X', 123);
+
+    Http::assertSent(fn (Request $request) => ! isset($request['icon_color']));
+});
+
+it('lists the topics of the configured chat that the bot has seen', function () {
+    Http::fake(['*/getUpdates' => Http::response(['ok' => true, 'result' => [
+        ['message' => ['chat' => ['id' => -1001, 'type' => 'supergroup'], 'message_thread_id' => 3, 'is_topic_message' => true,
+            'reply_to_message' => ['forum_topic_created' => ['name' => 'Zapytania']]]],
+        ['message' => ['chat' => ['id' => -1001, 'type' => 'supergroup'], 'message_thread_id' => 3, 'is_topic_message' => true]],
+        ['message' => ['chat' => ['id' => -999, 'type' => 'supergroup'], 'message_thread_id' => 7, 'is_topic_message' => true]],
+    ]])]);
+
+    expect(telegramChannel()->seenTopics())->toBe(['3' => 'Zapytania']);
+});
+
+it('labels topics by name for the log table', function () {
+    config(['ops-notify.channels.telegram.topics' => [['id' => '3', 'name' => 'Zapytania']]]);
+    app(ChannelManager::class)->forgetChannels();
+
+    expect(telegramChannel()->topicLabel('3'))->toBe('Zapytania #3')
+        ->and(telegramChannel()->topicLabel('8'))->toBe('#8');
+});
+
+it('saves the topics list and normalises it', function () {
+    $form = app(SettingsForm::class);
+
+    app(SettingsStore::class)->save($form->toSettings([
+        'telegram_topics' => [
+            'a' => ['name' => ' Zapytania ', 'id' => 3],
+            'b' => ['name' => 'Duplicate', 'id' => '3'],
+            'c' => ['name' => 'No id', 'id' => null],
+            'd' => ['name' => 'Buildy', 'id' => '4'],
+        ],
+    ]));
+
+    expect(config('ops-notify.channels.telegram.topics'))->toBe([
+        ['id' => '3', 'name' => 'Zapytania'],
+        ['id' => '4', 'name' => 'Buildy'],
+    ]);
+});
+
+describe('settings slide-over', function () {
+    beforeEach(function () {
+        Filament::setCurrentPanel('admin');
+        $this->actingAs($this->admin());
+        Http::fake([
+            '*/getMe' => Http::response(['ok' => true, 'result' => ['username' => 'bot']]),
+            '*/createForumTopic' => Http::response(['ok' => true, 'result' => ['message_thread_id' => 9]]),
+            '*/getUpdates' => Http::response(['ok' => true, 'result' => [
+                ['message' => ['chat' => ['id' => -1001], 'message_thread_id' => 3, 'is_topic_message' => true,
+                    'reply_to_message' => ['forum_topic_created' => ['name' => 'Zapytania']]]],
+            ]]),
+        ]);
+    });
+
+    it('creates a topic in telegram and adds it to the list', function () {
+        Livewire::test(OpsNotifyPage::class)
+            ->mountAction('settings')
+            ->callAction(TestAction::make('createTopic')->schemaComponent('topics', 'mountedActionSchema0'), data: ['name' => 'Komentarze'])
+            ->assertNotified('Topic "Komentarze" created (#9)')
+            ->callMountedAction()
+            ->assertHasNoActionErrors();
+
+        expect(config('ops-notify.channels.telegram.topics'))->toBe([['id' => '9', 'name' => 'Komentarze']]);
+    });
+
+    it('imports topics the bot has seen', function () {
+        Livewire::test(OpsNotifyPage::class)
+            ->mountAction('settings')
+            ->callAction(TestAction::make('importTopics')->schemaComponent('topics', 'mountedActionSchema0'))
+            ->assertNotified('Imported 1 topic(s)')
+            ->callMountedAction();
+
+        expect(config('ops-notify.channels.telegram.topics'))->toBe([['id' => '3', 'name' => 'Zapytania']]);
+    });
+});

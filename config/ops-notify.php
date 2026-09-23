@@ -34,6 +34,9 @@ return [
             'chat_id' => env('OPS_NOTIFY_TELEGRAM_CHAT_ID'),       // [panel]
             // [panel] Forum topic (message_thread_id) used when an event has no topic of its own.
             'topic' => env('OPS_NOTIFY_TELEGRAM_TOPIC'),
+            // [panel] Known forum topics, list of ['id' => '3', 'name' => 'Zapytania']. Labels
+            // for the pickers and the log; the Bot API cannot list topics itself.
+            'topics' => [],
             'api_url' => env('OPS_NOTIFY_TELEGRAM_API_URL', 'https://api.telegram.org'),
             'timeout' => 10,
         ],

@@ -19,6 +19,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Str;
+use Spokospace\OpsNotify\Contracts\LabelsTopics;
 use Spokospace\OpsNotify\Contracts\ReportsStatus;
 use Spokospace\OpsNotify\Enums\DeliveryStatus;
 use Spokospace\OpsNotify\Enums\Level;
@@ -146,7 +147,8 @@ class OpsNotifyPage extends Page implements HasTable
                     ->badge()
                     ->tooltip(fn (OpsNotifyLog $record): ?string => $record->error),
                 TextColumn::make('channel')
-                    ->formatStateUsing(fn (OpsNotifyLog $record): string => $record->channel.($record->topic ? ' #'.$record->topic : ''))
+                    ->label('Channel / topic')
+                    ->formatStateUsing(fn (OpsNotifyLog $record): string => $record->channel.($record->topic ? ' · '.$this->topicLabel($record->channel, $record->topic) : ''))
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('attempts')
                     ->numeric()
@@ -193,6 +195,18 @@ class OpsNotifyPage extends Page implements HasTable
         Notification::make()->success()->title('Sent')->send();
 
         return true;
+    }
+
+    /** Asks the row's channel for a readable topic name, e.g. "Zapytania #3". */
+    private function topicLabel(string $channel, string $id): string
+    {
+        try {
+            $resolved = app(OpsNotifier::class)->channels()->channel($channel);
+        } catch (Throwable) {
+            return "#{$id}";
+        }
+
+        return $resolved instanceof LabelsTopics ? $resolved->topicLabel($id) : "#{$id}";
     }
 
     private function connectionStatus(): string
