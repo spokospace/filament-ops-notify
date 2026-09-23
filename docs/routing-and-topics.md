@@ -11,12 +11,18 @@ the chat.
 list is kept in the panel:
 
 - **Create topic** creates the topic in Telegram (`createForumTopic`, with one of Telegram's six
-  icon colours) and adds it with its id. The bot needs the *Manage topics* admin right, and the
-  token and chat id must be saved first.
-- **Import from Telegram** adds the topics the bot has seen recently. Send `/ping@your_bot` in a
-  topic first.
+  icon colours) and adds it with its id. The bot needs the *Manage topics* admin right.
+- **Import from Telegram** adds the topics of the saved chat that the bot has seen. Send
+  `/ping@your_bot` in each topic first, and import within 24 hours; after that, found topics are
+  remembered for 30 days ([why](telegram-setup.md#3-find-the-chat-id)).
 - **Add existing topic** takes a name and an id. The id is the number after `_` in a Telegram Web
   link such as `…/#-1001234567890_3`.
+
+**Create topic** and **Import from Telegram** only add rows to the form. Press **Save** to keep
+them. Both use the **saved** token and chat id, not unsaved values in the form.
+
+The *General* topic has no id. To send to *General*, leave **Default topic** (or a rule's topic)
+empty.
 
 Routing rules pick topics by name ("Inquiries #3"), and the history shows the name as well.
 Removing a topic from the list does not delete it in Telegram.
@@ -34,7 +40,8 @@ on/off switch, and the first matching rule wins:
 | `debug.*` | – | ❌ (not sent) |
 
 Events that no rule matches go to the default topic, or to *General* when there is none. A message
-can override its rule with `->topic()` or `->channel()`.
+can override its rule with `->topic()` or `->channel()`. A rule can also send events to another
+channel with `channel` (config only, see [A second Telegram channel](settings.md#a-second-telegram-channel)).
 
 The same rules in `config/ops-notify.php`:
 
@@ -48,8 +55,17 @@ The same rules in `config/ops-notify.php`:
 ## Forwarding Filament notifications
 
 Every Filament database notification (`Notification::make()->...->sendToDatabase($users)`) is
-forwarded **once**, however many users receive it. **Settings → Filament notifications** turns
-titles into events, and the first matching rule wins:
+forwarded **once**, however many users receive it.
+
+That relies on two things. Filament stores one copy per user, and the package lets only the first
+identical copy through, using `Cache::add`. So:
+
+- `dedupe_seconds` must be above `0` (default `60`).
+- The cache store must be shared by web and queue worker processes (redis, database, file on one
+  server). With `dedupe_seconds` set to `0`, or a per-process store such as `array`, a notification
+  sent to N users becomes N Telegram messages.
+
+**Settings → Filament notifications** turns titles into events, and the first matching rule wins:
 
 | Title | Event | Forward |
 |---|---|---|

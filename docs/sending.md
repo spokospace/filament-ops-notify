@@ -42,7 +42,9 @@ Notification::route('ops', ['topic' => 4])->notify(new BuildFailed);   // or jus
 ```
 
 `Notification::send($admins, new BuildFailed)` sends **one** Telegram message, not one per admin.
-Identical messages within `dedupe_seconds` are sent once.
+Identical messages within `dedupe_seconds` are sent once. This needs `dedupe_seconds` above `0` and
+a cache store shared by web and worker processes (see
+[Forwarding](routing-and-topics.md#forwarding-filament-notifications)).
 
 ## 3. Directly
 
@@ -73,16 +75,114 @@ OpsMessage::make('build.completed')
 `send()` is safe in request code, such as saving an inquiry. A broken notification setup never
 breaks the request that triggered it.
 
+## What a message looks like
+
+The example above arrives as:
+
+```
+✅ [shop.example.com] Frontend build completed
+
+Deployed release 2026.09.23
+
+Duration: 4m 12s
+
+#build_completed
+```
+
+- The first line is the level emoji, the `[service]` prefix and the title, in bold. Without a title
+  the event name is used.
+- Then the body, then the fields, one per line, with bold labels.
+- The last line is the event as a hashtag, so each event is searchable in the chat.
+- Buttons are inline buttons below the message.
+
+## The `OpsNotify` facade
+
+The facade is aliased automatically and proxies `OpsNotifier`:
+
+| Method | |
+|---|---|
+| `OpsNotify::send(OpsMessage)` | Same as `$message->send()`: queues, never throws |
+| `OpsNotify::sendNow(OpsMessage)` | Same as `$message->sendNow()` |
+| `OpsNotify::destinationFor(OpsMessage)` | The channel and topic the message would go to, or `null` when it would not be sent |
+| `OpsNotify::channels()` | The `ChannelManager`, for example to register a [driver](drivers.md) |
+
 ## Delivery
 
-- `SendOpsMessage` runs on the configured queue with 5 attempts and a backoff of 10 s, 30 s, 2 min
-  and 5 min. When Telegram asks to slow down (`retry_after`), the job waits that long.
-- Permanent errors (a bad token, an unknown chat, a malformed message) fail at once. They are not
-  retried.
-- A message is capped at Telegram's 4096 characters. The body is shortened first, then extra
-  fields are summarised as "…and N more fields".
-- Every message is logged in `ops_notify_logs` with its status (`queued`, `sent`, `failed`,
-  `resent`), the number of attempts and the Telegram error.
+Every message becomes a queued `SendOpsMessage` job.
+
+- **Where:** `OPS_NOTIFY_QUEUE_CONNECTION` and `OPS_NOTIFY_QUEUE`. By default, the app's queue
+  connection and that connection's default queue.
+- **Any Laravel driver works:** Horizon (redis), `queue:work` (database, redis, sqs, beanstalkd),
+  or `sync`, which needs no worker and delivers inside the request.
+- **Retries:** 5 attempts, with a backoff of 10 s, 30 s, 2 min and 5 min. When Telegram answers
+  429 with `retry_after`, the job waits that long.
+- **Permanent errors** (a bad token, an unknown chat, a malformed message) fail at once. They are
+  not retried.
+- **After commit:** the job is dispatched after the surrounding database transaction commits, so a
+  message never arrives before the data it talks about is saved.
+- **Filament bell notifications take two queue hops.** Filament queues the database notification
+  itself. Once that job has stored it, the package forwards it as a second job.
+- **Length:** a message is capped at 3,900 visible characters, below Telegram's 4,096. The body is
+  shortened first, then extra fields are summarised as "…and N more fields".
+- **Log:** every message is stored in `ops_notify_logs` with its status (`queued`, `sent`,
+  `failed`, `resent`), the number of attempts and the Telegram error.
+
+**Status → Delivery** on the page shows `connection · queue` (or *Immediately (sync queue)*) and,
+with Horizon, its state. A warning appears when Horizon is paused or not running, when no Horizon
+supervisor works the queue, or when messages have been queued for over 5 minutes.
+
+### A custom queue name
+
+With Horizon, add the queue to a supervisor's `queue` list in `config/horizon.php`. Otherwise the
+messages never leave the queue:
+
+```php
+// .env: OPS_NOTIFY_QUEUE=ops
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            'connection' => 'redis',
+            'queue' => ['default', 'ops'],
+            // ...
+        ],
+    ],
+],
+```
+
+With `queue:work`, name the queue when you start the worker:
+
+```bash
+php artisan queue:work --queue=ops,default
+```
+
+## Testing the setup
+
+**Send test** on the page goes through the queue by default (**Send through the queue** on), so it
+also tests the worker. The row turns from *Queued* to *Sent* in the history. Turned off, the
+message is sent right away, which only checks the token and chat. On the `sync` connection the
+toggle is hidden.
+
+**Resend** on a failed row follows the same rule: through the queue, or right away on `sync`.
+
+### From the command line
+
+```bash
+php artisan ops-notify:test                         # default text, sent right away
+php artisan ops-notify:test "Hello from the server"  # your own text
+php artisan ops-notify:test --queue                 # through the queue, like a real message
+php artisan ops-notify:test --event=build.failed    # test a routing rule
+```
+
+| Argument / option | Default | |
+|---|---|---|
+| `text` | *If you can read this, notifications work.* | Message body |
+| `--event=` | `ops.test` | Event name, used for routing and the hashtag |
+| `--queue` | off | Dispatch through the queue instead of sending right away |
+
+The test message has the title *Test notification* and the fields *Environment* and *Host*.
+
+`php artisan ops-notify:telegram-chats [--channel=name]` lists the chats and topics the bot has
+seen ([Telegram setup](telegram-setup.md#3-find-the-chat-id)).
 
 ## In your app's tests
 

@@ -20,7 +20,7 @@ reach Telegram with no code changes.
 ## Features
 
 - **Bell notifications → Telegram, no code.** Every `sendToDatabase()` notification is forwarded
-  once, however many users receive it.
+  once, however many users receive it ([with a shared cache](docs/routing-and-topics.md#forwarding-filament-notifications)).
 - **Topics and routing.** Create forum topics from the panel and route events to them by pattern
   (`inquiry.*` → *Inquiries*). Filament notifications are routed by title.
 - **Settings in the panel.** Token (encrypted), chat id, service name, topics and rules, all without
@@ -83,16 +83,25 @@ use Spokospace\OpsNotify\Filament\OpsNotifyPlugin;
 $panel->plugin(
     OpsNotifyPlugin::make()
         ->navigationGroup('System')
-        ->authorize(fn (): bool => (bool) auth()->user()?->isAdmin()),
+        ->authorize(fn (): bool => auth()->user()?->can('viewOpsNotify') ?? false),
 );
 ```
+
+`authorize()` runs on every navigation render, so it must work for every user. Use your app's
+own admin check (a gate, a role, an email allowlist). Do not copy `isAdmin()` from other examples
+unless your `User` model defines it. See [Installation](docs/installation.md#register-the-filament-plugin).
+
+Delivery runs on the queue, so the app needs a worker (Horizon or `queue:work`) and the scheduler.
 
 ## Quick start
 
 1. Create a bot with [@BotFather](https://t.me/BotFather) and a Telegram group with **Topics**
-   turned on. Add the bot as an admin.
+   turned on. Add the bot and promote it to admin.
 2. In the panel, open **Ops notifications → Settings** and enter the bot token and chat id.
 3. Press **Send test**.
+
+The [setup checklist](docs/setup-checklist.md) has every step in order. Installing with an AI
+coding agent? Give it [Installing with an AI agent](docs/setup-checklist.md#installing-with-an-ai-agent).
 
 Your existing Filament notifications now reach Telegram. To send something yourself:
 
@@ -107,19 +116,36 @@ OpsMessage::make('build.completed')
     ->send();
 ```
 
+In Telegram it reads:
+
+```
+✅ [shop.example.com] Frontend build completed
+
+Duration: 4m 12s
+
+#build_completed
+```
+
+with an **Open site** button below. The title and field labels are bold.
+
 ## Documentation
 
-- [Setup checklist](docs/setup-checklist.md): what to set up, in order, and the rights the bot needs
+- [Setup checklist](docs/setup-checklist.md): what to set up, in order, the rights the bot needs, and
+  instructions for AI agents
 - [Installation](docs/installation.md): requirements, migrations, plugin options
 - [Telegram setup](docs/telegram-setup.md): bot, group, topics, finding the chat id, bot profile
 - [Settings](docs/settings.md): panel vs `.env`, every option, languages, the Ops notifications page
 - [Routing and topics](docs/routing-and-topics.md): topics, event rules, forwarding Filament notifications
 - [Sending messages](docs/sending.md): the `ops` channel, the `OpsMessage` API, delivery, tests
 - [Drivers](docs/drivers.md): adding a channel such as WhatsApp
-- [Troubleshooting](docs/troubleshooting.md): common Telegram errors and fixes
+- [Troubleshooting](docs/troubleshooting.md): common Telegram and queue errors and fixes
 
 ## Testing
 
 ```bash
 composer test
 ```
+
+## License
+
+MIT, see [LICENSE.md](LICENSE.md).
