@@ -2,8 +2,15 @@
 
 ## 1. Create a bot
 
-In Telegram, open [@BotFather](https://t.me/BotFather), send `/newbot`, and choose a display name
-and a username ending in `bot`. BotFather replies with the **token**.
+In Telegram, open [@BotFather](https://t.me/BotFather), send `/newbot`, and choose:
+
+- **Display name**, which the chat list and messages show. **DashBot** is a good default. Use
+  **DashBot · Shop** when several services post to the same group. You can change it later from
+  the panel ([Bot profile](#5-bot-profile)).
+- **Username**, which must be unique across Telegram and end in `bot`, for example
+  `shop_panel_bot`. It cannot be changed from the panel.
+
+BotFather replies with the **token**.
 
 Keep the token out of git, chats and PR descriptions. If it leaks, send `/revoke` to BotFather and
 enter the new one in the panel.
@@ -55,5 +62,20 @@ In **Settings**, enter the chat id and save. The status on the page should now s
 ```bash
 php artisan ops-notify:test "Hello from the panel"
 ```
+
+## 5. Bot profile
+
+**Ops notifications → Bot profile** edits what Telegram shows for the bot, so you don't need to go
+back to BotFather:
+
+| Field | Limit | Where Telegram shows it |
+|---|---|---|
+| Avatar | A preset, or your own JPEG, PNG or WebP, cropped to 640×640 | Chat list, messages, profile |
+| Display name | 64 characters | Chat list and above messages |
+| Short description | 120 characters | The bot's profile page |
+| Description | 512 characters | An empty chat with the bot |
+
+**Keep current** leaves the avatar as it is, and **Remove avatar** deletes it. Only the fields you
+change are sent to Telegram. The button appears once a bot token is saved.
 
 Next: [manage topics and route events](routing-and-topics.md).

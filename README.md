@@ -26,6 +26,10 @@ reach Telegram with no code changes.
 - **Settings in the panel.** Token (encrypted), chat id, service name, topics and rules, all without
   touching `.env`.
 - **Reliable delivery.** Queued, retried, rate-limit aware, and never breaks the request that sent it.
+- **Bot profile.** Pick an avatar (a preset or your own) and set the display name and
+  descriptions from the panel.
+- **Translated.** The panel ships in nine languages, and a separate setting controls the
+  language of the messages.
 - **History.** Every message is logged with its status and Telegram error, and failed ones can be
   resent.
 - **`ops` notification channel and a fluent `OpsMessage`** for events that are not bell notifications.
@@ -82,9 +86,10 @@ OpsMessage::make('build.completed')
 
 ## Documentation
 
+- [Setup checklist](docs/setup-checklist.md): what to set up, in order, and the rights the bot needs
 - [Installation](docs/installation.md): requirements, migrations, plugin options
-- [Telegram setup](docs/telegram-setup.md): bot, group, topics, finding the chat id
-- [Settings](docs/settings.md): panel vs `.env`, every option, the Ops notifications page
+- [Telegram setup](docs/telegram-setup.md): bot, group, topics, finding the chat id, bot profile
+- [Settings](docs/settings.md): panel vs `.env`, every option, languages, the Ops notifications page
 - [Routing and topics](docs/routing-and-topics.md): topics, event rules, forwarding Filament notifications
 - [Sending messages](docs/sending.md): the `ops` channel, the `OpsMessage` API, delivery, tests
 - [Drivers](docs/drivers.md): adding a channel such as WhatsApp
