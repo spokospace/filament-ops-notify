@@ -6,14 +6,30 @@ namespace Spokospace\OpsNotify\Support;
 final class Locales
 {
     private const NATIVE_NAMES = [
+        'bg' => 'Български',
+        'cs' => 'Čeština',
+        'da' => 'Dansk',
         'de' => 'Deutsch',
+        'el' => 'Ελληνικά',
         'en' => 'English',
         'es' => 'Español',
+        'et' => 'Eesti',
+        'fi' => 'Suomi',
         'fr' => 'Français',
+        'hr' => 'Hrvatski',
+        'hu' => 'Magyar',
         'it' => 'Italiano',
+        'lt' => 'Lietuvių',
+        'lv' => 'Latviešu',
+        'nb' => 'Norsk bokmål',
         'nl' => 'Nederlands',
         'pl' => 'Polski',
         'pt_BR' => 'Português (Brasil)',
+        'ro' => 'Română',
+        'sk' => 'Slovenčina',
+        'sl' => 'Slovenščina',
+        'sv' => 'Svenska',
+        'tr' => 'Türkçe',
         'uk' => 'Українська',
     ];
 

@@ -7,6 +7,7 @@ use Livewire\Livewire;
 use Spokospace\OpsNotify\Channels\Telegram\TelegramFormatter;
 use Spokospace\OpsNotify\Filament\Pages\OpsNotifyPage;
 use Spokospace\OpsNotify\OpsMessage;
+use Spokospace\OpsNotify\Support\Locales;
 
 function langFile(string $locale): array
 {
@@ -19,7 +20,20 @@ function locales(): array
 }
 
 it('ships the popular locales', function () {
-    expect(locales())->toContain('en', 'pl', 'de', 'fr', 'es', 'it', 'nl', 'pt_BR', 'uk');
+    expect(locales())->toContain(
+        'en', 'pl', 'de', 'fr', 'es', 'it', 'nl', 'pt_BR', 'uk',
+        'cs', 'sk', 'hr', 'sl', 'bg', 'el', 'hu', 'ro', 'lt', 'lv', 'et', 'sv', 'da', 'fi', 'nb', 'tr',
+    );
+});
+
+it('names every shipped locale in its own language', function () {
+    $options = Locales::options();
+
+    expect(array_keys($options))->toEqualCanonicalizing(locales());
+
+    foreach ($options as $locale => $name) {
+        expect($name)->not->toBe($locale, "{$locale} has no native name in Locales");
+    }
 });
 
 it('has every English key in every locale, and no extra ones', function (string $locale) {
