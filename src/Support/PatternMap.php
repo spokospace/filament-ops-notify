@@ -23,4 +23,21 @@ final class PatternMap
 
         return null;
     }
+
+    /**
+     * firstKey() for a value known only by its start: a pattern that starts with it may match
+     * the whole value too, and counts as matching.
+     *
+     * @param  array<array-key, mixed>  $map
+     */
+    public static function firstKeyForStart(array $map, string $start): ?string
+    {
+        foreach (array_keys($map) as $pattern) {
+            if (Str::is((string) $pattern, $start) || str_starts_with((string) $pattern, $start)) {
+                return (string) $pattern;
+            }
+        }
+
+        return null;
+    }
 }
