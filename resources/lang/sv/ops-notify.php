@@ -111,7 +111,10 @@ return [
         'routing' => 'Routning av händelser',
         'routing_description' => 'Varje meddelande har ett händelsenamn, till exempel inquiry.created. En regel skickar matchande händelser till ett ämne; * matchar vad som helst, så inquiry.* fångar varje förfrågningshändelse. Reglerna kontrolleras uppifrån och första träffen gäller. Händelser utan träff går till standardämnet.',
         'pattern' => 'Mönster',
-        'seen_events' => 'Sedda sedan :date: :events',
+        'seen_recent' => 'Händelser från senaste :count dagen med antal meddelanden.|Händelser från de senaste :count dagarna med antal meddelanden.',
+        'seen_click' => 'Klicka på en händelse för att lägga till en routningsregel för den.',
+        'seen_rule_added' => 'Regeln :pattern har lagts till: välj ämne och spara inställningarna.',
+        'seen_rule_exists' => ':pattern matchar redan :event: ange ämnet i den regeln.',
         'seen_default' => 'inget ämne i reglerna',
         'add_rule' => 'Lägg till regel',
 

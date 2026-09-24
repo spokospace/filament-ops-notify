@@ -111,7 +111,10 @@ return [
         'routing' => 'Rutarea evenimentelor',
         'routing_description' => 'Fiecare mesaj are un nume de eveniment, de exemplu inquiry.created. O regulă trimite evenimentele potrivite într-un subiect; * se potrivește cu orice, deci inquiry.* prinde orice eveniment de solicitare. Regulile sunt verificate de sus în jos și se aplică prima potrivire. Evenimentele fără potrivire merg în subiectul implicit.',
         'pattern' => 'Șablon',
-        'seen_events' => 'Văzute din :date: :events',
+        'seen_recent' => 'Evenimentele din ultima :count zi, cu numărul de mesaje.|Evenimentele din ultimele :count zile, cu numărul de mesaje.|Evenimentele din ultimele :count de zile, cu numărul de mesaje.',
+        'seen_click' => 'Faceți clic pe un eveniment pentru a-i adăuga o regulă de rutare.',
+        'seen_rule_added' => 'Regula :pattern a fost adăugată: alegeți subiectul și salvați setările.',
+        'seen_rule_exists' => ':pattern se potrivește deja cu :event: setați subiectul în acea regulă.',
         'seen_default' => 'fără subiect în reguli',
         'add_rule' => 'Adăugare regulă',
 

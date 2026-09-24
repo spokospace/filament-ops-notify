@@ -111,7 +111,10 @@ return [
         'routing' => 'Usmerjanje dogodkov',
         'routing_description' => 'Vsako sporočilo ima ime dogodka, npr. inquiry.created. Pravilo pošlje ujemajoče se dogodke v temo; * se ujema s čimer koli, zato inquiry.* zajame vsak dogodek povpraševanja. Pravila se preverjajo od zgoraj in velja prvo ujemanje. Dogodki brez ujemanja gredo v privzeto temo.',
         'pattern' => 'Vzorec',
-        'seen_events' => 'Videno od :date: :events',
+        'seen_recent' => 'Dogodki zadnjega :count dneva s številom sporočil.|Dogodki zadnjih :count dni s številom sporočil.|Dogodki zadnjih :count dni s številom sporočil.|Dogodki zadnjih :count dni s številom sporočil.',
+        'seen_click' => 'Kliknite dogodek, da zanj dodate pravilo usmerjanja.',
+        'seen_rule_added' => 'Pravilo :pattern dodano: izberite temo in shranite nastavitve.',
+        'seen_rule_exists' => ':pattern se že ujema z :event: nastavite temo v tem pravilu.',
         'seen_default' => 'brez teme v pravilih',
         'add_rule' => 'Dodaj pravilo',
 

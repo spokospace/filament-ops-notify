@@ -111,7 +111,10 @@ return [
         'routing' => 'Routing af hændelser',
         'routing_description' => 'Hver besked har et hændelsesnavn, fx inquiry.created. En regel sender matchende hændelser til et emne; * matcher alt, så inquiry.* fanger alle forespørgselshændelser. Reglerne tjekkes oppefra, og første match vinder. Hændelser uden match går til standardemnet.',
         'pattern' => 'Mønster',
-        'seen_events' => 'Set siden :date: :events',
+        'seen_recent' => 'Hændelser fra den seneste :count dag med antal beskeder.|Hændelser fra de seneste :count dage med antal beskeder.',
+        'seen_click' => 'Klik på en hændelse for at tilføje en routingregel for den.',
+        'seen_rule_added' => 'Reglen :pattern er tilføjet: vælg dens emne, og gem indstillingerne.',
+        'seen_rule_exists' => ':pattern matcher allerede :event: angiv emnet i den regel.',
         'seen_default' => 'intet emne i reglerne',
         'add_rule' => 'Tilføj regel',
 

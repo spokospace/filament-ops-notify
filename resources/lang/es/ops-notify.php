@@ -111,7 +111,10 @@ return [
         'routing' => 'Enrutamiento de eventos',
         'routing_description' => 'Cada mensaje tiene un nombre de evento, como inquiry.created. Una regla envía los eventos que coinciden a un tema; * coincide con cualquier cosa, así que inquiry.* captura todos los eventos de consultas. Las reglas se revisan de arriba abajo y gana la primera que coincida. Los eventos sin coincidencia van al tema predeterminado.',
         'pattern' => 'Patrón',
-        'seen_events' => 'Vistos desde el :date: :events',
+        'seen_recent' => 'Eventos del último :count día, con su número de mensajes.|Eventos de los últimos :count días, con su número de mensajes.',
+        'seen_click' => 'Haz clic en un evento para añadir una regla de enrutamiento para él.',
+        'seen_rule_added' => 'Regla :pattern añadida: elige su tema y guarda los ajustes.',
+        'seen_rule_exists' => ':pattern ya coincide con :event: define el tema en esa regla.',
         'seen_default' => 'sin tema en las reglas',
         'add_rule' => 'Añadir regla',
 

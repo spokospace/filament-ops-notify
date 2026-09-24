@@ -111,7 +111,10 @@ return [
         'routing' => 'Usmjeravanje događaja',
         'routing_description' => 'Svaka poruka ima naziv događaja, npr. inquiry.created. Pravilo šalje odgovarajuće događaje u temu; * odgovara bilo čemu, pa inquiry.* hvata svaki događaj upita. Pravila se provjeravaju odozgo i vrijedi prvo podudaranje. Događaji bez podudaranja idu u zadanu temu.',
         'pattern' => 'Uzorak',
-        'seen_events' => 'Viđeno od :date: :events',
+        'seen_recent' => 'Događaji iz posljednjeg :count dana s brojem poruka.|Događaji iz posljednja :count dana s brojem poruka.|Događaji iz posljednjih :count dana s brojem poruka.',
+        'seen_click' => 'Kliknite događaj da biste za njega dodali pravilo usmjeravanja.',
+        'seen_rule_added' => 'Pravilo :pattern dodano: odaberite temu i spremite postavke.',
+        'seen_rule_exists' => ':pattern već odgovara događaju :event: postavite temu u tom pravilu.',
         'seen_default' => 'bez teme u pravilima',
         'add_rule' => 'Dodaj pravilo',
 

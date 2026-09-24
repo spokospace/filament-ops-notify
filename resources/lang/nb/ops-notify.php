@@ -111,7 +111,10 @@ return [
         'routing' => 'Ruting av hendelser',
         'routing_description' => 'Hver melding har et hendelsesnavn, for eksempel inquiry.created. En regel sender samsvarende hendelser til et emne; * samsvarer med alt, så inquiry.* fanger alle forespørselshendelser. Reglene sjekkes ovenfra, og første treff vinner. Hendelser uten treff går til standardemnet.',
         'pattern' => 'Mønster',
-        'seen_events' => 'Sett siden :date: :events',
+        'seen_recent' => 'Hendelser fra siste :count dag med antall meldinger.|Hendelser fra siste :count dager med antall meldinger.',
+        'seen_click' => 'Klikk på en hendelse for å legge til en rutingsregel for den.',
+        'seen_rule_added' => 'Regelen :pattern er lagt til: velg emne, og lagre innstillingene.',
+        'seen_rule_exists' => ':pattern samsvarer allerede med :event: angi emnet i den regelen.',
         'seen_default' => 'ikke noe emne i reglene',
         'add_rule' => 'Legg til regel',
 

@@ -111,7 +111,10 @@ return [
         'routing' => 'Ereignis-Routing',
         'routing_description' => 'Jede Nachricht hat einen Ereignisnamen, z. B. inquiry.created. Eine Regel leitet passende Ereignisse an ein Thema; * passt auf alles, also erfasst inquiry.* jedes Anfrage-Ereignis. Die Regeln werden von oben geprüft, die erste passende gewinnt. Ereignisse ohne Treffer gehen an das Standardthema.',
         'pattern' => 'Muster',
-        'seen_events' => 'Gesehen seit :date: :events',
+        'seen_recent' => 'Ereignisse des letzten :count Tages mit der Anzahl der Nachrichten.|Ereignisse der letzten :count Tage mit der Anzahl der Nachrichten.',
+        'seen_click' => 'Klicke auf ein Ereignis, um eine Routing-Regel dafür hinzuzufügen.',
+        'seen_rule_added' => 'Regel :pattern hinzugefügt: wähle ihr Thema und speichere die Einstellungen.',
+        'seen_rule_exists' => ':pattern passt bereits auf :event: lege das Thema in dieser Regel fest.',
         'seen_default' => 'kein Thema in den Regeln',
         'add_rule' => 'Regel hinzufügen',
 

@@ -13,6 +13,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
@@ -51,6 +52,7 @@ class SettingsForm
     {
         $saved = $this->store->formValues();
         $seenEvents = SeenEvents::counts();
+        $eventsLocked = $this->store->isLocked('events');
         $patterns = SeenEvents::patterns(SeenEvents::suggested($seenEvents));
 
         // One line per list item: the section header lists them, and each collapsed row shows its own.
@@ -156,8 +158,12 @@ class SettingsForm
                             ->addActionLabel(Trans::get('settings.add_rule')),
                         Trans::get('settings.routing_description'),
                     ),
-                    Text::make(fn (Get $get): string => $this->describeSeenEvents($seenEvents, $get('events')))
+                    Text::make(Trans::choice('settings.seen_recent', SeenEvents::days())
+                        .($eventsLocked ? '' : ' '.Trans::get('settings.seen_click')))
                         ->key('seen_events')
+                        ->visible($seenEvents !== []),
+                    Actions::make(fn (Get $get): array => $this->seenEventTags($seenEvents, $eventsLocked, $get))
+                        ->key('seen_event_tags')
                         ->visible($seenEvents !== []),
                 ]),
 
@@ -345,57 +351,108 @@ class SettingsForm
     }
 
     /**
-     * "Seen since August 25, 2026: inquiry.created (12) · order_placed (3, no topic in rules)".
-     * Marks the events that the rules give no topic (no match, or a rule without a topic; the
-     * message's own topic or the default one applies) or do not send at all (a disabled rule),
-     * and names the channel a rule sends to. Lists the most frequent events and, past those,
-     * only the marked ones: a rare event that no rule routes matters most.
+     * The events seen recently, one tag each with its count: grey when a rule gives it a topic
+     * (the tooltip names it), amber when the rules give it none (no match, or a rule without a
+     * topic; the message's own topic or the default one applies), struck through when a disabled
+     * rule drops it. The tooltip also names the channel a rule sends to. Lists the most frequent
+     * events and, past those, only the marked ones: a rare event that no rule routes matters most.
+     * A click adds a rule for the event (addRuleFor()).
      *
      * @param  array<string, int>  $counts  SeenEvents::counts()
-     * @param  mixed  $rows  The form's rule rows.
+     * @return list<Action>
      */
-    private function describeSeenEvents(array $counts, mixed $rows): string
+    private function seenEventTags(array $counts, bool $locked, Get $get): array
     {
         // The rules in effect: the form's, or the config's when they are locked there (a config
         // rule may also set a channel, which the form has no field for).
-        $rules = $this->store->isLocked('events')
-            ? (array) config('ops-notify.events', [])
-            : $this->toSettings(['events' => array_filter(
-                self::rows($rows),
-                fn (mixed $row): bool => is_array($row) && filled($row['pattern'] ?? null),
-            )])['events'];
-
-        $events = [];
-
+        $rules = $locked ? (array) config('ops-notify.events', []) : $this->formRules($get('events'));
+        $topics = self::topicNames($get);
         $suggested = SeenEvents::suggested($counts);
+        [$disabled, $noTopic] = [Trans::get('page.disabled'), Trans::get('settings.seen_default')];
+        $tags = [];
 
         foreach ($counts as $event => $count) {
             $event = (string) $event;
             $truncated = SeenEvents::isTruncated($event);
             $rule = RoutingRules::ruleFor($rules, $event);
+            $topic = filled($rule['topic'] ?? null) ? (string) $rule['topic'] : null;
+            $channel = filled($rule['channel'] ?? null) ? '→ '.$rule['channel'] : null;
+            $sends = RoutingRules::sends($rule);
 
-            $notes = array_filter([
-                filled($rule['channel'] ?? null) ? '→ '.$rule['channel'] : null,
-                match (true) {
-                    // The log cut the name short: an exact rule for the full name cannot be checked.
-                    $rule === [] && $truncated => null,
-                    ! RoutingRules::sends($rule) => Trans::get('page.disabled'),
-                    blank($rule['topic'] ?? null) => Trans::get('settings.seen_default'),
-                    default => null,
-                },
-            ]);
+            // What the rules do with the event. Unmarked: a rule gives it a topic, or the log cut
+            // the name short and an exact rule for the full name cannot be checked.
+            $mark = match (true) {
+                $rule === [] && $truncated => null,
+                ! $sends => $disabled,
+                $topic === null => $noTopic,
+                default => null,
+            };
 
-            if ($notes === [] && ! isset($suggested[$event])) {
+            if ($mark === null && $channel === null && ! isset($suggested[$event])) {
                 continue;
             }
 
-            $events[] = ($truncated ? $event.'…' : $event).' ('.implode(', ', [$count, ...$notes]).')';
+            $notes = array_filter([
+                $channel,
+                $mark ?? ($topic !== null ? '→ '.TelegramChannel::formatTopic($topic, $topics[$topic] ?? null) : null),
+            ]);
+
+            $tags[] = Action::make(self::seenEventAction($event))
+                ->badge()
+                ->label(($truncated ? $event.'…' : $event).' ('.$count.')')
+                // Amber for no topic; a disabled one is struck through instead.
+                ->color($mark !== null && $sends ? 'warning' : 'gray')
+                ->tooltip($notes === [] ? null : implode(', ', $notes))
+                ->extraAttributes($sends ? [] : ['style' => 'text-decoration: line-through'])
+                ->disabled($locked)
+                ->action(fn (Get $get, Set $set) => $this->addRuleFor($event, $get, $set));
         }
 
-        return Trans::get('settings.seen_events', [
-            'date' => SeenEvents::since()->isoFormat('LL'),
-            'events' => implode(' · ', $events),
-        ]);
+        return $tags;
+    }
+
+    /** A seen event's tag action. Named after the event alone: the click has to find it again. */
+    public static function seenEventAction(string $event): string
+    {
+        return 'seenEvent'.hash('xxh128', $event);
+    }
+
+    /**
+     * Adds a routing rule for a seen event, its pattern filled in (SeenEvents::rulePattern())
+     * and its row open to pick a topic. The first matching rule wins, so a new rule below one
+     * that already matches the event would never apply: that one is named instead.
+     */
+    private function addRuleFor(string $event, Get $get, Set $set): void
+    {
+        $rows = self::rows($get('events'));
+
+        if (($existing = PatternMap::firstKey($this->formRules($rows), $event)) !== null) {
+            Notification::make()->warning()
+                ->title(Trans::get('settings.seen_rule_exists', ['pattern' => $existing, 'event' => $event]))
+                ->send();
+
+            return;
+        }
+
+        $pattern = SeenEvents::rulePattern($event);
+        // "new" keeps the row open (compact()). No field reads it, so it is never saved.
+        $rows[(string) Str::uuid()] = ['pattern' => $pattern, 'topic' => null, 'enabled' => true, 'new' => true];
+        $set('events', $rows);
+
+        Notification::make()->success()
+            ->title(Trans::get('settings.seen_rule_added', ['pattern' => $pattern]))
+            ->body(Trans::get('settings.save_to_keep_it'))
+            ->send();
+    }
+
+    /**
+     * The form's rule rows as routing reads them: pattern => rule, rows without a pattern aside.
+     *
+     * @return array<string, mixed>
+     */
+    private function formRules(mixed $rows): array
+    {
+        return $this->toSettings(['events' => $rows])['events'];
     }
 
     /**
@@ -492,9 +549,9 @@ class SettingsForm
     }
 
     /**
-     * A rule field whose changes refresh the "seen recently" line, which marks unmatched events,
-     * rules without a topic and disabled rules. Only the Routing section re-renders: the line,
-     * the row labels and the header. The field decides how live it is (a text field on blur).
+     * A rule field whose changes refresh the seen-event tags, which mark unmatched events, rules
+     * without a topic and disabled rules. Only the Routing section re-renders: the tags, the row
+     * labels and the header. The field decides how live it is (a text field on blur).
      */
     private function refreshesRouting(Field $field): Field
     {
@@ -643,7 +700,13 @@ class SettingsForm
     {
         return $repeater
             ->collapsible()
-            ->collapsed(fn (?Schema $item): bool => filled($item?->getStateSnapshot()[$required] ?? null))
+            // A row flagged "new" (added from a seen event, see addRuleFor()) is filled in but
+            // still needs its other fields: it stays open too.
+            ->collapsed(function (?Schema $item) use ($required): bool {
+                $row = $item?->getStateSnapshot() ?? [];
+
+                return filled($row[$required] ?? null) && ! ($row['new'] ?? false);
+            })
             ->itemLabel(fn (array $state, Get $get): ?string => filled($state[$required] ?? null)
                 ? $describe($state, self::topicNames($get))
                 : null);

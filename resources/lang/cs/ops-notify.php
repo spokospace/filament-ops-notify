@@ -111,7 +111,10 @@ return [
         'routing' => 'Směrování událostí',
         'routing_description' => 'Každá zpráva má název události, např. inquiry.created. Pravidlo posílá odpovídající události do tématu; * odpovídá čemukoli, takže inquiry.* zachytí každou událost poptávky. Pravidla se kontrolují shora a platí první shoda. Události bez shody jdou do výchozího tématu.',
         'pattern' => 'Vzor',
-        'seen_events' => 'Viděno od :date: :events',
+        'seen_recent' => 'Události za poslední :count den s počtem zpráv.|Události za poslední :count dny s počtem zpráv.|Události za posledních :count dní s počtem zpráv.',
+        'seen_click' => 'Kliknutím na událost pro ni přidáte pravidlo směrování.',
+        'seen_rule_added' => 'Pravidlo :pattern přidáno: vyberte téma a uložte nastavení.',
+        'seen_rule_exists' => ':pattern už odpovídá :event: nastavte téma v tomto pravidle.',
         'seen_default' => 'bez tématu v pravidlech',
         'add_rule' => 'Přidat pravidlo',
 

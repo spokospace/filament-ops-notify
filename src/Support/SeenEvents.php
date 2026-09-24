@@ -123,15 +123,43 @@ final class SeenEvents
 
         foreach (array_keys($counts) as $event) {
             $event = (string) $event;
-            $patterns[] = self::isTruncated($event) ? $event.'*' : $event;
-
-            for ($prefix = $event; str_contains($prefix, '.');) {
-                $prefix = Str::beforeLast($prefix, '.');
-                $patterns[] = $prefix.'.*';
-            }
+            array_push($patterns, self::namePattern($event), ...self::prefixPatterns($event));
         }
 
         return array_values(array_unique($patterns));
+    }
+
+    /**
+     * The pattern a new routing rule for this event starts with: the wildcard form of its
+     * nearest prefix (inquiry.created → inquiry.*, the first prefix patterns() offers), or the
+     * name pattern when it has no prefix or the log cut it short.
+     */
+    public static function rulePattern(string $event): string
+    {
+        return self::isTruncated($event) ? self::namePattern($event) : (self::prefixPatterns($event)[0] ?? $event);
+    }
+
+    /** The event name as a pattern: "its first 120 characters*" when the log cut it short. */
+    private static function namePattern(string $event): string
+    {
+        return self::isTruncated($event) ? $event.'*' : $event;
+    }
+
+    /**
+     * The wildcard form of each prefix, nearest first: site.build.failed → site.build.*, site.*.
+     *
+     * @return list<string>
+     */
+    private static function prefixPatterns(string $event): array
+    {
+        $patterns = [];
+
+        for ($prefix = $event; str_contains($prefix, '.');) {
+            $prefix = Str::beforeLast($prefix, '.');
+            $patterns[] = $prefix.'.*';
+        }
+
+        return $patterns;
     }
 
     /**

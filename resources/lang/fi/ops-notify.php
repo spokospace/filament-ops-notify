@@ -111,7 +111,10 @@ return [
         'routing' => 'Tapahtumien reititys',
         'routing_description' => 'Jokaisella viestillä on tapahtuman nimi, esimerkiksi inquiry.created. Sääntö lähettää vastaavat tapahtumat aiheeseen; * vastaa mitä tahansa, joten inquiry.* poimii jokaisen tiedustelutapahtuman. Säännöt tarkistetaan ylhäältä alkaen ja ensimmäinen osuma voittaa. Tapahtumat ilman osumaa menevät oletusaiheeseen.',
         'pattern' => 'Kaava',
-        'seen_events' => 'Nähty alkaen :date: :events',
+        'seen_recent' => 'Viimeisen :count päivän tapahtumat ja niiden viestimäärät.|Viimeisten :count päivän tapahtumat ja niiden viestimäärät.',
+        'seen_click' => 'Lisää tapahtumalle reitityssääntö napsauttamalla sitä.',
+        'seen_rule_added' => 'Sääntö :pattern lisätty: valitse sen aihe ja tallenna asetukset.',
+        'seen_rule_exists' => ':pattern vastaa jo tapahtumaa :event: aseta aihe siinä säännössä.',
         'seen_default' => 'ei aihetta säännöissä',
         'add_rule' => 'Lisää sääntö',
 

@@ -111,7 +111,10 @@ return [
         'routing' => 'Sündmuste suunamine',
         'routing_description' => 'Igal sõnumil on sündmuse nimi, näiteks inquiry.created. Reegel saadab sobivad sündmused teemasse; * sobib kõigega, nii et inquiry.* püüab kinni iga päringu sündmuse. Reegleid kontrollitakse ülalt alla ja kehtib esimene vaste. Vasteta sündmused lähevad vaiketeemasse.',
         'pattern' => 'Muster',
-        'seen_events' => 'Nähtud alates :date: :events',
+        'seen_recent' => 'Viimase :count päeva sündmused ja nende sõnumite arv.|Viimase :count päeva sündmused ja nende sõnumite arv.',
+        'seen_click' => 'Klõpsake sündmusel, et lisada sellele suunamisreegel.',
+        'seen_rule_added' => 'Reegel :pattern lisatud: valige teema ja salvestage seaded.',
+        'seen_rule_exists' => ':pattern sobib juba sündmusega :event: määrake teema selles reeglis.',
         'seen_default' => 'reeglites teemat pole',
         'add_rule' => 'Lisa reegel',
 

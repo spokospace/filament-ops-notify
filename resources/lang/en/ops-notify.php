@@ -111,7 +111,10 @@ return [
         'routing' => 'Event routing',
         'routing_description' => 'Every message has an event name, such as inquiry.created. A rule sends matching events to a topic; * matches anything, so inquiry.* catches every inquiry event. Rules are checked from the top and the first match wins. Events with no match go to the default topic.',
         'pattern' => 'Pattern',
-        'seen_events' => 'Seen since :date: :events',
+        'seen_recent' => 'Events from the last :count day, with their message counts.|Events from the last :count days, with their message counts.',
+        'seen_click' => 'Click an event to add a routing rule for it.',
+        'seen_rule_added' => 'Rule :pattern added: pick its topic and save the settings.',
+        'seen_rule_exists' => ':pattern already matches :event: set the topic in that rule.',
         'seen_default' => 'no topic in rules',
         'add_rule' => 'Add rule',
 

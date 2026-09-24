@@ -111,7 +111,10 @@ return [
         'routing' => 'Események irányítása',
         'routing_description' => 'Minden üzenetnek van eseményneve, például inquiry.created. Egy szabály az illeszkedő eseményeket egy témába küldi; a * bármire illeszkedik, így az inquiry.* minden ajánlatkérési eseményt elkap. A szabályokat felülről ellenőrizzük, az első találat érvényes. A találat nélküli események az alapértelmezett témába kerülnek.',
         'pattern' => 'Minta',
-        'seen_events' => 'Látott :date óta: :events',
+        'seen_recent' => 'Az elmúlt :count nap eseményei és üzeneteik száma.|Az elmúlt :count nap eseményei és üzeneteik száma.',
+        'seen_click' => 'Kattints egy eseményre, hogy útválasztási szabályt adj hozzá.',
+        'seen_rule_added' => 'A(z) :pattern szabály hozzáadva: válassz témát, és mentsd a beállításokat.',
+        'seen_rule_exists' => 'A(z) :pattern már illeszkedik erre: :event. A témát abban a szabályban állítsd be.',
         'seen_default' => 'nincs téma a szabályokban',
         'add_rule' => 'Szabály hozzáadása',
 

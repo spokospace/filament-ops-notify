@@ -111,7 +111,10 @@ return [
         'routing' => 'Instradamento degli eventi',
         'routing_description' => "Ogni messaggio ha un nome di evento, ad esempio inquiry.created. Una regola invia gli eventi corrispondenti a un argomento; * corrisponde a qualsiasi cosa, quindi inquiry.* cattura ogni evento di richiesta. Le regole vengono controllate dall'alto e vince la prima corrispondente. Gli eventi senza corrispondenza vanno all'argomento predefinito.",
         'pattern' => 'Schema',
-        'seen_events' => 'Visti dal :date: :events',
+        'seen_recent' => 'Eventi dell’ultimo :count giorno, con il numero di messaggi.|Eventi degli ultimi :count giorni, con il numero di messaggi.',
+        'seen_click' => 'Fai clic su un evento per aggiungere una regola di instradamento.',
+        'seen_rule_added' => 'Regola :pattern aggiunta: scegli il suo argomento e salva le impostazioni.',
+        'seen_rule_exists' => ':pattern corrisponde già a :event: imposta l’argomento in quella regola.',
         'seen_default' => 'nessun argomento nelle regole',
         'add_rule' => 'Aggiungi regola',
 

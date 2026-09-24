@@ -111,7 +111,10 @@ return [
         'routing' => 'Routage des événements',
         'routing_description' => "Chaque message porte un nom d'événement, par exemple inquiry.created. Une règle envoie les événements correspondants vers un sujet ; * correspond à tout, donc inquiry.* capte tous les événements de demande. Les règles sont vérifiées de haut en bas et la première correspondante l'emporte. Les événements sans correspondance vont au sujet par défaut.",
         'pattern' => 'Motif',
-        'seen_events' => 'Vus depuis le :date : :events',
+        'seen_recent' => 'Événements du dernier :count jour, avec leur nombre de messages.|Événements des :count derniers jours, avec leur nombre de messages.',
+        'seen_click' => 'Cliquez sur un événement pour lui ajouter une règle de routage.',
+        'seen_rule_added' => 'Règle :pattern ajoutée : choisissez son sujet et enregistrez les paramètres.',
+        'seen_rule_exists' => ':pattern correspond déjà à :event : définissez le sujet dans cette règle.',
         'seen_default' => 'aucun sujet dans les règles',
         'add_rule' => 'Ajouter une règle',
 

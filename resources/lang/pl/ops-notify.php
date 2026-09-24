@@ -111,7 +111,10 @@ return [
         'routing' => 'Kierowanie zdarzeń',
         'routing_description' => 'Każda wiadomość ma nazwę zdarzenia, np. inquiry.created. Reguła kieruje pasujące zdarzenia do tematu; * pasuje do czegokolwiek, więc inquiry.* łapie każde zdarzenie zapytania. Reguły są sprawdzane od góry i wygrywa pierwsza pasująca. Zdarzenia bez dopasowania trafiają do domyślnego tematu.',
         'pattern' => 'Wzorzec',
-        'seen_events' => 'Widziane od :date: :events',
+        'seen_recent' => 'Zdarzenia z ostatniego :count dnia z liczbą wiadomości.|Zdarzenia z ostatnich :count dni z liczbą wiadomości.|Zdarzenia z ostatnich :count dni z liczbą wiadomości.',
+        'seen_click' => 'Kliknij zdarzenie, aby dodać dla niego regułę routingu.',
+        'seen_rule_added' => 'Dodano regułę :pattern: wybierz temat i zapisz ustawienia.',
+        'seen_rule_exists' => ':pattern już pasuje do :event: ustaw temat w tej regule.',
         'seen_default' => 'brak tematu w regułach',
         'add_rule' => 'Dodaj regułę',
 

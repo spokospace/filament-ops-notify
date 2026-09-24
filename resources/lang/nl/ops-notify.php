@@ -111,7 +111,10 @@ return [
         'routing' => 'Routering van gebeurtenissen',
         'routing_description' => 'Elk bericht heeft een gebeurtenisnaam, zoals inquiry.created. Een regel stuurt overeenkomende gebeurtenissen naar een onderwerp; * past op alles, dus inquiry.* vangt elke aanvraaggebeurtenis. Regels worden van boven af gecontroleerd en de eerste overeenkomende wint. Gebeurtenissen zonder overeenkomst gaan naar het standaardonderwerp.',
         'pattern' => 'Patroon',
-        'seen_events' => 'Gezien sinds :date: :events',
+        'seen_recent' => 'Gebeurtenissen van de laatste :count dag, met het aantal berichten.|Gebeurtenissen van de laatste :count dagen, met het aantal berichten.',
+        'seen_click' => 'Klik op een gebeurtenis om er een routeringsregel voor toe te voegen.',
+        'seen_rule_added' => 'Regel :pattern toegevoegd: kies het onderwerp en sla de instellingen op.',
+        'seen_rule_exists' => ':pattern past al op :event: stel het onderwerp in die regel in.',
         'seen_default' => 'geen onderwerp in de regels',
         'add_rule' => 'Regel toevoegen',
 

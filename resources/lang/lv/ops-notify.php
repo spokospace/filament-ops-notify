@@ -111,7 +111,10 @@ return [
         'routing' => 'Notikumu maršrutēšana',
         'routing_description' => 'Katram ziņojumam ir notikuma nosaukums, piemēram, inquiry.created. Noteikums sūta atbilstošos notikumus uz tēmu; * atbilst jebkam, tāpēc inquiry.* notver katru pieprasījuma notikumu. Noteikumi tiek pārbaudīti no augšas, un tiek izmantota pirmā atbilstība. Notikumi bez atbilstības nonāk noklusējuma tēmā.',
         'pattern' => 'Šablons',
-        'seen_events' => 'Redzēti kopš :date: :events',
+        'seen_recent' => 'Pēdējo :count dienu notikumi un to ziņojumu skaits.|Pēdējās :count dienas notikumi un to ziņojumu skaits.|Pēdējo :count dienu notikumi un to ziņojumu skaits.',
+        'seen_click' => 'Noklikšķiniet uz notikuma, lai tam pievienotu maršrutēšanas kārtulu.',
+        'seen_rule_added' => 'Kārtula :pattern pievienota: izvēlieties tēmu un saglabājiet iestatījumus.',
+        'seen_rule_exists' => ':pattern jau atbilst :event: iestatiet tēmu tajā kārtulā.',
         'seen_default' => 'noteikumos nav tēmas',
         'add_rule' => 'Pievienot noteikumu',
 

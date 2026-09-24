@@ -111,7 +111,10 @@ return [
         'routing' => 'Įvykių nukreipimas',
         'routing_description' => 'Kiekviena žinutė turi įvykio pavadinimą, pvz., inquiry.created. Taisyklė siunčia atitinkančius įvykius į temą; * atitinka bet ką, todėl inquiry.* pagauna kiekvieną užklausos įvykį. Taisyklės tikrinamos iš viršaus ir taikoma pirma atitiktis. Įvykiai be atitikties patenka į numatytąją temą.',
         'pattern' => 'Šablonas',
-        'seen_events' => 'Matyti nuo :date: :events',
+        'seen_recent' => 'Paskutinės :count dienos įvykiai ir jų pranešimų skaičius.|Paskutinių :count dienų įvykiai ir jų pranešimų skaičius.|Paskutinių :count dienų įvykiai ir jų pranešimų skaičius.',
+        'seen_click' => 'Spustelėkite įvykį, kad pridėtumėte jam nukreipimo taisyklę.',
+        'seen_rule_added' => 'Taisyklė :pattern pridėta: pasirinkite temą ir išsaugokite nustatymus.',
+        'seen_rule_exists' => ':pattern jau atitinka :event: nustatykite temą toje taisyklėje.',
         'seen_default' => 'taisyklėse nėra temos',
         'add_rule' => 'Pridėti taisyklę',
 
