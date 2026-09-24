@@ -124,9 +124,14 @@ template keeps the default layout.
 | `hashtag` | the `#event` line | `false` drops it |
 | `service` | the `[service]` prefix | `false` drops it |
 
-The level emoji and the buttons always stay. In Settings, a new row starts with `:title` and
-`:body`, the default parts spelled out, so you edit the layout rather than write it from scratch.
-Saving them unchanged stores nothing.
+The level emoji and the buttons always stay.
+
+In Settings, a new row starts as an example template in the message language: `:title (:level)`,
+and `:body` followed by a line naming the event and the service. The text shows what stays fixed
+and what a placeholder is. Under each field, the title and the body appear as they come out, and
+the whole message is rendered under the row. Buttons above a field insert its placeholders, one per
+field of the message the row is tried on, so they show what the event carries. **Default layout**
+resets a row to `:title` and `:body`, which store nothing.
 
 - **Placeholders:** `:title`, `:body`, `:event`, `:service`, `:level` and `:field.Label`. For a label
   with spaces, use `:field.{Order number}`. Labels match ignoring case, and a missing field is left
@@ -135,9 +140,10 @@ Saving them unchanged stores nothing.
   template can't produce HTML that Telegram rejects.
 - **Same limits.** A template is cut to the same length budgets as the default layout. Your fixed text
   is kept, and `:title` and `:body` are shortened to fit.
-- **Preview.** In Settings, **Preview** on a template shows it rendered with the latest logged message
-  of a matching event. The form doesn't have to be saved first. It also warns when a template higher
-  up matches that event first.
+- **Preview.** The message under a row is the latest logged message of an event the pattern matches,
+  or a sample message while nothing matching is logged. The form doesn't have to be saved first, and
+  the Service name typed in it is used. It also warns when a template higher up matches that event
+  first.
 - **Resend** uses the current template, because the log keeps the message and not the rendered text.
 - Burst digests and the package's own test messages (**Send test**, `ops-notify:test`) don't use
   templates, so a catch-all template can't hide a connectivity test. Your own message can skip

@@ -13,4 +13,8 @@
             <directory>src</directory>
         </include>
     </source>
+    <php>
+        <!-- The whole suite renders the Filament page many times over; 128M ran out at ~260 tests. -->
+        <ini name="memory_limit" value="256M"/>
+    </php>
 </phpunit>

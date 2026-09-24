@@ -15,15 +15,26 @@ use Spokospace\OpsNotify\OpsMessage;
  */
 final class MessageTemplate
 {
-    /** The placeholders, as Settings lists them. */
-    public const PLACEHOLDERS = [':title', ':body', ':event', ':service', ':level', ':field.Label', ':field.{Label with spaces}'];
+    /** The placeholders every message has. */
+    public const FIXED_PLACEHOLDERS = [':title', ':body', ':event', ':service', ':level'];
+
+    /** The placeholders, as the documentation lists them. */
+    public const PLACEHOLDERS = [...self::FIXED_PLACEHOLDERS, ':field.Label', ':field.{Label with spaces}'];
+
+    /** A title of just this, or a body of just DEFAULT_BODY, is the default part spelled out. */
+    public const DEFAULT_TITLE = ':title';
+
+    public const DEFAULT_BODY = ':body';
+
+    /** A bare field label: it may contain a hyphen (E-mail) but not end with one. */
+    private const LABEL = '[\pL\pN_]+(?:-[\pL\pN_]+)*';
 
     /**
      * One pass over the template, so a value that contains a placeholder is not filled in again.
-     * A name must end there: ":titles" is text, not ":title" followed by "s". A bare label may
-     * contain a hyphen (E-mail) but not end with one: ":field.Name-:field.Email" is two fields.
+     * A name must end there: ":titles" is text, not ":title" followed by "s", and
+     * ":field.Name-:field.Email" is two fields.
      */
-    private const PLACEHOLDER = '/:(?:field\.(?:\{([^}]*)\}|([\pL\pN_]+(?:-[\pL\pN_]+)*))|(title|body|event|service|level)(?![\pL\pN_]))/u';
+    private const PLACEHOLDER = '/:(?:field\.(?:\{([^}]*)\}|('.self::LABEL.'))|(title|body|event|service|level)(?![\pL\pN_]))/u';
 
     /**
      * @param  string|null  $title  Null = the message title, or the event name.
@@ -58,10 +69,26 @@ final class MessageTemplate
     }
 
     /**
+     * The placeholders a message offers: the fixed ones, then one per field, as the field must
+     * be written to be read back (":field.{Order number}" for a label with spaces).
+     *
+     * @return list<string>
+     */
+    public static function placeholders(OpsMessage $message): array
+    {
+        return [...self::FIXED_PLACEHOLDERS, ...array_map(self::fieldPlaceholder(...), array_map(strval(...), array_keys($message->fields)))];
+    }
+
+    public static function fieldPlaceholder(string $label): string
+    {
+        return preg_match('/^'.self::LABEL.'$/u', $label) ? ":field.{$label}" : ':field.{'.$label.'}';
+    }
+
+    /**
      * Reads a template from config or settings. Anything of the wrong type (a hand-edited
      * value) counts as not set, so a bad template shows the default part, not an error. So do
-     * a title of just ":title" and a body of just ":body", the default parts spelled out: a new
-     * Settings row starts with them.
+     * DEFAULT_TITLE and DEFAULT_BODY, the default parts spelled out, which Settings shows in
+     * place of an empty field.
      */
     public static function fromArray(mixed $data): self
     {
@@ -71,8 +98,8 @@ final class MessageTemplate
         $fields = $data['fields'] ?? null;
 
         return new self(
-            title: is_string($title) && ! in_array(trim($title), ['', ':title'], true) ? $title : null,
-            body: $body === false ? false : (is_string($body) && ! in_array(trim($body), ['', ':body'], true) ? $body : null),
+            title: is_string($title) && ! in_array(trim($title), ['', self::DEFAULT_TITLE], true) ? $title : null,
+            body: $body === false ? false : (is_string($body) && ! in_array(trim($body), ['', self::DEFAULT_BODY], true) ? $body : null),
             fields: is_array($fields) && array_is_list($fields) ? array_values(array_filter(
                 array_map(fn (mixed $label): string => trim((string) $label), array_filter($fields, 'is_scalar')),
                 fn (string $label): bool => $label !== '',
