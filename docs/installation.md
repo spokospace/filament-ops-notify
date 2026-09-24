@@ -11,14 +11,6 @@
 
 ## Install the package
 
-The package is not on Packagist yet, so add its repository to the app's `composer.json`:
-
-```json
-"repositories": [
-    { "type": "vcs", "url": "https://github.com/spokospace/filament-ops-notify" }
-]
-```
-
 ```bash
 composer require spokospace/filament-ops-notify
 php artisan migrate

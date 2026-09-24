@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/cover-dark.jpg">
-  <img alt="Filament Ops Notify: inquiries, errors and builds from your Filament panel, delivered to Telegram forum topics" src="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/cover-light.jpg">
+  <img class="filament-hidden" alt="Filament Ops Notify: inquiries, errors and builds from your Filament panel, delivered to Telegram forum topics" src="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/cover-light.jpg">
 </picture>
 
 # Filament Ops Notify
@@ -65,12 +65,6 @@ Telegram shows.
 - Filament 5
 
 ## Installation
-
-```json
-"repositories": [
-    { "type": "vcs", "url": "https://github.com/spokospace/filament-ops-notify" }
-]
-```
 
 ```bash
 composer require spokospace/filament-ops-notify

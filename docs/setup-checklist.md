@@ -65,8 +65,7 @@ Part of the setup happens in Telegram and needs a human.
 
 ### The agent may
 
-1. Add the VCS repository to `composer.json` and run
-   `composer require spokospace/filament-ops-notify`.
+1. Run `composer require spokospace/filament-ops-notify`.
 2. Run `php artisan migrate`.
 3. Register the plugin in the app's existing `app/Providers/Filament/*PanelProvider.php`. Adapt the
    `authorize()` closure to the app's own admin check (an existing gate, role, `is_admin` column
