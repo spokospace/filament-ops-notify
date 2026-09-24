@@ -27,6 +27,9 @@ reach Telegram with no code changes.
   (`inquiry.*` → *Inquiries*). Filament notifications are routed by title.
 - **Settings in the panel.** Token (encrypted), chat id, service name, topics and rules, all without
   touching `.env`.
+- **Message templates.** Change an event's title, body, fields and hashtag by pattern
+  (`inquiry.*` → *New inquiry from :field.Name*), and preview it on the latest logged message
+  before saving ([Message templates](docs/sending.md#message-templates)).
 - **Reliable delivery.** Queued, retried, rate-limit aware, and never breaks the request that sent it.
 - **Bot profile.** Pick an avatar (a preset or your own) and set the display name and
   descriptions from the panel.
@@ -46,8 +49,9 @@ Horizon state), and the history of every message sent, with failed ones ready to
   <img alt="Ops Notify page with the connection status and the message history" src="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/page-light.png">
 </picture>
 
-**Settings:** bot token, chat id and message language, plus forum topics that can be created in
-Telegram or imported from it. Filled lists collapse to a one-line summary.
+**Settings:** bot token, chat id and message language, forum topics that can be created in
+Telegram or imported from it, routing rules and message templates. Filled lists collapse to a
+one-line summary.
 
 <img alt="Settings slide-over with the Telegram connection and the topics list" src="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/settings-light.png" width="600">
 
@@ -133,7 +137,7 @@ with an **Open site** button below. The title and field labels are bold.
 - [Telegram setup](docs/telegram-setup.md): bot, group, topics, finding the chat id, bot profile
 - [Settings](docs/settings.md): panel vs `.env`, every option, languages, the Ops Notify page
 - [Routing and topics](docs/routing-and-topics.md): topics, event rules, forwarding Filament notifications
-- [Sending messages](docs/sending.md): the `ops` channel, the `OpsMessage` API, delivery, tests
+- [Sending messages](docs/sending.md): the `ops` channel, the `OpsMessage` API, message templates, delivery, tests
 - [Drivers](docs/drivers.md): writing your own channel driver
 - [Troubleshooting](docs/troubleshooting.md): common Telegram and queue errors and fixes
 

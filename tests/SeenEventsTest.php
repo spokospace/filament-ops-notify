@@ -1,14 +1,10 @@
 <?php
 
-use Filament\Facades\Filament;
 use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Text;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Livewire\Livewire;
 use Spokospace\OpsNotify\Enums\DeliveryStatus;
-use Spokospace\OpsNotify\Filament\Pages\OpsNotifyPage;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\Support\SeenEvents;
 use Spokospace\OpsNotify\Support\TitleRules;
@@ -26,16 +22,6 @@ function seen(string $event, int $times = 1, ?string $title = null, int $daysAgo
         ]);
         $log->forceFill(['created_at' => now()->subDays($daysAgo)])->save();
     }
-}
-
-/** The Settings slide-over, opened by an admin whose bot has every right. */
-function settingsForm(): mixed
-{
-    Http::fake(['api.telegram.org/*' => Http::response(['ok' => true, 'result' => ['status' => 'creator', 'username' => 'bot']])]);
-    Filament::setCurrentPanel('admin');
-    test()->actingAs(test()->admin());
-
-    return Livewire::test(OpsNotifyPage::class)->mountAction('settings');
 }
 
 function seenLine(string $events): Closure
@@ -191,4 +177,19 @@ it('updates the seen line as the rules are edited, before saving', function () {
                 ->map(fn (string $key): ?string => $component->getLivewire()->getSchemaComponent($component->resolveRelativeKey($key), withHidden: true)?->getKey())
                 ->all() === ['mountedActionSchema0.routing']);
     }
+});
+
+it('previews from any logged message the pattern matches, cached counts and held-back messages aside', function () {
+    seen('rare.event', status: DeliveryStatus::Suppressed);
+    expect(SeenEvents::counts())->toBe([]); // Cached now, without the held-back message.
+
+    seen('inquiry.created');
+    seen('orderx.created');
+
+    expect(SeenEvents::latestMessage('rare.*')?->event)->toBe('rare.event')
+        ->and(SeenEvents::latestMessage('inquiry.*')?->event)->toBe('inquiry.created')
+        ->and(SeenEvents::latestMessage('inquiry.created')?->event)->toBe('inquiry.created')
+        // LIKE would read order_* as "order, any character, anything"; the templates would not.
+        ->and(SeenEvents::latestMessage('order_*'))->toBeNull()
+        ->and(SeenEvents::latestMessage('nothing.*'))->toBeNull();
 });

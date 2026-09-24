@@ -13,6 +13,7 @@ use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\Support\Button;
 use Spokospace\OpsNotify\Support\Destination;
+use Spokospace\OpsNotify\Support\MessageTemplate;
 use Spokospace\OpsNotify\Support\Trans;
 
 class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
@@ -210,9 +211,11 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
             throw new ChannelException('Telegram bot token or chat id is not configured.', permanent: true);
         }
 
+        $template = MessageTemplate::for((array) config('ops-notify.templates', []), $message);
+
         $payload = [
             'chat_id' => $this->chatId(),
-            'text' => $this->formatter->format($message, $this->config['service'] ?? null),
+            'text' => $this->formatter->format($message, $this->config['service'] ?? null, template: $template),
             'parse_mode' => 'HTML',
             'link_preview_options' => ['is_disabled' => true],
         ];
@@ -241,7 +244,7 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
                 throw $e;
             }
 
-            $payload['text'] = $this->formatter->format($message, $this->config['service'] ?? null, linksAsText: true);
+            $payload['text'] = $this->formatter->format($message, $this->config['service'] ?? null, linksAsText: true, template: $template);
 
             return (string) $this->call('sendMessage', $payload)['message_id'];
         }

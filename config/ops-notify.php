@@ -60,6 +60,21 @@ return [
     ],
 
     /*
+    | [panel] Message templates per event. Keys are Str::is() patterns, first match wins; events
+    | that match nothing keep the default layout. Template text is plain text (no HTML).
+    |   title    Replaces the title. Placeholders: :title :body :event :service :level
+    |            :field.Label (or :field.{Label with spaces}); a missing field is empty.
+    |   body     Replaces the body, with the same placeholders; false = no body.
+    |   fields   Only these fields, in this order; [] = none. Leave it out for all.
+    |   hashtag  false drops the #event line.   service  false drops the [service] prefix.
+    | The level emoji and the buttons always stay.
+    */
+    'templates' => [
+        // 'inquiry.*' => ['title' => 'New inquiry from :field.Name', 'body' => ":body\n\nCall back within 1h", 'fields' => ['Name', 'Email']],
+        // 'debug.*' => ['body' => false, 'fields' => [], 'hashtag' => false],
+    ],
+
+    /*
     | A notification sent to N users is delivered once per user. Identical messages within this
     | many seconds are sent once (Filament forwarding and the "ops" notification channel).
     | 0 disables it.

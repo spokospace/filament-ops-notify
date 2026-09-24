@@ -25,6 +25,7 @@ use Spokospace\OpsNotify\OpsMessage;
  * @property ?string $error
  * @property int $attempts
  * @property ?Carbon $sent_at
+ * @property ?Carbon $created_at
  */
 class OpsNotifyLog extends Model
 {

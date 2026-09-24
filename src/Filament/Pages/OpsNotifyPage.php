@@ -137,6 +137,8 @@ class OpsNotifyPage extends Page implements HasTable
                 ->modalSubmitActionLabel(Trans::get('actions.send'))
                 ->action(function (array $data): void {
                     $message = app(OpsNotifier::class)->inMessageLocale(fn (): OpsMessage => OpsMessage::make('ops.test')
+                        // A catch-all template must not hide what a connectivity test sends.
+                        ->withoutTemplate()
                         ->title(Trans::get('message.test_title'))
                         ->line($data['text'])
                         // Any Authenticatable: not every user model has an email attribute.

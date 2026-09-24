@@ -18,6 +18,7 @@ not the values typed into the form, so save those first.
 | Topics | `channels.telegram.topics` | |
 | Notifications enabled | `enabled` | `OPS_NOTIFY_ENABLED` |
 | Event routing | `events` | |
+| Message templates ([Sending → Message templates](sending.md#message-templates)) | `templates` | |
 | Forward bell notifications | `forward_database_notifications.enabled` | `OPS_NOTIFY_FORWARD_DATABASE` |
 | Filament forwarding rules | `forward_database_notifications.map` | |
 | Forward other Laravel notifications | `forward_notifications.enabled` | `OPS_NOTIFY_FORWARD_NOTIFICATIONS` |
@@ -25,9 +26,9 @@ not the values typed into the form, so save those first.
 
 New to the package? Start with the [setup checklist](setup-checklist.md).
 
-Once **Topics**, **Event routing** and **Filament notifications** have saved items, they start
-collapsed and their header lists what is inside (`Inquiries #3 · Errors #2`). You can check the
-setup without expanding them.
+Once **Topics**, **Event routing**, **Message templates** and **Filament notifications** have saved
+items, they start collapsed and their header lists what is inside (`Inquiries #3 · Errors #2`). You
+can check the setup without expanding them.
 
 ## Panel or `.env`?
 
