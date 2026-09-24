@@ -102,7 +102,8 @@ Duration: 4m 12s
 A template changes that layout for one kind of event. You can set it in **Settings → Message
 templates** or in `config('ops-notify.templates')`. Keys are event patterns, and `*` matches
 anything, as in [event routing](routing-and-topics.md). Templates are checked from the top and the
-first match wins. An event that matches no template keeps the default layout.
+first match wins, so the form rejects two rows with the same pattern. An event that matches no
+template keeps the default layout.
 
 ```php
 'templates' => [

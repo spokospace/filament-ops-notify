@@ -26,9 +26,9 @@ not the values typed into the form, so save those first.
 
 New to the package? Start with the [setup checklist](setup-checklist.md).
 
-Once **Topics**, **Event routing** and **Filament notifications** have saved items, they start
-collapsed and their header lists what is inside (`Inquiries #3 · Errors #2`). You can check the
-setup without expanding them.
+Once **Topics**, **Event routing**, **Message templates** and **Filament notifications** have saved
+items, they start collapsed and their header lists what is inside (`Inquiries #3 · Errors #2`). You
+can check the setup without expanding them.
 
 ## Panel or `.env`?
 
