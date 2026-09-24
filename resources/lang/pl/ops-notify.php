@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Każda wiadomość ma nazwę zdarzenia, np. inquiry.created. Reguła kieruje pasujące zdarzenia do tematu; * pasuje do czegokolwiek, więc inquiry.* łapie każde zdarzenie zapytania. Reguły są sprawdzane od góry i wygrywa pierwsza pasująca. Zdarzenia bez dopasowania trafiają do domyślnego tematu.',
         'pattern' => 'Wzorzec',
         'seen_events' => 'Widziane w ostatnich :days dniach: :events',
-        'seen_default' => 'domyślny temat',
+        'seen_default' => 'brak tematu w regułach',
         'add_rule' => 'Dodaj regułę',
 
         'forwarding' => 'Powiadomienia Filamenta',

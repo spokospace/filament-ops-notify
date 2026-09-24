@@ -35,13 +35,14 @@ Removing a topic from the list does not delete it in Telegram.
   (`App\Notifications\OrderPlaced` → `order_placed`).
 - A Filament bell notification: the event its title rule gives it
   ([Forwarding Filament notifications](#forwarding-filament-notifications)), else
-  `filament.notification`.
+  `default_event` (`filament.notification` unless you change it; with `null` it is not forwarded).
 
 The history on the plugin's page shows each message's event. Settings also suggests them: the
 **Pattern** field offers event names sent in the last 30 days (or fewer, if `log.prune_after_days` is lower; most frequent first), together
 with the wildcard form of each prefix (`inquiry.created` also offers `inquiry.*`). A line under
-the list counts these events, e.g. `inquiry.created (12) · order_placed (3, default topic)`.
-*default topic* marks events that no rule matches, or whose rule has no topic; *Disabled* marks
+the list counts these events, e.g. `inquiry.created (12) · order_placed (3, no topic in rules)`.
+*no topic in rules* marks events that no rule matches, or whose rule has no topic: they go to the
+default topic, unless the message sets its own with `->topic()`. *Disabled* marks
 events a disabled rule drops. The suggestions are refreshed every five minutes. Typing a name that
 was never sent is fine.
 
@@ -98,7 +99,8 @@ forward only the titles you listed.
 
 Title patterns work like event patterns: `*` matches anything, so `New inquiry*` also matches
 "New inquiry from Anna". The **Title** field suggests the titles of recent bell notifications that
-no rule renamed yet, i.e. those sent as `filament.notification`.
+no rule renamed yet, i.e. those sent as `default_event`. With `default_event` set to `null` there
+are none to suggest, because unmatched titles are not forwarded.
 
 The title rules pair with event routing. `New inquiry*` becomes `inquiry.created`, and
 `inquiry.*` sends it to the Inquiries topic.

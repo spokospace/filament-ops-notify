@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Fiecare mesaj are un nume de eveniment, de exemplu inquiry.created. O regulă trimite evenimentele potrivite într-un subiect; * se potrivește cu orice, deci inquiry.* prinde orice eveniment de solicitare. Regulile sunt verificate de sus în jos și se aplică prima potrivire. Evenimentele fără potrivire merg în subiectul implicit.',
         'pattern' => 'Șablon',
         'seen_events' => 'Văzute în ultimele :days zile: :events',
-        'seen_default' => 'subiectul implicit',
+        'seen_default' => 'fără subiect în reguli',
         'add_rule' => 'Adăugare regulă',
 
         'forwarding' => 'Notificări Filament',

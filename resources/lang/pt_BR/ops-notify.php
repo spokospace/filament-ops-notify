@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Toda mensagem tem um nome de evento, como inquiry.created. Uma regra envia os eventos correspondentes a um tópico; * corresponde a qualquer coisa, então inquiry.* pega todos os eventos de consulta. As regras são verificadas de cima para baixo e vence a primeira correspondente. Eventos sem correspondência vão para o tópico padrão.',
         'pattern' => 'Padrão',
         'seen_events' => 'Vistos nos últimos :days dias: :events',
-        'seen_default' => 'tópico padrão',
+        'seen_default' => 'sem tópico nas regras',
         'add_rule' => 'Adicionar regra',
 
         'forwarding' => 'Notificações do Filament',

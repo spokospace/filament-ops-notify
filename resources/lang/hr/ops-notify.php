@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Svaka poruka ima naziv događaja, npr. inquiry.created. Pravilo šalje odgovarajuće događaje u temu; * odgovara bilo čemu, pa inquiry.* hvata svaki događaj upita. Pravila se provjeravaju odozgo i vrijedi prvo podudaranje. Događaji bez podudaranja idu u zadanu temu.',
         'pattern' => 'Uzorak',
         'seen_events' => 'Viđeno u zadnjih :days dana: :events',
-        'seen_default' => 'zadana tema',
+        'seen_default' => 'bez teme u pravilima',
         'add_rule' => 'Dodaj pravilo',
 
         'forwarding' => 'Filament obavijesti',

@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Vsako sporočilo ima ime dogodka, npr. inquiry.created. Pravilo pošlje ujemajoče se dogodke v temo; * se ujema s čimer koli, zato inquiry.* zajame vsak dogodek povpraševanja. Pravila se preverjajo od zgoraj in velja prvo ujemanje. Dogodki brez ujemanja gredo v privzeto temo.',
         'pattern' => 'Vzorec',
         'seen_events' => 'Videno v zadnjih :days dneh: :events',
-        'seen_default' => 'privzeta tema',
+        'seen_default' => 'brez teme v pravilih',
         'add_rule' => 'Dodaj pravilo',
 
         'forwarding' => 'Obvestila Filament',

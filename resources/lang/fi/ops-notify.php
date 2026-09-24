@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Jokaisella viestillä on tapahtuman nimi, esimerkiksi inquiry.created. Sääntö lähettää vastaavat tapahtumat aiheeseen; * vastaa mitä tahansa, joten inquiry.* poimii jokaisen tiedustelutapahtuman. Säännöt tarkistetaan ylhäältä alkaen ja ensimmäinen osuma voittaa. Tapahtumat ilman osumaa menevät oletusaiheeseen.',
         'pattern' => 'Kaava',
         'seen_events' => 'Nähty viimeisen :days päivän aikana: :events',
-        'seen_default' => 'oletusaihe',
+        'seen_default' => 'ei aihetta säännöissä',
         'add_rule' => 'Lisää sääntö',
 
         'forwarding' => 'Filament-ilmoitukset',

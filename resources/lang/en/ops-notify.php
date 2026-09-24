@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Every message has an event name, such as inquiry.created. A rule sends matching events to a topic; * matches anything, so inquiry.* catches every inquiry event. Rules are checked from the top and the first match wins. Events with no match go to the default topic.',
         'pattern' => 'Pattern',
         'seen_events' => 'Seen in the last :days days: :events',
-        'seen_default' => 'default topic',
+        'seen_default' => 'no topic in rules',
         'add_rule' => 'Add rule',
 
         'forwarding' => 'Filament notifications',

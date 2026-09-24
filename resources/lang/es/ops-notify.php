@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Cada mensaje tiene un nombre de evento, como inquiry.created. Una regla envía los eventos que coinciden a un tema; * coincide con cualquier cosa, así que inquiry.* captura todos los eventos de consultas. Las reglas se revisan de arriba abajo y gana la primera que coincida. Los eventos sin coincidencia van al tema predeterminado.',
         'pattern' => 'Patrón',
         'seen_events' => 'Vistos en los últimos :days días: :events',
-        'seen_default' => 'tema predeterminado',
+        'seen_default' => 'sin tema en las reglas',
         'add_rule' => 'Añadir regla',
 
         'forwarding' => 'Notificaciones de Filament',

@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Elk bericht heeft een gebeurtenisnaam, zoals inquiry.created. Een regel stuurt overeenkomende gebeurtenissen naar een onderwerp; * past op alles, dus inquiry.* vangt elke aanvraaggebeurtenis. Regels worden van boven af gecontroleerd en de eerste overeenkomende wint. Gebeurtenissen zonder overeenkomst gaan naar het standaardonderwerp.',
         'pattern' => 'Patroon',
         'seen_events' => 'Gezien in de afgelopen :days dagen: :events',
-        'seen_default' => 'standaardonderwerp',
+        'seen_default' => 'geen onderwerp in de regels',
         'add_rule' => 'Regel toevoegen',
 
         'forwarding' => 'Filament-meldingen',

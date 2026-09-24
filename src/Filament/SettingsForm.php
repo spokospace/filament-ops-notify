@@ -133,8 +133,9 @@ class SettingsForm
                                     ->datalist(SeenEvents::patterns($seenEvents))
                                     // Refreshes the "seen recently" line below, which marks unmatched events.
                                     ->live(onBlur: true),
-                                $this->topicSelect('topic', '../../telegram_topics')->label(Trans::get('settings.topic')),
-                                Toggle::make('enabled')->label(Trans::get('page.enabled'))->default(true)->inline(false),
+                                // Live for the same line: it marks rules without a topic and disabled rules.
+                                $this->topicSelect('topic', '../../telegram_topics')->label(Trans::get('settings.topic'))->live(),
+                                Toggle::make('enabled')->label(Trans::get('page.enabled'))->default(true)->inline(false)->live(),
                             ])
                             ->columns(3)
                             ->defaultItems(0)
@@ -261,9 +262,10 @@ class SettingsForm
     }
 
     /**
-     * "Seen in the last 30 days: inquiry.created (12) · order_placed (3, default topic)". Marks
-     * the events that the rules in the form send to the default topic (no match, or a rule
-     * without a topic) or do not send at all (a disabled rule).
+     * "Seen in the last 30 days: inquiry.created (12) · order_placed (3, no topic in rules)".
+     * Marks the events that the rules in the form give no topic (no match, or a rule without a
+     * topic; the message's own topic or the default one applies) or do not send at all (a
+     * disabled rule).
      *
      * @param  array<string, int>  $counts  SeenEvents::counts()
      */

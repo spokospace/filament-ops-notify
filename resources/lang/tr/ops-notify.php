@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Her mesajın inquiry.created gibi bir olay adı vardır. Bir kural, eşleşen olayları bir konuya gönderir; * her şeyle eşleşir, bu yüzden inquiry.* tüm talep olaylarını yakalar. Kurallar yukarıdan aşağı kontrol edilir ve ilk eşleşme geçerli olur. Eşleşmeyen olaylar varsayılan konuya gider.',
         'pattern' => 'Desen',
         'seen_events' => 'Son :days günde görülenler: :events',
-        'seen_default' => 'varsayılan konu',
+        'seen_default' => 'kurallarda konu yok',
         'add_rule' => 'Kural ekle',
 
         'forwarding' => 'Filament bildirimleri',

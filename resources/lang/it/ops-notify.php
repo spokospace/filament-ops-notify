@@ -112,7 +112,7 @@ return [
         'routing_description' => "Ogni messaggio ha un nome di evento, ad esempio inquiry.created. Una regola invia gli eventi corrispondenti a un argomento; * corrisponde a qualsiasi cosa, quindi inquiry.* cattura ogni evento di richiesta. Le regole vengono controllate dall'alto e vince la prima corrispondente. Gli eventi senza corrispondenza vanno all'argomento predefinito.",
         'pattern' => 'Schema',
         'seen_events' => 'Visti negli ultimi :days giorni: :events',
-        'seen_default' => 'argomento predefinito',
+        'seen_default' => 'nessun argomento nelle regole',
         'add_rule' => 'Aggiungi regola',
 
         'forwarding' => 'Notifiche di Filament',

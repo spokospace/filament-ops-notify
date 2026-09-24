@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Varje meddelande har ett händelsenamn, till exempel inquiry.created. En regel skickar matchande händelser till ett ämne; * matchar vad som helst, så inquiry.* fångar varje förfrågningshändelse. Reglerna kontrolleras uppifrån och första träffen gäller. Händelser utan träff går till standardämnet.',
         'pattern' => 'Mönster',
         'seen_events' => 'Sedda de senaste :days dagarna: :events',
-        'seen_default' => 'standardämne',
+        'seen_default' => 'inget ämne i reglerna',
         'add_rule' => 'Lägg till regel',
 
         'forwarding' => 'Filament-notiser',

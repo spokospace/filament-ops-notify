@@ -112,7 +112,7 @@ return [
         'routing_description' => "Chaque message porte un nom d'événement, par exemple inquiry.created. Une règle envoie les événements correspondants vers un sujet ; * correspond à tout, donc inquiry.* capte tous les événements de demande. Les règles sont vérifiées de haut en bas et la première correspondante l'emporte. Les événements sans correspondance vont au sujet par défaut.",
         'pattern' => 'Motif',
         'seen_events' => 'Vus ces :days derniers jours : :events',
-        'seen_default' => 'sujet par défaut',
+        'seen_default' => 'aucun sujet dans les règles',
         'add_rule' => 'Ajouter une règle',
 
         'forwarding' => 'Notifications Filament',

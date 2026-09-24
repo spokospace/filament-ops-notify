@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Hver besked har et hændelsesnavn, fx inquiry.created. En regel sender matchende hændelser til et emne; * matcher alt, så inquiry.* fanger alle forespørgselshændelser. Reglerne tjekkes oppefra, og første match vinder. Hændelser uden match går til standardemnet.',
         'pattern' => 'Mønster',
         'seen_events' => 'Set de seneste :days dage: :events',
-        'seen_default' => 'standardemne',
+        'seen_default' => 'intet emne i reglerne',
         'add_rule' => 'Tilføj regel',
 
         'forwarding' => 'Filament-notifikationer',

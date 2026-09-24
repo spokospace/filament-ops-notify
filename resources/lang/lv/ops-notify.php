@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Katram ziņojumam ir notikuma nosaukums, piemēram, inquiry.created. Noteikums sūta atbilstošos notikumus uz tēmu; * atbilst jebkam, tāpēc inquiry.* notver katru pieprasījuma notikumu. Noteikumi tiek pārbaudīti no augšas, un tiek izmantota pirmā atbilstība. Notikumi bez atbilstības nonāk noklusējuma tēmā.',
         'pattern' => 'Šablons',
         'seen_events' => 'Redzēti pēdējās :days dienās: :events',
-        'seen_default' => 'noklusējuma tēma',
+        'seen_default' => 'noteikumos nav tēmas',
         'add_rule' => 'Pievienot noteikumu',
 
         'forwarding' => 'Filament paziņojumi',

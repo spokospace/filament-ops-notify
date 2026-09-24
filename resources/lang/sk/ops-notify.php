@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Každá správa má názov udalosti, napr. inquiry.created. Pravidlo posiela zodpovedajúce udalosti do témy; * zodpovedá čomukoľvek, takže inquiry.* zachytí každú udalosť dopytu. Pravidlá sa kontrolujú zhora a platí prvá zhoda. Udalosti bez zhody idú do predvolenej témy.',
         'pattern' => 'Vzor',
         'seen_events' => 'Videné za posledných :days dní: :events',
-        'seen_default' => 'predvolená téma',
+        'seen_default' => 'bez témy v pravidlách',
         'add_rule' => 'Pridať pravidlo',
 
         'forwarding' => 'Oznámenia Filamentu',

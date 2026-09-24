@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Minden üzenetnek van eseményneve, például inquiry.created. Egy szabály az illeszkedő eseményeket egy témába küldi; a * bármire illeszkedik, így az inquiry.* minden ajánlatkérési eseményt elkap. A szabályokat felülről ellenőrizzük, az első találat érvényes. A találat nélküli események az alapértelmezett témába kerülnek.',
         'pattern' => 'Minta',
         'seen_events' => 'Az elmúlt :days napban látott: :events',
-        'seen_default' => 'alapértelmezett téma',
+        'seen_default' => 'nincs téma a szabályokban',
         'add_rule' => 'Szabály hozzáadása',
 
         'forwarding' => 'Filament-értesítések',

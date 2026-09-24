@@ -78,5 +78,5 @@ it('lists recent events in Settings and marks the ones no rule matches', functio
     Livewire::test(OpsNotifyPage::class)
         ->mountAction('settings')
         ->assertSchemaComponentExists('routing.seen_events', 'mountedActionSchema0', fn (Text $text): bool => $text->getContent()
-            === 'Seen in the last 30 days: inquiry.created (2) · build.failed (1, default topic) · debug.dump (1, Disabled) · order_placed (1, default topic)');
+            === 'Seen in the last 30 days: inquiry.created (2) · build.failed (1, no topic in rules) · debug.dump (1, Disabled) · order_placed (1, no topic in rules)');
 });

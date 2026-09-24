@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Jede Nachricht hat einen Ereignisnamen, z. B. inquiry.created. Eine Regel leitet passende Ereignisse an ein Thema; * passt auf alles, also erfasst inquiry.* jedes Anfrage-Ereignis. Die Regeln werden von oben geprüft, die erste passende gewinnt. Ereignisse ohne Treffer gehen an das Standardthema.',
         'pattern' => 'Muster',
         'seen_events' => 'In den letzten :days Tagen gesehen: :events',
-        'seen_default' => 'Standardthema',
+        'seen_default' => 'kein Thema in den Regeln',
         'add_rule' => 'Regel hinzufügen',
 
         'forwarding' => 'Filament-Benachrichtigungen',

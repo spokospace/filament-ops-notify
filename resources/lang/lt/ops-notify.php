@@ -112,7 +112,7 @@ return [
         'routing_description' => 'Kiekviena žinutė turi įvykio pavadinimą, pvz., inquiry.created. Taisyklė siunčia atitinkančius įvykius į temą; * atitinka bet ką, todėl inquiry.* pagauna kiekvieną užklausos įvykį. Taisyklės tikrinamos iš viršaus ir taikoma pirma atitiktis. Įvykiai be atitikties patenka į numatytąją temą.',
         'pattern' => 'Šablonas',
         'seen_events' => 'Matyti per paskutines :days d.: :events',
-        'seen_default' => 'numatytoji tema',
+        'seen_default' => 'taisyklėse nėra temos',
         'add_rule' => 'Pridėti taisyklę',
 
         'forwarding' => 'Filament pranešimai',
