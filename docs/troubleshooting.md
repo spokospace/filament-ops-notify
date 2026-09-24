@@ -1,6 +1,6 @@
 # Troubleshooting
 
-The message history on the **Spoko DashBot** page shows each failed message with the Telegram
+The message history on the **Ops Notify** page shows each failed message with the Telegram
 error. Hover the status to see it. Delivery problems also show as a warning under
 **Status → Delivery**.
 

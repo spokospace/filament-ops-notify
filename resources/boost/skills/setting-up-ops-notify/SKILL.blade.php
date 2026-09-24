@@ -41,7 +41,7 @@ Confirm delivery can work: a queue worker must run for the connection in `config
 
 Tell the human to:
 
-1. Create a bot with @BotFather (`/newbot`; the username must end in `bot`) and paste the token into **Spoko DashBot → Settings** in the panel. Never ask them to paste it into the chat, `.env` or a file.
+1. Create a bot with @BotFather (`/newbot`; the username must end in `bot`) and paste the token into **Ops Notify → Settings** in the panel. Never ask them to paste it into the chat, `.env` or a file.
 2. Create a Telegram **group** (not a channel), turn on **Topics** (only the owner can), add the bot and promote it to admin with **Manage topics**.
 3. Send `/ping@<bot_username>` in every topic they want to use.
 
@@ -61,7 +61,7 @@ First send right away, which shows Telegram's error if the token or chat is wron
 {{ $assist->artisanCommand('ops-notify:test') }}
 ```
 
-Then send through the queue, which also tests the worker. It prints `Queued, ...`; the new row on the Spoko DashBot page must turn *Sent* within seconds:
+Then send through the queue, which also tests the worker. It prints `Queued, ...`; the new row on the Ops Notify page must turn *Sent* within seconds:
 
 ```bash
 {{ $assist->artisanCommand('ops-notify:test --queue') }}
@@ -76,7 +76,7 @@ Then send through the queue, which also tests the worker. It prints `Queued, ...
 | `group chat was upgraded to a supergroup chat` | The old group id was entered; use the `-100` id |
 | `409: Conflict` | A webhook is set on the bot; `getUpdates` cannot run |
 | `No chats yet` | No `/ping@<bot>` reached the bot yet |
-| Rows stay *Queued* | No worker for the queue; see **Delivery** on the Spoko DashBot page |
+| Rows stay *Queued* | No worker for the queue; see **Delivery** on the Ops Notify page |
 
 ## Never
 

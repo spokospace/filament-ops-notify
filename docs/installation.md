@@ -60,7 +60,7 @@ public function panel(Panel $panel): Panel
 }
 ```
 
-The plugin adds one page, **Spoko DashBot**, at `{panel path}/ops-notify` (for example
+The plugin adds one page, **Ops Notify**, at `{panel path}/ops-notify` (for example
 `/admin/ops-notify`). It has the connection status, a *Send test* button, the message history and
 the *Settings* slide-over.
 
@@ -83,7 +83,7 @@ not just this page. Two options that work everywhere:
 | Method | Default |
 |---|---|
 | `navigationGroup(string\|UnitEnum\|null)` | none |
-| `navigationLabel(?string)` | `Spoko DashBot` (not translated; pass your own, e.g. a translated string) |
+| `navigationLabel(?string)` | `Ops Notify` (not translated; pass your own, e.g. a translated string) |
 | `navigationSort(?int)` | none |
 | `navigationIcon(string\|BackedEnum\|null)` | `Heroicon::OutlinedBellAlert` |
 | `authorize(?Closure)` | every panel user |

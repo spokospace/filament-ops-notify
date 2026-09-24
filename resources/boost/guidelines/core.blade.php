@@ -1,7 +1,7 @@
 ## Filament Ops Notify (spokospace/filament-ops-notify)
 
 - Sends operational notifications (inquiries, errors, builds) from this app to Telegram forum topics. Built on Laravel notifications: every Filament `sendToDatabase()` notification is already forwarded, so bell notifications need no extra code.
-- Settings (bot token, chat id, topics, routing rules) live in the panel on the **Spoko DashBot** page (`/{panel}/ops-notify` → Settings), stored encrypted in `ops_notify_settings`. Docs: https://github.com/spokospace/filament-ops-notify/tree/main/docs
+- Settings (bot token, chat id, topics, routing rules) live in the panel on the **Ops Notify** page (`/{panel}/ops-notify` → Settings), stored encrypted in `ops_notify_settings`. Docs: https://github.com/spokospace/filament-ops-notify/tree/main/docs
 
 ### Sending your own events
 
@@ -31,4 +31,4 @@ OpsMessage::make('build.failed')
 - Never guess a chat id or topic id. Ask the human, or read them from `php artisan ops-notify:telegram-chats` after they sent `/ping@<bot>` in each topic.
 - Delivery goes through the app's queue (`OPS_NOTIFY_QUEUE_CONNECTION` / `OPS_NOTIFY_QUEUE`). A custom queue name must be added to a Horizon supervisor or a `queue:work --queue=` list, or messages never leave it. Do not switch production to the `sync` queue without asking.
 - Nothing is sent while the app's test suite runs (`ops-notify.disable_in_tests`), so tests need no fakes for it.
-- Check a setup with `php artisan ops-notify:test` (sends right away and prints Telegram's error), then `php artisan ops-notify:test --queue` and confirm the new row turns *Sent* on the Spoko DashBot page.
+- Check a setup with `php artisan ops-notify:test` (sends right away and prints Telegram's error), then `php artisan ops-notify:test --queue` and confirm the new row turns *Sent* on the Ops Notify page.

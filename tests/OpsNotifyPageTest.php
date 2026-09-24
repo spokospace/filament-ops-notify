@@ -74,14 +74,14 @@ it('resends a failed message', function () {
     expect(OpsNotifyLog::query()->latest('id')->first()->status)->toBe(DeliveryStatus::Sent);
 });
 
-it('is called Spoko DashBot unless the app renames it', function () {
-    expect(OpsNotifyPage::getNavigationLabel())->toBe('Spoko DashBot');
+it('is called Ops Notify unless the app renames it', function () {
+    expect(OpsNotifyPage::getNavigationLabel())->toBe('Ops Notify');
 
     OpsNotifyPlugin::get()->navigationLabel('Alerts');
     expect(OpsNotifyPage::getNavigationLabel())->toBe('Alerts');
 
     OpsNotifyPlugin::get()->navigationLabel(null);
-    expect(OpsNotifyPage::getNavigationLabel())->toBe('Spoko DashBot');
+    expect(OpsNotifyPage::getNavigationLabel())->toBe('Ops Notify');
 });
 
 it('is hidden from users the plugin does not authorize', function () {
