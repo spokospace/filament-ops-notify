@@ -2,6 +2,7 @@
 
 namespace Spokospace\OpsNotify;
 
+use Illuminate\Foundation\Bus\PendingDispatch;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -249,15 +250,21 @@ class OpsNotifier
     {
         $startedAt = $burst['ends_at']->copy()->subMinutes($guard->windowMinutes())->getTimestamp();
 
-        SendBurstDigest::dispatch($message->event, $destination, $message->level, $startedAt, $key, $perTitle ? $message->title : null)
-            ->delay($burst['ends_at'])
-            ->onConnection(config('ops-notify.queue.connection'))
-            ->onQueue(config('ops-notify.queue.name'));
+        $this->route(
+            SendBurstDigest::dispatch($message->event, $destination, $message->level, $startedAt, $key, $perTitle ? $message->title : null)
+                ->delay($burst['ends_at'])
+        );
     }
 
     private function dispatch(OpsMessage $message, Destination $destination, ?OpsNotifyLog $log): void
     {
-        SendOpsMessage::dispatch($message, $destination, $log)
+        $this->route(SendOpsMessage::dispatch($message, $destination, $log));
+    }
+
+    /** The connection and queue every ops job is dispatched on, in one place. */
+    private function route(PendingDispatch $dispatch): PendingDispatch
+    {
+        return $dispatch
             ->onConnection(config('ops-notify.queue.connection'))
             ->onQueue(config('ops-notify.queue.name'));
     }
