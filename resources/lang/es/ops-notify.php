@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Reenviar notificaciones de la campana',
         'forward_title_placeholder' => 'Nueva consulta*',
         'forward' => 'Reenviar',
+
+        'laravel_forwarding' => 'Otras notificaciones de Laravel',
+        'laravel_forwarding_description' => 'Para aplicaciones sin campana: reenviar las notificaciones enviadas por correo electrónico, SMS, broadcast y otros canales de Laravel.',
+        'laravel_forward_enabled' => 'Reenviar otras notificaciones',
+        'laravel_forward_channels' => 'Canales',
+        'laravel_forward_channels_help' => 'Cada notificación enviada por estos canales llega una sola vez, sin importar cuántas personas la reciban. Los restablecimientos de contraseña, la verificación de correo electrónico y los códigos de un solo uso nunca se reenvían.',
     ],
 
     'profile' => [

@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Vidarebefordra notiser från klockan',
         'forward_title_placeholder' => 'Ny förfrågan*',
         'forward' => 'Vidarebefordra',
+
+        'laravel_forwarding' => 'Andra Laravel-notiser',
+        'laravel_forwarding_description' => 'För appar utan klocka: vidarebefordra notiser som skickas via e-post, sms, broadcast och andra Laravel-kanaler.',
+        'laravel_forward_enabled' => 'Vidarebefordra andra notiser',
+        'laravel_forward_channels' => 'Kanaler',
+        'laravel_forward_channels_help' => 'Varje notis som skickas via dessa kanaler kommer fram en gång, oavsett hur många som tar emot den. Lösenordsåterställningar, e-postverifiering och engångskoder vidarebefordras aldrig.',
     ],
 
     'profile' => [

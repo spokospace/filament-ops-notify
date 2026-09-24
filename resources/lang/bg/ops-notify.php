@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Препращай известията от камбанката',
         'forward_title_placeholder' => 'Ново запитване*',
         'forward' => 'Препращане',
+
+        'laravel_forwarding' => 'Други известия от Laravel',
+        'laravel_forwarding_description' => 'За приложения без камбанка: препращай известия, изпратени по имейл, SMS, broadcast и други канали на Laravel.',
+        'laravel_forward_enabled' => 'Препращай другите известия',
+        'laravel_forward_channels' => 'Канали',
+        'laravel_forward_channels_help' => 'Всяко известие, изпратено по тези канали, пристига веднъж, независимо колко души го получават. Нулирането на парола, потвърждаването на имейл и еднократните кодове никога не се препращат.',
     ],
 
     'profile' => [

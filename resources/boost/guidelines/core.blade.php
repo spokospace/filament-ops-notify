@@ -1,6 +1,6 @@
 ## Filament Ops Notify (spokospace/filament-ops-notify)
 
-- Sends operational notifications (inquiries, errors, builds) from this app to Telegram forum topics. Built on Laravel notifications: every Filament `sendToDatabase()` notification is already forwarded, so bell notifications need no extra code.
+- Sends operational notifications (inquiries, errors, builds) from this app to Telegram forum topics. Built on Laravel notifications: every Filament `sendToDatabase()` notification is already forwarded, so bell notifications need no extra code. Other Laravel notifications (mail, SMS, broadcast) are forwarded too once Settings → Other Laravel notifications is on, so don't add the `ops` channel to them just to reach Telegram.
 - Settings (bot token, chat id, topics, routing rules) live in the panel on the **Ops Notify** page (`/{panel}/ops-notify` → Settings), stored encrypted in `ops_notify_settings`. Docs: https://github.com/spokospace/filament-ops-notify/tree/main/docs
 
 ### Sending your own events

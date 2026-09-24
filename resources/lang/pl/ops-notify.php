@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Przekazuj powiadomienia z dzwonka',
         'forward_title_placeholder' => 'Nowe zapytanie*',
         'forward' => 'Przekazuj',
+
+        'laravel_forwarding' => 'Inne powiadomienia Laravela',
+        'laravel_forwarding_description' => 'Dla aplikacji bez dzwonka: przekazuj powiadomienia wysyłane e-mailem, SMS-em, przez broadcast i innymi kanałami Laravela.',
+        'laravel_forward_enabled' => 'Przekazuj inne powiadomienia',
+        'laravel_forward_channels' => 'Kanały',
+        'laravel_forward_channels_help' => 'Każde powiadomienie wysłane tymi kanałami dociera raz, niezależnie od liczby odbiorców. Resety haseł, weryfikacja adresu e-mail i kody jednorazowe nigdy nie są przekazywane.',
     ],
 
     'profile' => [

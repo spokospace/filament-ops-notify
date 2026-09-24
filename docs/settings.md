@@ -20,6 +20,8 @@ not the values typed into the form, so save those first.
 | Event routing | `events` | |
 | Forward bell notifications | `forward_database_notifications.enabled` | `OPS_NOTIFY_FORWARD_DATABASE` |
 | Filament forwarding rules | `forward_database_notifications.map` | |
+| Forward other Laravel notifications | `forward_notifications.enabled` | `OPS_NOTIFY_FORWARD_NOTIFICATIONS` |
+| Channels to forward | `forward_notifications.channels` | |
 
 New to the package? Start with the [setup checklist](setup-checklist.md).
 

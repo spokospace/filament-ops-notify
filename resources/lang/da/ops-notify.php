@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Videresend notifikationer fra klokken',
         'forward_title_placeholder' => 'Ny forespørgsel*',
         'forward' => 'Videresend',
+
+        'laravel_forwarding' => 'Andre Laravel-notifikationer',
+        'laravel_forwarding_description' => 'Til apps uden klokke: videresend notifikationer sendt via mail, sms, broadcast og andre Laravel-kanaler.',
+        'laravel_forward_enabled' => 'Videresend andre notifikationer',
+        'laravel_forward_channels' => 'Kanaler',
+        'laravel_forward_channels_help' => 'Hver notifikation sendt via disse kanaler ankommer én gang, uanset hvor mange der modtager den. Nulstilling af adgangskode, bekræftelse af e-mail og engangskoder videresendes aldrig.',
     ],
 
     'profile' => [

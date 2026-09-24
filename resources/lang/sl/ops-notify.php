@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Posreduj obvestila iz zvončka',
         'forward_title_placeholder' => 'Novo povpraševanje*',
         'forward' => 'Posreduj',
+
+        'laravel_forwarding' => 'Druga obvestila Laravel',
+        'laravel_forwarding_description' => 'Za aplikacije brez zvončka: posreduj obvestila, poslana po e-pošti, SMS-u, broadcastu in drugih kanalih Laravel.',
+        'laravel_forward_enabled' => 'Posreduj druga obvestila',
+        'laravel_forward_channels' => 'Kanali',
+        'laravel_forward_channels_help' => 'Vsako obvestilo, poslano po teh kanalih, prispe enkrat, ne glede na število prejemnikov. Ponastavitve gesla, potrditve e-pošte in enkratne kode se nikoli ne posredujejo.',
     ],
 
     'profile' => [

@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Belmeldingen doorsturen',
         'forward_title_placeholder' => 'Nieuwe aanvraag*',
         'forward' => 'Doorsturen',
+
+        'laravel_forwarding' => 'Andere Laravel-meldingen',
+        'laravel_forwarding_description' => 'Voor apps zonder bel: meldingen doorsturen die via e-mail, sms, broadcast en andere Laravel-kanalen worden verzonden.',
+        'laravel_forward_enabled' => 'Andere meldingen doorsturen',
+        'laravel_forward_channels' => 'Kanalen',
+        'laravel_forward_channels_help' => 'Elke melding die via deze kanalen wordt verzonden, komt één keer aan, ongeacht hoeveel mensen hem ontvangen. Wachtwoordresets, e-mailverificatie en eenmalige codes worden nooit doorgestuurd.',
     ],
 
     'profile' => [

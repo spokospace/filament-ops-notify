@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Videresend varsler fra bjella',
         'forward_title_placeholder' => 'Ny forespørsel*',
         'forward' => 'Videresend',
+
+        'laravel_forwarding' => 'Andre Laravel-varsler',
+        'laravel_forwarding_description' => 'For apper uten bjelle: videresend varsler sendt via e-post, SMS, broadcast og andre Laravel-kanaler.',
+        'laravel_forward_enabled' => 'Videresend andre varsler',
+        'laravel_forward_channels' => 'Kanaler',
+        'laravel_forward_channels_help' => 'Hvert varsel som sendes via disse kanalene, kommer fram én gang, uansett hvor mange som mottar det. Tilbakestilling av passord, bekreftelse av e-post og engangskoder videresendes aldri.',
     ],
 
     'profile' => [

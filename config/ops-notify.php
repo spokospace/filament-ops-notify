@@ -82,6 +82,30 @@ return [
         ],
     ],
 
+    /*
+    | Mirror other Laravel notifications (mail, SMS, broadcast, …) for apps without Filament's
+    | bell. Off by default. The message comes from toOps() if the notification has one, else from
+    | the mail message (subject, lines, button) or toArray(). One message per notification,
+    | however many recipients and channels it has.
+    |
+    | `except` lists classes (Str::is patterns) that are never forwarded because their content is
+    | secret: password resets, e-mail verification, one-time codes. Keep them when extending it.
+    */
+    'forward_notifications' => [
+        'enabled' => env('OPS_NOTIFY_FORWARD_NOTIFICATIONS'),  // [panel] null = off
+        'channels' => ['mail'],                                // [panel]
+        'only' => [],
+        'except' => [
+            'Illuminate\Auth\Notifications\*',
+            'Filament\Auth\*',
+            '*ResetPassword*',
+            '*VerifyEmail*',
+            '*OneTimePassword*',
+            '*TwoFactor*',
+            '*MagicLink*',
+        ],
+    ],
+
     'queue' => [
         'connection' => env('OPS_NOTIFY_QUEUE_CONNECTION'),
         'name' => env('OPS_NOTIFY_QUEUE'),

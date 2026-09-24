@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Пересилати сповіщення з дзвіночка',
         'forward_title_placeholder' => 'Новий запит*',
         'forward' => 'Пересилати',
+
+        'laravel_forwarding' => 'Інші сповіщення Laravel',
+        'laravel_forwarding_description' => 'Для застосунків без дзвіночка: пересилати сповіщення, надіслані електронною поштою, SMS, broadcast та іншими каналами Laravel.',
+        'laravel_forward_enabled' => 'Пересилати інші сповіщення',
+        'laravel_forward_channels' => 'Канали',
+        'laravel_forward_channels_help' => 'Кожне сповіщення, надіслане цими каналами, надходить один раз, скільки б людей його не отримали. Скидання пароля, підтвердження електронної пошти та одноразові коди ніколи не пересилаються.',
     ],
 
     'profile' => [

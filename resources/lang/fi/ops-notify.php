@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Välitä kellon ilmoitukset',
         'forward_title_placeholder' => 'Uusi tiedustelu*',
         'forward' => 'Välitä',
+
+        'laravel_forwarding' => 'Muut Laravel-ilmoitukset',
+        'laravel_forwarding_description' => 'Sovelluksille ilman kelloa: välitä sähköpostilla, tekstiviestillä, broadcastilla ja muilla Laravel-kanavilla lähetetyt ilmoitukset.',
+        'laravel_forward_enabled' => 'Välitä muut ilmoitukset',
+        'laravel_forward_channels' => 'Kanavat',
+        'laravel_forward_channels_help' => 'Jokainen näiden kanavien kautta lähetetty ilmoitus saapuu kerran, vastaanottajien määrästä riippumatta. Salasanan palautuksia, sähköpostin vahvistuksia ja kertakäyttökoodeja ei koskaan välitetä.',
     ],
 
     'profile' => [

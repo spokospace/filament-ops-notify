@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Forward bell notifications',
         'forward_title_placeholder' => 'New inquiry*',
         'forward' => 'Forward',
+
+        'laravel_forwarding' => 'Other Laravel notifications',
+        'laravel_forwarding_description' => 'For apps without the bell: forward notifications sent by mail, SMS, broadcast and other Laravel channels.',
+        'laravel_forward_enabled' => 'Forward other notifications',
+        'laravel_forward_channels' => 'Channels',
+        'laravel_forward_channels_help' => 'Each notification sent through these channels arrives once, however many people receive it. Password resets, e-mail verification and one-time codes are never forwarded.',
     ],
 
     'profile' => [

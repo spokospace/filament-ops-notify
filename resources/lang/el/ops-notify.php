@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Προώθηση ειδοποιήσεων καμπανακιού',
         'forward_title_placeholder' => 'Νέο αίτημα*',
         'forward' => 'Προώθηση',
+
+        'laravel_forwarding' => 'Άλλες ειδοποιήσεις Laravel',
+        'laravel_forwarding_description' => 'Για εφαρμογές χωρίς καμπανάκι: προώθηση ειδοποιήσεων που αποστέλλονται μέσω email, SMS, broadcast και άλλων καναλιών του Laravel.',
+        'laravel_forward_enabled' => 'Προώθηση άλλων ειδοποιήσεων',
+        'laravel_forward_channels' => 'Κανάλια',
+        'laravel_forward_channels_help' => 'Κάθε ειδοποίηση που αποστέλλεται μέσω αυτών των καναλιών φτάνει μία φορά, όσοι κι αν τη λαμβάνουν. Οι επαναφορές κωδικού πρόσβασης, οι επαληθεύσεις email και οι κωδικοί μίας χρήσης δεν προωθούνται ποτέ.',
     ],
 
     'profile' => [

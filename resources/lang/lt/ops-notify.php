@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Persiųsti varpelio pranešimus',
         'forward_title_placeholder' => 'Nauja užklausa*',
         'forward' => 'Persiųsti',
+
+        'laravel_forwarding' => 'Kiti Laravel pranešimai',
+        'laravel_forwarding_description' => 'Programoms be varpelio: persiųsti pranešimus, siunčiamus el. paštu, SMS, broadcast ir kitais Laravel kanalais.',
+        'laravel_forward_enabled' => 'Persiųsti kitus pranešimus',
+        'laravel_forward_channels' => 'Kanalai',
+        'laravel_forward_channels_help' => 'Kiekvienas šiais kanalais išsiųstas pranešimas ateina vieną kartą, nesvarbu, kiek žmonių jį gauna. Slaptažodžio atkūrimo, el. pašto patvirtinimo ir vienkartinių kodų pranešimai niekada nepersiunčiami.',
     ],
 
     'profile' => [

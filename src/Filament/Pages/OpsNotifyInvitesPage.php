@@ -2,6 +2,7 @@
 
 namespace Spokospace\OpsNotify\Filament\Pages;
 
+use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -17,6 +18,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
+use Spokospace\OpsNotify\Channels\Telegram\TelegramChannel;
 use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\Filament\OpsNotifyPlugin;
 use Spokospace\OpsNotify\Models\OpsNotifyInvite;
@@ -78,12 +80,9 @@ class OpsNotifyInvitesPage extends Page implements HasTable
                     $expiresAt = now()->addHours($hours);
                     $memberLimit = ($data['single_use'] ?? true) ? 1 : null;
 
-                    try {
-                        $link = app(OpsNotifier::class)->telegram()->createInviteLink((string) $data['name'], $expiresAt, $memberLimit);
-                    } catch (ChannelException $e) {
-                        $body = app(OpsNotifier::class)->telegram()->explain($e, 'invite_users');
-                        Notification::make()->danger()->title(Trans::get('invites.failed'))->body($body)->send();
+                    $link = $this->telegram(fn (TelegramChannel $telegram): string => $telegram->createInviteLink((string) $data['name'], $expiresAt, $memberLimit));
 
+                    if ($link === null) {
                         return;
                     }
 
@@ -118,6 +117,28 @@ class OpsNotifyInvitesPage extends Page implements HasTable
             ])
             ->modalSubmitAction(false)
             ->modalCancelActionLabel(Trans::get('invites.close'));
+    }
+
+    /**
+     * Runs one Telegram call; on a refusal, says why (which admin right is missing, if that is
+     * the reason) and returns null.
+     *
+     * @template T
+     *
+     * @param  Closure(TelegramChannel): T  $call
+     * @return T|null
+     */
+    private function telegram(Closure $call): mixed
+    {
+        $telegram = app(OpsNotifier::class)->telegram();
+
+        try {
+            return $call($telegram);
+        } catch (ChannelException $e) {
+            Notification::make()->danger()->title(Trans::get('invites.failed'))->body($telegram->explain($e, 'invite_users'))->send();
+
+            return null;
+        }
     }
 
     public function content(Schema $schema): Schema
@@ -170,12 +191,11 @@ class OpsNotifyInvitesPage extends Page implements HasTable
                     ->requiresConfirmation()
                     ->visible(fn (OpsNotifyInvite $record): bool => $record->state() === OpsNotifyInvite::STATE_ACTIVE)
                     ->action(function (OpsNotifyInvite $record): void {
-                        try {
-                            app(OpsNotifier::class)->telegram()->revokeInviteLink($record->invite_link);
-                        } catch (ChannelException $e) {
-                            $body = app(OpsNotifier::class)->telegram()->explain($e, 'invite_users');
-                            Notification::make()->danger()->title(Trans::get('invites.failed'))->body($body)->send();
+                        if ($this->telegram(function (TelegramChannel $telegram) use ($record): bool {
+                            $telegram->revokeInviteLink($record->invite_link);
 
+                            return true;
+                        }) === null) {
                             return;
                         }
 

@@ -191,5 +191,6 @@ it('saves settings from the filament page', function () {
         'forward_map' => ['Nowe zapytanie*' => 'inquiry.created', 'Export*' => false],
     ])->and(config('ops-notify.channels.telegram.bot_token'))->toBe('999:PANEL');
 
-    expect(DB::table('ops_notify_settings')->count())->toBe(7);
+    // Incl. forward_other_enabled = false; its channel list is hidden while it is off.
+    expect(DB::table('ops_notify_settings')->count())->toBe(8);
 });

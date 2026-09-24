@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Zil bildirimlerini ilet',
         'forward_title_placeholder' => 'Yeni talep*',
         'forward' => 'İlet',
+
+        'laravel_forwarding' => 'Diğer Laravel bildirimleri',
+        'laravel_forwarding_description' => 'Zili olmayan uygulamalar için: e-posta, SMS, broadcast ve diğer Laravel kanallarıyla gönderilen bildirimleri ilet.',
+        'laravel_forward_enabled' => 'Diğer bildirimleri ilet',
+        'laravel_forward_channels' => 'Kanallar',
+        'laravel_forward_channels_help' => 'Bu kanallarla gönderilen her bildirim, kaç kişi alırsa alsın yalnızca bir kez ulaşır. Şifre sıfırlama, e-posta doğrulama ve tek kullanımlık kodlar asla iletilmez.',
     ],
 
     'profile' => [

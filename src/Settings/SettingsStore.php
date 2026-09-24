@@ -36,12 +36,16 @@ class SettingsStore
         'events' => 'ops-notify.events',
         'forward_enabled' => 'ops-notify.forward_database_notifications.enabled',
         'forward_map' => 'ops-notify.forward_database_notifications.map',
+        'forward_other_enabled' => 'ops-notify.forward_notifications.enabled',
+        'forward_other_channels' => 'ops-notify.forward_notifications.channels',
     ];
 
     /** Static defaults; see defaultFor() for the dynamic ones. */
     public const DEFAULTS = [
         'enabled' => true,
         'forward_enabled' => true,
+        'forward_other_enabled' => false,
+        'forward_other_channels' => ['mail'],
     ];
 
     public const SECRETS = ['telegram_bot_token'];

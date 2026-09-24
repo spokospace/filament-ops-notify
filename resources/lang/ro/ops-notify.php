@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Redirecționare notificări din clopoțel',
         'forward_title_placeholder' => 'Solicitare nouă*',
         'forward' => 'Redirecționare',
+
+        'laravel_forwarding' => 'Alte notificări Laravel',
+        'laravel_forwarding_description' => 'Pentru aplicațiile fără clopoțel: redirecționarea notificărilor trimise prin e-mail, SMS, broadcast și alte canale Laravel.',
+        'laravel_forward_enabled' => 'Redirecționare alte notificări',
+        'laravel_forward_channels' => 'Canale',
+        'laravel_forward_channels_help' => 'Fiecare notificare trimisă prin aceste canale ajunge o singură dată, indiferent câte persoane o primesc. Resetările de parolă, verificarea e-mailului și codurile de unică folosință nu sunt redirecționate niciodată.',
     ],
 
     'profile' => [

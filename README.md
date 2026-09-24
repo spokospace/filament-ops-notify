@@ -21,6 +21,8 @@ reach Telegram with no code changes.
 
 - **Bell notifications → Telegram, no code.** Every `sendToDatabase()` notification is forwarded
   once, however many users receive it ([with a shared cache](docs/routing-and-topics.md#forwarding-filament-notifications)).
+- **Any Laravel notification, too.** Apps without the bell can forward mail, SMS or push
+  notifications, once each and without secrets such as password reset links.
 - **Topics and routing.** Create forum topics from the panel and route events to them by pattern
   (`inquiry.*` → *Inquiries*). Filament notifications are routed by title.
 - **Settings in the panel.** Token (encrypted), chat id, service name, topics and rules, all without
