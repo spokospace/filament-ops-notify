@@ -40,40 +40,58 @@ class TelegramFormatter
      */
     public function format(OpsMessage $message, ?string $service, bool $linksAsText = false, ?MessageTemplate $template = null): string
     {
+        $parts = $this->parts($message, $service, $template, $linksAsText);
+        $lines = [$message->level->emoji().' <b>'.$this->escape($parts['title']).'</b>'];
+
+        if (filled($parts['body'])) {
+            $lines[] = $this->escape($parts['body']);
+        }
+
+        if ($parts['fields'] !== []) {
+            $lines[] = $this->renderLines($parts['fields']);
+        }
+
+        if ($parts['links'] !== []) {
+            $lines[] = $this->renderLines($parts['links']);
+        }
+
+        if ($parts['hashtag'] !== '') {
+            $lines[] = $parts['hashtag'];
+        }
+
+        return implode("\n\n", $lines);
+    }
+
+    /**
+     * The parts of a message as plain text, cut to their budgets: the title with the [service]
+     * prefix, the body, the field and link lines and the #hashtag. Settings shows the title and
+     * body of a template row from here, so they read as the chat will show them.
+     *
+     * @return array{title: string, body: string, fields: list<array{string, string}>, links: list<array{string, string}>, hashtag: string}
+     */
+    public function parts(OpsMessage $message, ?string $service, ?MessageTemplate $template = null, bool $linksAsText = false): array
+    {
         $template ??= new MessageTemplate;
 
         $prefix = $template->service && filled($service) ? '['.$service.'] ' : '';
-        $emoji = $message->level->emoji();
         $title = $prefix.$template->title($message, $service, self::TITLE_LIMIT);
         $hashtag = $template->hashtag ? '#'.$this->hashtag($message->event) : '';
 
         $fields = $this->fieldLines($template->fields($message->fields));
         $links = $linksAsText ? $this->linkLines($message->buttons) : [];
 
-        $used = mb_strlen($emoji.' '.$title) + mb_strlen($hashtag)
+        $used = mb_strlen($message->level->emoji().' '.$title) + mb_strlen($hashtag)
             + array_sum(array_map(fn (array $line): int => mb_strlen($line[0].$line[1]) + 3, [...$fields, ...$links]))
             + 8; // blank lines between parts
         $bodyBudget = max(0, min(self::BODY_LIMIT, self::TOTAL_LIMIT - $used));
 
-        $parts = [$emoji.' <b>'.$this->escape($title).'</b>'];
-
-        if (filled($body = $template->body($message, $service, $bodyBudget))) {
-            $parts[] = $this->escape($body);
-        }
-
-        if ($fields !== []) {
-            $parts[] = $this->renderLines($fields);
-        }
-
-        if ($links !== []) {
-            $parts[] = $this->renderLines($links);
-        }
-
-        if ($hashtag !== '') {
-            $parts[] = $hashtag;
-        }
-
-        return implode("\n\n", $parts);
+        return [
+            'title' => $title,
+            'body' => $template->body($message, $service, $bodyBudget),
+            'fields' => $fields,
+            'links' => $links,
+            'hashtag' => $hashtag,
+        ];
     }
 
     /**

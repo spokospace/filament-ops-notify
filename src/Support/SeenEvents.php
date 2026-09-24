@@ -163,27 +163,39 @@ final class SeenEvents
     }
 
     /**
-     * The latest logged message of an event the pattern matches, burst digests aside, for a
-     * template preview. Reads the log itself rather than counts(): that is cached, capped and
-     * without held-back messages, and a preview should find every logged message. Null when
-     * there is none, or the log cannot be read.
+     * The event names logged in the last days(), held-back messages included. Not counts(): that
+     * is cached, capped and without held-back messages, and a template preview should find an
+     * event logged a moment ago. The read comes off the index that covers counts(). [] when the
+     * log cannot be read.
+     *
+     * @return list<string>
      */
-    public static function latestMessage(string $pattern): ?OpsNotifyLog
+    public static function recentEvents(): array
     {
         try {
-            // The event names of the window come off the index that covers counts(), and both
-            // lookups stay on indexes. The names are read uncached and unfiltered on purpose.
-            $events = OpsNotifyLog::query()
-                ->where('created_at', '>=', self::since())
-                ->distinct()
-                ->pluck('event')
-                ->filter(fn (mixed $event): bool => Str::is($pattern, (string) $event))
-                ->all();
+            return array_values(array_map(strval(...), OpsNotifyLog::query()->where('created_at', '>=', self::since())->distinct()->pluck('event')->all()));
+        } catch (Throwable $e) {
+            Log::warning('[ops-notify] Could not read recent events for a template preview: '.$e->getMessage());
 
-            if ($events === []) {
-                return null;
-            }
+            return [];
+        }
+    }
 
+    /**
+     * The latest logged message of an event the pattern matches, burst digests aside, for a
+     * template preview. Null when there is none, or the log cannot be read.
+     *
+     * @param  list<string>|null  $events  recentEvents(), when the caller has read them already.
+     */
+    public static function latestMessage(string $pattern, ?array $events = null): ?OpsNotifyLog
+    {
+        $events = array_values(array_filter($events ?? self::recentEvents(), fn (string $event): bool => Str::is($pattern, $event)));
+
+        if ($events === []) {
+            return null;
+        }
+
+        try {
             return OpsNotifyLog::query()
                 ->whereIn('event', $events)
                 ->where('created_at', '>=', self::since())

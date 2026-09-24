@@ -1,7 +1,8 @@
 <?php
 
-use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Text;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
@@ -205,20 +206,19 @@ it('saves templates from the settings page in config shape', function () {
     ]);
 });
 
-it('previews a template against the latest message of a matching event', function () {
+it('previews a template under its row, on the latest message of a matching event', function () {
     loggedInquiry();
 
-    $form = templateSettings()->fillForm(['templates' => [
+    templateSettings()->fillForm(['templates' => [
         'a' => ['pattern' => 'inquiry.*', 'title' => 'First'],
         'b' => ['pattern' => 'inquiry.created', 'title' => '<b>From :field.Name</b>', 'show_body' => false, 'fields' => [], 'show_fields' => true, 'hashtag' => true, 'service' => true],
-        'c' => ['pattern' => 'nothing.*'],
-    ]], 'mountedActionSchema0');
-
-    $form->mountAction(TestAction::make('previewTemplate')->schemaComponent('templates.templates', 'mountedActionSchema0')->arguments(['item' => 'b']))
-        ->assertMountedActionModalSeeHtml('&lt;b&gt;From Anna&lt;/b&gt;')
-        // The first row matches inquiry.created too, so the chat gets that one.
-        ->assertMountedActionModalSee('The template inquiry.* above matches inquiry.created first')
-        ->assertMountedActionModalDontSee('Hello');
+    ]], 'mountedActionSchema0')
+        ->assertSchemaComponentExists('templates.templates.b.preview', 'mountedActionSchema0', fn (Text $text): bool => str_contains($html = (string) $text->getContent(), '&lt;b&gt;From Anna&lt;/b&gt;')
+            // The first row matches inquiry.created too, so the chat gets that one.
+            && str_contains($html, 'The template inquiry.* above matches inquiry.created first')
+            && ! str_contains($html, 'Hello'))
+        // Under the title field, the title as it comes out.
+        ->assertSchemaComponentExists('templates.templates.b.title', 'mountedActionSchema0', fn (TextInput $field): bool => str_contains((string) $field->getChildSchema(TextInput::BELOW_CONTENT_SCHEMA_KEY)?->toHtmlString(), '→ [test-app] &lt;b&gt;From Anna&lt;/b&gt;'));
 });
 
 it('rejects two template rows with the same pattern, since only the upper one could apply', function () {
@@ -267,9 +267,8 @@ it('previews with the service name typed in the form, before it is saved', funct
     loggedInquiry();
 
     templateSettings()
-        ->fillForm(['service' => 'Typed', 'templates' => ['a' => ['pattern' => 'inquiry.*', 'title' => ':title']]], 'mountedActionSchema0')
-        ->mountAction(TestAction::make('previewTemplate')->schemaComponent('templates.templates', 'mountedActionSchema0')->arguments(['item' => 'a']))
-        ->assertMountedActionModalSee('[Typed] New inquiry');
+        ->fillForm(['service' => 'Typed', 'templates' => ['a' => ['pattern' => 'inquiry.*', 'title' => ':title', 'show_body' => true, 'show_fields' => true, 'hashtag' => true, 'service' => true]]], 'mountedActionSchema0')
+        ->assertSchemaComponentExists('templates.templates.a.preview', 'mountedActionSchema0', fn (Text $text): bool => str_contains((string) $text->getContent(), '[Typed] New inquiry'));
 });
 
 it('sends test messages without a template, so a catch-all cannot hide them', function () {
@@ -311,25 +310,57 @@ it('keeps the upper of two rows with the same key, the one the chat gets', funct
     ]);
 });
 
-it('starts a new template row as the default layout spelled out, and saves that as no change', function () {
+it('starts a new template row as an example in the message language, tried on a sample message', function () {
+    config(['ops-notify.locale' => 'pl']);
+
     $form = templateSettings()
         ->fillForm(['telegram_bot_token' => '999:PANEL', 'telegram_chat_id' => '-1'], 'mountedActionSchema0')
         ->callFormComponentAction('templates.templates', 'add', formName: 'mountedActionSchema0');
 
     $path = $form->instance()->mountedActionSchema0->getStatePath().'.templates';
-    $rows = $form->get($path);
-    $key = array_key_first($rows);
+    $key = array_key_first($form->get($path));
 
-    expect($rows[$key])->toMatchArray(['title' => ':title', 'body' => ':body', 'show_body' => true, 'show_fields' => true]);
+    expect($form->get("{$path}.{$key}"))->toMatchArray(['title' => ':title (:level)', 'body' => ":body\n\nZdarzenie :event z :service.", 'show_body' => true, 'show_fields' => true]);
+
+    // Nothing is logged yet, so the example is a sample message, in the message language too.
+    $form->assertSchemaComponentExists("templates.templates.{$key}.preview", 'mountedActionSchema0', fn (Text $text): bool => str_contains($html = (string) $text->getContent(), 'Nowe zapytanie (info)')
+        && str_contains($html, 'Anna pyta o produkt.')
+        && str_contains($html, 'Zdarzenie inquiry.created z')
+        && str_contains($html, 'Enter a pattern first.'));
 
     $form->set("{$path}.{$key}.pattern", 'inquiry.*')
         ->callMountedAction()
         ->assertHasNoActionErrors();
 
-    $store = app(SettingsStore::class);
+    expect(app(SettingsStore::class)->formValues()['templates'])->toBe(['inquiry.*' => ['title' => ':title (:level)', 'body' => ":body\n\nZdarzenie :event z :service."]]);
+});
 
-    expect($store->formValues()['templates'])->toBe(['inquiry.*' => []])
-        // Back in the form, the default parts are spelled out again.
-        ->and(array_values((new SettingsForm($store))->fill()['templates'])[0])->toMatchArray(['pattern' => 'inquiry.*', 'title' => ':title', 'body' => ':body'])
+it('spells the default parts out as :title and :body, and saves them as no change', function () {
+    $store = app(SettingsStore::class);
+    $store->save(['templates' => ['inquiry.*' => ['hashtag' => false]]]);
+
+    expect(array_values((new SettingsForm($store))->fill()['templates'])[0])->toMatchArray(['pattern' => 'inquiry.*', 'title' => ':title', 'body' => ':body', 'hashtag' => false])
+        ->and(MessageTemplate::fromArray(['title' => ':title', 'body' => ':body'])->toArray())->toBe([])
         ->and(formatWith(['inquiry.*' => ['title' => ':title', 'body' => ':body']], inquiry()))->toBe((new TelegramFormatter)->format(inquiry(), 'panel'));
+});
+
+it('resets a row to the default layout, and the chips append placeholders to a field', function () {
+    $form = templateSettings()->fillForm(['templates' => ['a' => ['pattern' => 'inquiry.*', 'title' => 'Hi', 'body' => 'x', 'show_body' => false, 'fields' => ['Name'], 'show_fields' => true, 'hashtag' => false, 'service' => false]]], 'mountedActionSchema0');
+    $path = $form->instance()->mountedActionSchema0->getStatePath().'.templates.a';
+
+    $form->callFormComponentAction('templates.templates', 'defaultTemplate', arguments: ['item' => 'a'], formName: 'mountedActionSchema0');
+
+    expect($form->get($path))->toMatchArray(['pattern' => 'inquiry.*', 'title' => ':title', 'body' => ':body', 'fields' => [], 'show_body' => true, 'show_fields' => true, 'hashtag' => true, 'service' => true]);
+
+    // The chips: the fixed placeholders, then one per field of the sample message, as data for the browser.
+    $form->assertSchemaComponentExists('templates.templates.a.title', 'mountedActionSchema0', function (TextInput $field): bool {
+        $chips = (string) $field->getChildSchema(TextInput::ABOVE_CONTENT_SCHEMA_KEY)?->toHtmlString();
+
+        return str_contains($chips, 'data-token=":level"') && str_contains($chips, 'data-token=":field.Name"') && str_contains($chips, 'data-token=":field.Email"');
+    });
+});
+
+it('lists the placeholders a message offers, a label with spaces in braces', function () {
+    expect(MessageTemplate::placeholders(inquiry()->field('Order number', '7')))
+        ->toBe([':title', ':body', ':event', ':service', ':level', ':field.Name', ':field.Email', ':field.Phone', ':field.{Order number}']);
 });
