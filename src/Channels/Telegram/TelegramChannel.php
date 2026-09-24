@@ -294,8 +294,14 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
     {
         $key = 'ops-notify:telegram-seen:'.hash('sha256', (string) ($this->config['bot_token'] ?? ''));
 
+        // The scan makes up to UPDATE_PAGES getUpdates calls, each bounded by the HTTP timeout, so
+        // it can run for ~100 s. A 60 s lock would expire mid-run and let a second discovery start
+        // and clobber our Cache::put($key) — the exact race the lock exists to stop. Hold it for
+        // the whole worst case instead.
+        $lockSeconds = self::discoveryLockSeconds((int) ($this->config['timeout'] ?? 10));
+
         try {
-            return Cache::lock($key.':lock', 60)->block(15, function () use ($key): array {
+            return Cache::lock($key.':lock', $lockSeconds)->block(15, function () use ($key): array {
                 $seen = UpdateParser::merge((array) Cache::get($key, []), ['chats' => [], 'topics' => [], 'migrations' => []]);
                 $offset = null;
 
@@ -316,6 +322,15 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
         } catch (LockTimeoutException) {
             throw new ChannelException('Another chat discovery for this bot is still running. Try again in a moment.');
         }
+    }
+
+    /**
+     * How long to hold the chat-discovery lock: the whole worst-case scan (every page timing out),
+     * never less than a minute. Long enough that the lock cannot lapse before the run finishes.
+     */
+    public static function discoveryLockSeconds(int $timeout): int
+    {
+        return max(60, self::UPDATE_PAGES * max(0, $timeout) + 15);
     }
 
     /**
