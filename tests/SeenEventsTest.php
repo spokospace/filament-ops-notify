@@ -1,14 +1,10 @@
 <?php
 
-use Filament\Facades\Filament;
 use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Text;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Livewire\Livewire;
 use Spokospace\OpsNotify\Enums\DeliveryStatus;
-use Spokospace\OpsNotify\Filament\Pages\OpsNotifyPage;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\Support\SeenEvents;
 use Spokospace\OpsNotify\Support\TitleRules;
@@ -26,16 +22,6 @@ function seen(string $event, int $times = 1, ?string $title = null, int $daysAgo
         ]);
         $log->forceFill(['created_at' => now()->subDays($daysAgo)])->save();
     }
-}
-
-/** The Settings slide-over, opened by an admin whose bot has every right. */
-function settingsForm(): mixed
-{
-    Http::fake(['api.telegram.org/*' => Http::response(['ok' => true, 'result' => ['status' => 'creator', 'username' => 'bot']])]);
-    Filament::setCurrentPanel('admin');
-    test()->actingAs(test()->admin());
-
-    return Livewire::test(OpsNotifyPage::class)->mountAction('settings');
 }
 
 function seenLine(string $events): Closure

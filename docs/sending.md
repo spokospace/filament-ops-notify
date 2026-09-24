@@ -124,7 +124,9 @@ template keeps the default layout.
 | `hashtag` | the `#event` line | `false` drops it |
 | `service` | the `[service]` prefix | `false` drops it |
 
-The level emoji and the buttons always stay.
+The level emoji and the buttons always stay. In Settings, a new row starts with `:title` and
+`:body`, the default parts spelled out, so you edit the layout rather than write it from scratch.
+Saving them unchanged stores nothing.
 
 - **Placeholders:** `:title`, `:body`, `:event`, `:service`, `:level` and `:field.Label`. For a label
   with spaces, use `:field.{Order number}`. Labels match ignoring case, and a missing field is left

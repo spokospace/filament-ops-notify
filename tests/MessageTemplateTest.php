@@ -310,3 +310,26 @@ it('keeps the upper of two rows with the same key, the one the chat gets', funct
         'forward_map' => ['Backup' => 'backup.done'],
     ]);
 });
+
+it('starts a new template row as the default layout spelled out, and saves that as no change', function () {
+    $form = templateSettings()
+        ->fillForm(['telegram_bot_token' => '999:PANEL', 'telegram_chat_id' => '-1'], 'mountedActionSchema0')
+        ->callFormComponentAction('templates.templates', 'add', formName: 'mountedActionSchema0');
+
+    $path = $form->instance()->mountedActionSchema0->getStatePath().'.templates';
+    $rows = $form->get($path);
+    $key = array_key_first($rows);
+
+    expect($rows[$key])->toMatchArray(['title' => ':title', 'body' => ':body', 'show_body' => true, 'show_fields' => true]);
+
+    $form->set("{$path}.{$key}.pattern", 'inquiry.*')
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    $store = app(SettingsStore::class);
+
+    expect($store->formValues()['templates'])->toBe(['inquiry.*' => []])
+        // Back in the form, the default parts are spelled out again.
+        ->and(array_values((new SettingsForm($store))->fill()['templates'])[0])->toMatchArray(['pattern' => 'inquiry.*', 'title' => ':title', 'body' => ':body'])
+        ->and(formatWith(['inquiry.*' => ['title' => ':title', 'body' => ':body']], inquiry()))->toBe((new TelegramFormatter)->format(inquiry(), 'panel'));
+});

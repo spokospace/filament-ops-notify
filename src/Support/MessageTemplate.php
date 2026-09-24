@@ -59,17 +59,20 @@ final class MessageTemplate
 
     /**
      * Reads a template from config or settings. Anything of the wrong type (a hand-edited
-     * value) counts as not set, so a bad template shows the default part, not an error.
+     * value) counts as not set, so a bad template shows the default part, not an error. So do
+     * a title of just ":title" and a body of just ":body", the default parts spelled out: a new
+     * Settings row starts with them.
      */
     public static function fromArray(mixed $data): self
     {
         $data = is_array($data) ? $data : [];
+        $title = $data['title'] ?? null;
         $body = $data['body'] ?? null;
         $fields = $data['fields'] ?? null;
 
         return new self(
-            title: is_string($data['title'] ?? null) && trim($data['title']) !== '' ? $data['title'] : null,
-            body: $body === false ? false : (is_string($body) && trim($body) !== '' ? $body : null),
+            title: is_string($title) && ! in_array(trim($title), ['', ':title'], true) ? $title : null,
+            body: $body === false ? false : (is_string($body) && ! in_array(trim($body), ['', ':body'], true) ? $body : null),
             fields: is_array($fields) && array_is_list($fields) ? array_values(array_filter(
                 array_map(fn (mixed $label): string => trim((string) $label), array_filter($fields, 'is_scalar')),
                 fn (string $label): bool => $label !== '',

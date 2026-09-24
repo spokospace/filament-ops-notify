@@ -179,14 +179,18 @@ class SettingsForm
                                     ->datalist($patterns)
                                     ->distinct()
                                     ->columnSpanFull(),
+                                // A new row starts as the default layout, spelled out: ":title" and ":body".
+                                // Saving them unchanged stores nothing (MessageTemplate::fromArray()).
                                 TextInput::make('title')
                                     ->label(Trans::get('settings.template_title'))
+                                    ->default(':title')
                                     ->placeholder(':title')
                                     ->maxLength(500)
                                     ->helperText(Trans::get('settings.template_placeholders', ['placeholders' => implode(' ', MessageTemplate::PLACEHOLDERS)]))
                                     ->columnSpanFull(),
                                 Textarea::make('body')
                                     ->label(Trans::get('settings.template_body'))
+                                    ->default(':body')
                                     ->placeholder(':body')
                                     ->rows(3)
                                     ->maxLength(3000)
@@ -283,8 +287,8 @@ class SettingsForm
 
                     return [
                         'pattern' => (string) $pattern,
-                        'title' => $template->title,
-                        'body' => is_string($template->body) ? $template->body : null,
+                        'title' => $template->title ?? ':title',
+                        'body' => $template->body === null ? ':body' : ($template->body ?: null),
                         'show_body' => $template->body !== false,
                         'fields' => $template->fields ?? [],
                         'show_fields' => $template->fields !== [],
