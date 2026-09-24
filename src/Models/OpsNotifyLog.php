@@ -73,7 +73,8 @@ class OpsNotifyLog extends Model
     /** Rebuild the original message, e.g. to resend a failed one. */
     public function toMessage(): OpsMessage
     {
-        // The payload column is nullable: a row without one (edited by hand) resends its event and title.
-        return OpsMessage::fromArray($this->payload ?? ['event' => $this->event, 'title' => $this->title]);
+        // The payload column is nullable, and one edited by hand may lack keys: the row's own event
+        // and title fill in for them.
+        return OpsMessage::fromArray(($this->payload ?? []) + ['event' => $this->event, 'title' => $this->title]);
     }
 }

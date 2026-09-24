@@ -99,11 +99,12 @@ Duration: 4m 12s
 
 ## Message templates
 
-A template changes that layout for one kind of event. You can set it in **Settings → Message
-templates** or in `config('ops-notify.templates')`. Keys are event patterns, and `*` matches
-anything, as in [event routing](routing-and-topics.md). Templates are checked from the top and the
-first match wins, so the form rejects two rows with the same pattern. An event that matches no
-template keeps the default layout.
+A template changes that layout for one kind of event. It lives in `config('ops-notify.templates')`,
+next to the code that sends the messages: what a message says is the sender's business, so the
+panel doesn't edit it. Keys are event patterns, as in [event routing](routing-and-topics.md).
+Templates are checked from the top and the first match wins; `*` is checked last, wherever it is,
+and is the look of every message no other template changes. An event that matches no template
+keeps the default layout.
 
 ```php
 'templates' => [
@@ -126,12 +127,11 @@ template keeps the default layout.
 
 The level emoji and the buttons always stay.
 
-In Settings, a new row starts as an example template in the message language: `:title (:level)`,
-and `:body` followed by a line naming the event and the service. The text shows what stays fixed
-and what a placeholder is. Under each field, the title and the body appear as they come out, and
-the whole message is rendered under the row. Buttons above a field insert its placeholders, one per
-field of the message the row is tried on, so they show what the event carries. **Default layout**
-resets a row to `:title` and `:body`, which store nothing.
+Two parts of the `*` template are in the panel, as toggles in **Settings → Telegram**: **Start with
+[service]** and **End with #event**. They are for chats several apps write to (the prefix says which
+one) and for chats where the hashtag is noise. Switching one off stores `'*' => ['service' => false]`
+or `'hashtag' => false`; any title, body or fields the `*` template has stay as they are. Templates
+set in config lock the two toggles, like every other setting.
 
 - **Placeholders:** `:title`, `:body`, `:event`, `:service`, `:level` and `:field.Label`. For a label
   with spaces, use `:field.{Order number}`. Labels match ignoring case, and a missing field is left
@@ -140,14 +140,11 @@ resets a row to `:title` and `:body`, which store nothing.
   template can't produce HTML that Telegram rejects.
 - **Same limits.** A template is cut to the same length budgets as the default layout. Your fixed text
   is kept, and `:title` and `:body` are shortened to fit.
-- **Preview.** The message under a row is the latest logged message of an event the pattern matches,
-  or a sample message while nothing matching is logged. The form doesn't have to be saved first, and
-  the Service name typed in it is used. It also warns when a template higher up matches that event
-  first.
 - **Resend** uses the current template, because the log keeps the message and not the rendered text.
-- Burst digests and the package's own test messages (**Send test**, `ops-notify:test`) don't use
-  templates, so a catch-all template can't hide a connectivity test. Your own message can skip
-  them with `->withoutTemplate()`.
+- Burst digests and the package's own test messages (**Send test**, `ops-notify:test`) keep their
+  title, body and fields whatever the templates say, so a catch-all template can't hide a
+  connectivity test. They do follow the two toggles, so a test shows what those do. Your own
+  message can do the same with `->withoutTemplate()`.
 
 ## The `OpsNotify` facade
 
