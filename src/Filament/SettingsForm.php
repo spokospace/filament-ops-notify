@@ -12,6 +12,7 @@ use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Str;
 use Spokospace\OpsNotify\Channels\Telegram\TelegramChannel;
@@ -33,6 +34,14 @@ class SettingsForm
     public function components(): array
     {
         $saved = $this->store->formValues();
+
+        // One line per list item: the section header lists them, and each collapsed row shows its own.
+        $describeTopic = fn (array $row): string => trim(($row['name'] ?? '').' #'.($row['id'] ?? ''));
+        $describeRule = fn (array $row, array $topics): string => ($row['pattern'] ?? '')
+            .(filled($row['topic'] ?? null) ? ' → '.($topics[$row['topic']] ?? '#'.$row['topic']) : '')
+            .(($row['enabled'] ?? true) ? '' : ' ('.Trans::get('page.disabled').')');
+        $describeForward = fn (array $row): string => ($row['title'] ?? '')
+            .(($row['forward'] ?? true) ? ' → '.($row['event'] ?? '') : ' ('.Trans::get('page.disabled').')');
 
         return [
             Section::make(Trans::get('settings.telegram'))
@@ -80,7 +89,7 @@ class SettingsForm
                 Section::make(Trans::get('settings.topics'))->key('topics'),
                 $saved,
                 'telegram_topics',
-                fn (array $row): string => trim(($row['name'] ?? '').' #'.($row['id'] ?? '')),
+                $describeTopic,
             )
                 ->headerActions($this->store->isLocked('telegram_topics') ? [] : [
                     $this->createTopicAction(),
@@ -88,7 +97,7 @@ class SettingsForm
                 ])
                 ->schema([
                     $this->locked(
-                        Repeater::make('telegram_topics')
+                        $this->compact(Repeater::make('telegram_topics'), 'id', $describeTopic)
                             ->hiddenLabel()
                             ->schema([
                                 TextInput::make('name')->label(Trans::get('settings.topic_name'))->required()->maxLength(128),
@@ -105,13 +114,11 @@ class SettingsForm
                 Section::make(Trans::get('settings.routing'))->key('routing'),
                 $saved,
                 'events',
-                fn (array $row, array $topics): string => ($row['pattern'] ?? '')
-                    .(filled($row['topic'] ?? null) ? ' → '.($topics[$row['topic']] ?? '#'.$row['topic']) : '')
-                    .(($row['enabled'] ?? true) ? '' : ' ('.Trans::get('page.disabled').')'),
+                $describeRule,
             )
                 ->schema([
                     $this->locked(
-                        Repeater::make('events')
+                        $this->compact(Repeater::make('events'), 'pattern', $describeRule)
                             ->hiddenLabel()
                             ->schema([
                                 TextInput::make('pattern')->label(Trans::get('settings.pattern'))->required()->placeholder('inquiry.*'),
@@ -129,13 +136,12 @@ class SettingsForm
                 Section::make(Trans::get('settings.forwarding'))->key('forwarding'),
                 $saved,
                 'forward_map',
-                fn (array $row): string => ($row['title'] ?? '')
-                    .(($row['forward'] ?? true) ? ' → '.($row['event'] ?? '') : ' ('.Trans::get('page.disabled').')'),
+                $describeForward,
             )
                 ->schema([
                     $this->locked(Toggle::make('forward_enabled')->label(Trans::get('settings.forward_enabled'))),
                     $this->locked(
-                        Repeater::make('forward_map')
+                        $this->compact(Repeater::make('forward_map'), 'title', $describeForward)
                             ->hiddenLabel()
                             ->schema([
                                 TextInput::make('title')->label(Trans::get('table.title'))->required()->placeholder(Trans::get('settings.forward_title_placeholder')),
@@ -339,13 +345,43 @@ class SettingsForm
             ->collapsed(filled($saved[$list] ?? null))
             ->description(function (Get $get) use ($list, $describe): ?string {
                 $rows = array_filter((array) $get($list), 'is_array');
-                $topics = collect((array) $get('telegram_topics'))->filter(fn (mixed $row): bool => is_array($row))->pluck('name', 'id')->all();
+                $topics = self::topicNames($get);
 
                 return $rows === [] ? null : Str::limit(
                     collect($rows)->map(fn (array $row): string => $describe($row, $topics))->filter()->implode(' · '),
                     240,
                 );
             });
+    }
+
+    /**
+     * Saved rows collapse to one line with their data ("inquiry.* → Inquiries #3"); a row that is
+     * new, or not filled in yet, stays open for editing. Click a row to expand it.
+     *
+     * @param  string  $required  The field that marks a row as filled in.
+     * @param  \Closure(array<string, mixed>, array<string, string>): string  $describe  Row and topic names by id.
+     */
+    private function compact(Repeater $repeater, string $required, \Closure $describe): Repeater
+    {
+        return $repeater
+            ->collapsible()
+            ->collapsed(fn (?Schema $item): bool => filled($item?->getStateSnapshot()[$required] ?? null))
+            ->itemLabel(fn (array $state, Get $get): ?string => filled($state[$required] ?? null)
+                ? $describe($state, self::topicNames($get))
+                : null);
+    }
+
+    /**
+     * Topic names by id from the form's Topics list, for labels.
+     *
+     * @return array<string, string>
+     */
+    private static function topicNames(Get $get): array
+    {
+        return collect(self::rows($get('telegram_topics')))
+            ->filter(fn (mixed $row): bool => is_array($row) && filled($row['id'] ?? null))
+            ->mapWithKeys(fn (array $row): array => [(string) $row['id'] => (string) ($row['name'] ?? '')])
+            ->all();
     }
 
     /**

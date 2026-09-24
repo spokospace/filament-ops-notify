@@ -2,6 +2,7 @@
 
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Repeater;
 use Filament\Schemas\Components\Section;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -111,6 +112,41 @@ describe('settings slide-over', function () {
             ->assertSchemaComponentExists('topics', checkComponentUsing: $section(true, 'Zapytania #3 · Błędy #2'))
             ->assertSchemaComponentExists('routing', checkComponentUsing: $section(true, 'inquiry.* → Zapytania · build.* (Disabled)'))
             ->assertSchemaComponentExists('forwarding', checkComponentUsing: $section(false, null));
+    });
+
+    it('collapses each saved row to a one-line label', function () {
+        app(SettingsStore::class)->save([
+            'telegram_topics' => [['id' => '3', 'name' => 'Zapytania']],
+            'events' => ['inquiry.*' => ['topic' => '3'], 'build.*' => ['enabled' => false]],
+        ]);
+
+        $rows = fn (array $expected): Closure => function (Repeater $repeater) use ($expected): bool {
+            $actual = [];
+            foreach ($repeater->getItems() as $key => $item) {
+                $actual[] = [(string) $repeater->getItemLabel($key), $repeater->isCollapsed($item)];
+            }
+
+            return $actual === $expected;
+        };
+
+        Livewire::test(OpsNotifyPage::class)
+            ->mountAction('settings')
+            ->assertSchemaComponentExists('topics.telegram_topics', checkComponentUsing: $rows([['Zapytania #3', true]]))
+            ->assertSchemaComponentExists('routing.events', checkComponentUsing: $rows([
+                ['inquiry.* → Zapytania', true],
+                ['build.* (Disabled)', true],
+            ]));
+    });
+
+    it('keeps a new, empty row open for editing', function () {
+        Livewire::test(OpsNotifyPage::class)
+            ->mountAction('settings')
+            ->fillForm(['events' => [['pattern' => null, 'topic' => null, 'enabled' => true]]], 'mountedActionSchema0')
+            ->assertSchemaComponentExists('routing.events', checkComponentUsing: function (Repeater $repeater): bool {
+                $item = collect($repeater->getItems())->first();
+
+                return $item !== null && ! $repeater->isCollapsed($item);
+            });
     });
 
     it('imports topics the bot has seen', function () {
