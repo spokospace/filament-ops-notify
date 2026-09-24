@@ -15,12 +15,6 @@ use Spokospace\OpsNotify\OpsMessage;
  */
 final class MessageTemplate
 {
-    /** The placeholders every message has. */
-    public const FIXED_PLACEHOLDERS = [':title', ':body', ':event', ':service', ':level'];
-
-    /** The placeholders, as the documentation lists them. */
-    public const PLACEHOLDERS = [...self::FIXED_PLACEHOLDERS, ':field.Label', ':field.{Label with spaces}'];
-
     /** A title of just this, or a body of just DEFAULT_BODY, is the default part spelled out. */
     public const DEFAULT_TITLE = ':title';
 
@@ -52,43 +46,32 @@ final class MessageTemplate
     ) {}
 
     /**
-     * The template of the first pattern that matches the event, or null when none does (the
-     * default layout). A message sent withoutTemplate() never gets one.
+     * The template of the first pattern that matches the event, then the "*" template if there
+     * is one, or null (the default layout). A message sent withoutTemplate() (a test, a burst
+     * digest) keeps its title, body and fields whatever the templates say, and takes only the
+     * hashtag and service switches of "*": those are the panel's two toggles, and a test
+     * message should show what they do.
      *
      * @param  array<string, mixed>  $templates  Pattern => template (config('ops-notify.templates')).
      */
     public static function for(array $templates, OpsMessage $message): ?self
     {
+        // "*" is the default look: it applies when no other pattern does, wherever it is stored.
+        $default = array_key_exists('*', $templates) ? self::fromArray($templates['*']) : null;
+
         if (! $message->templated) {
-            return null;
+            return $default === null ? null : new self(hashtag: $default->hashtag, service: $default->service);
         }
 
-        $key = PatternMap::firstKey($templates, $message->event);
+        $key = PatternMap::firstKey(array_diff_key($templates, ['*' => true]), $message->event);
 
-        return $key === null ? null : self::fromArray($templates[$key]);
-    }
-
-    /**
-     * The placeholders a message offers: the fixed ones, then one per field, as the field must
-     * be written to be read back (":field.{Order number}" for a label with spaces).
-     *
-     * @return list<string>
-     */
-    public static function placeholders(OpsMessage $message): array
-    {
-        return [...self::FIXED_PLACEHOLDERS, ...array_map(self::fieldPlaceholder(...), array_map(strval(...), array_keys($message->fields)))];
-    }
-
-    public static function fieldPlaceholder(string $label): string
-    {
-        return preg_match('/^'.self::LABEL.'$/u', $label) ? ":field.{$label}" : ':field.{'.$label.'}';
+        return $key === null ? $default : self::fromArray($templates[$key]);
     }
 
     /**
      * Reads a template from config or settings. Anything of the wrong type (a hand-edited
      * value) counts as not set, so a bad template shows the default part, not an error. So do
-     * DEFAULT_TITLE and DEFAULT_BODY, the default parts spelled out, which Settings shows in
-     * place of an empty field.
+     * DEFAULT_TITLE and DEFAULT_BODY, the default parts spelled out.
      */
     public static function fromArray(mixed $data): self
     {

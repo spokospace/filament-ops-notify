@@ -27,9 +27,9 @@ reach Telegram with no code changes.
   (`inquiry.*` → *Inquiries*). Filament notifications are routed by title.
 - **Settings in the panel.** Token (encrypted), chat id, service name, topics and rules, all without
   touching `.env`.
-- **Message templates.** Change an event's title, body, fields and hashtag by pattern
-  (`inquiry.*` → *New inquiry from :field.Name*), and preview it on the latest logged message
-  before saving ([Message templates](docs/sending.md#message-templates)).
+- **Message templates.** Change an event's title, body, fields and hashtag by pattern in config
+  (`inquiry.*` → *New inquiry from :field.Name*); the panel switches the `[service]` prefix and
+  the `#event` line ([Message templates](docs/sending.md#message-templates)).
 - **Reliable delivery.** Queued, retried, rate-limit aware, and never breaks the request that sent it.
 - **Bot profile.** Pick an avatar (a preset or your own) and set the display name and
   descriptions from the panel.
@@ -50,7 +50,7 @@ Horizon state), and the history of every message sent, with failed ones ready to
 </picture>
 
 **Settings:** bot token, chat id and message language, forum topics that can be created in
-Telegram or imported from it, routing rules and message templates. Filled lists collapse to a
+Telegram or imported from it, routing rules and forwarding rules. Filled lists collapse to a
 one-line summary.
 
 <img alt="Settings slide-over with the Telegram connection and the topics list" src="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/settings-light.png" width="600">

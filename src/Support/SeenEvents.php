@@ -202,53 +202,6 @@ final class SeenEvents
     }
 
     /**
-     * The event names logged in the last days(), held-back messages included. Not counts(): that
-     * is cached, capped and without held-back messages, and a template preview should find an
-     * event logged a moment ago. The read comes off the index that covers counts(). [] when the
-     * log cannot be read.
-     *
-     * @return list<string>
-     */
-    public static function recentEvents(): array
-    {
-        try {
-            return array_values(array_map(strval(...), OpsNotifyLog::query()->where('created_at', '>=', self::since())->distinct()->pluck('event')->all()));
-        } catch (Throwable $e) {
-            Log::warning('[ops-notify] Could not read recent events for a template preview: '.$e->getMessage());
-
-            return [];
-        }
-    }
-
-    /**
-     * The latest logged message of an event the pattern matches, burst digests aside, for a
-     * template preview. Null when there is none, or the log cannot be read.
-     *
-     * @param  list<string>|null  $events  recentEvents(), when the caller has read them already.
-     */
-    public static function latestMessage(string $pattern, ?array $events = null): ?OpsNotifyLog
-    {
-        $events = array_values(array_filter($events ?? self::recentEvents(), fn (string $event): bool => Str::is($pattern, $event)));
-
-        if ($events === []) {
-            return null;
-        }
-
-        try {
-            return OpsNotifyLog::query()
-                ->whereIn('event', $events)
-                ->where('created_at', '>=', self::since())
-                ->whereNull('payload->'.OpsNotifyLog::DIGEST)
-                ->latest('id')
-                ->first();
-        } catch (Throwable $e) {
-            Log::warning('[ops-notify] Could not read a message for the template preview: '.$e->getMessage());
-
-            return null;
-        }
-    }
-
-    /**
      * Counts of one column's values without held-back burst messages; for one event, also
      * without burst digests, whose titles are not notification titles. Settings must open even when the history table is missing or
      * unreadable, or the cache is down, so a failed read suggests nothing.
