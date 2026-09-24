@@ -41,6 +41,11 @@ reach Telegram with no code changes.
 
 ## Screenshots
 
+**In Telegram:** a build notification as the bot delivers it to the *Builds* topic, with the
+`[service]` prefix, bold field labels, the `#event` hashtag and a button.
+
+<img alt="Telegram message from the bot: build completed, with duration, release and commit fields, a #build_completed hashtag and a View build button" src="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/telegram-build-completed.png" width="480">
+
 **The Ops Notify page:** the Telegram connection, where messages are delivered (queue and
 Horizon state), and the history of every message sent, with failed ones ready to resend.
 
