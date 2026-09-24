@@ -2,6 +2,8 @@
 
 namespace Spokospace\OpsNotify;
 
+use Illuminate\Foundation\Bus\PendingDispatch;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Localizable;
@@ -213,30 +215,56 @@ class OpsNotifier
         // Bell notifications without a title rule all share the default event name, so a build
         // notification and a new comment would count as one burst. Count those per title.
         $perTitle = $message->event === config('ops-notify.forward_database_notifications.default_event') && filled($message->title);
-        $key = $perTitle ? $message->event.'|'.$message->title : $message->event;
+        $eventKey = $perTitle ? $message->event.'|'.$message->title : $message->event;
+        // One event sent to different chats/topics must not share a counter, nor one digest: a
+        // quiet destination would be suppressed by a noisy one and the digest go to the wrong chat.
+        $key = $destination->channel.'|'.($destination->topic ?? '').'|'.$eventKey;
         $burst = $guard->hit($key);
 
         if (! $burst['held']) {
             return false;
         }
 
-        $log = $this->createLog($message, $destination, DeliveryStatus::Suppressed);
-
         if ($burst['first']) {
-            $startedAt = $burst['ends_at']->copy()->subMinutes($guard->windowMinutes())->getTimestamp();
+            try {
+                // Schedule before logging the suppressed row: a DB hiccup on the log must not cost
+                // the digest, or messages #12..N would be held silently with no summary ever sent.
+                $this->scheduleDigest($message, $destination, $key, $burst, $guard, $perTitle);
+            } catch (Throwable $e) {
+                Log::warning('[ops-notify] Could not schedule burst digest for "'.$message->event.'": '.$e->getMessage());
 
-            SendBurstDigest::dispatch($message->event, $destination, $message->level, $startedAt, $key, $perTitle ? $message->title : null)
-                ->delay($burst['ends_at'])
-                ->onConnection(config('ops-notify.queue.connection'))
-                ->onQueue(config('ops-notify.queue.name'));
+                // Without a digest the held messages vanish silently; let this one through instead.
+                return false;
+            }
         }
+
+        $log = $this->createLog($message, $destination, DeliveryStatus::Suppressed);
 
         return true;
     }
 
+    /**
+     * @param  array{held: bool, first: bool, ends_at: Carbon}  $burst
+     */
+    private function scheduleDigest(OpsMessage $message, Destination $destination, string $key, array $burst, BurstGuard $guard, bool $perTitle): void
+    {
+        $startedAt = $burst['ends_at']->copy()->subMinutes($guard->windowMinutes())->getTimestamp();
+
+        $this->route(
+            SendBurstDigest::dispatch($message->event, $destination, $message->level, $startedAt, $key, $perTitle ? $message->title : null)
+                ->delay($burst['ends_at'])
+        );
+    }
+
     private function dispatch(OpsMessage $message, Destination $destination, ?OpsNotifyLog $log): void
     {
-        SendOpsMessage::dispatch($message, $destination, $log)
+        $this->route(SendOpsMessage::dispatch($message, $destination, $log));
+    }
+
+    /** The connection and queue every ops job is dispatched on, in one place. */
+    private function route(PendingDispatch $dispatch): PendingDispatch
+    {
+        return $dispatch
             ->onConnection(config('ops-notify.queue.connection'))
             ->onQueue(config('ops-notify.queue.name'));
     }

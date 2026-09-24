@@ -3,6 +3,7 @@
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
+use Spokospace\OpsNotify\Channels\Telegram\TelegramChannel;
 
 it('sends a test notification', function () {
     Http::fake(['api.telegram.org/*' => Http::response(['ok' => true, 'result' => ['message_id' => 1]])]);
@@ -41,6 +42,14 @@ it('reports failure when --queue queues nothing because the event is disabled', 
         ->assertFailed();
 
     Http::assertNothingSent();
+});
+
+it('holds the discovery lock for the whole worst-case scan, not just 60s', function () {
+    // 10 pages x 10 s each: the lock must outlast the run, not expire at 60 s and let a second
+    // discovery start and clobber the first one's writes.
+    expect(TelegramChannel::discoveryLockSeconds(10))->toBe(115)
+        // A tiny timeout still keeps a sensible floor.
+        ->and(TelegramChannel::discoveryLockSeconds(1))->toBe(60);
 });
 
 it('lists chats and forum topics the bot has seen', function () {

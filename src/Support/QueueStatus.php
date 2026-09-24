@@ -35,11 +35,30 @@ final class QueueStatus
         return config("queue.connections.{$this->connection()}.driver") === 'sync';
     }
 
+    /** Memoises horizon() within the instance; null is a real result, so guard with a flag. */
+    private bool $horizonResolved = false;
+
+    private ?string $horizonStatus = null;
+
     /**
      * Horizon's own verdict, as `horizon:status` gives it: running, paused or inactive. Null when
      * Horizon is not installed, the jobs go to another driver, or Redis cannot be reached.
+     *
+     * summary() and warning() both need it on every render (including the table's poll); memoise
+     * so it costs one Redis round trip per instance, not two. Bound scoped, so that is per request.
      */
     public function horizon(): ?string
+    {
+        if ($this->horizonResolved) {
+            return $this->horizonStatus;
+        }
+
+        $this->horizonResolved = true;
+
+        return $this->horizonStatus = $this->resolveHorizon();
+    }
+
+    protected function resolveHorizon(): ?string
     {
         if (! $this->usesHorizon() || ! interface_exists(MasterSupervisorRepository::class)) {
             return null;
