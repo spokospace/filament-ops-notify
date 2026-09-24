@@ -290,15 +290,6 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
      *
      * @throws ChannelException
      */
-    /**
-     * How long to hold the chat-discovery lock: the whole worst-case scan (every page timing out),
-     * never less than a minute. Long enough that the lock cannot lapse before the run finishes.
-     */
-    public static function discoveryLockSeconds(int $timeout): int
-    {
-        return max(60, self::UPDATE_PAGES * max(0, $timeout) + 15);
-    }
-
     public function seen(): array
     {
         $key = 'ops-notify:telegram-seen:'.hash('sha256', (string) ($this->config['bot_token'] ?? ''));
@@ -331,6 +322,15 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
         } catch (LockTimeoutException) {
             throw new ChannelException('Another chat discovery for this bot is still running. Try again in a moment.');
         }
+    }
+
+    /**
+     * How long to hold the chat-discovery lock: the whole worst-case scan (every page timing out),
+     * never less than a minute. Long enough that the lock cannot lapse before the run finishes.
+     */
+    public static function discoveryLockSeconds(int $timeout): int
+    {
+        return max(60, self::UPDATE_PAGES * max(0, $timeout) + 15);
     }
 
     /**
