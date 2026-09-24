@@ -43,6 +43,7 @@ Promote the bot to admin: group → **Administrators** → **Add admin** → pic
 | Admin right | Needed for |
 |---|---|
 | *Manage topics* | **Create topic** in Settings |
+| *Invite users via link* | **Invites**: links for new members |
 
 That is the only right the package uses; the others can be switched off. Group admin rights have
 no "send messages" switch: every member can post, and being an admin also lets the bot post in

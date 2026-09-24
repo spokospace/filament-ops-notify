@@ -36,8 +36,9 @@ It must be a **group**. Channels have no topics.
 
    Telegram upgrades the group to a supergroup, and its id changes to one starting with `-100`.
 3. Promote the bot to admin: group settings → **Administrators** → **Add admin** → pick the bot.
-   The only right the package uses is **Manage topics**, for *Create topic* in Settings. You can
-   switch the other rights off. Being an admin also lets the bot post in closed topics.
+   The package uses two rights: **Manage topics**, for *Create topic* in Settings, and **Invite
+   users via link**, for [invite links](#6-invite-people). You can switch the other rights off.
+   Being an admin also lets the bot post in closed topics.
 
 A common layout is one group for all services, with one topic per kind of event: *Inquiries*,
 *Errors*, *Builds*, *Comments*.
@@ -120,5 +121,22 @@ back to BotFather:
 
 **Keep current** leaves the avatar as it is, and **Remove avatar** deletes it. Only the fields you
 change are sent to Telegram. The button appears once both a bot token and a chat id are saved.
+
+## 6. Invite people
+
+A bot cannot add people to a group, and it never sees phone numbers, so new members join through
+a link. **Ops Notify → Invites → Create invite** makes one:
+
+| Field | Meaning |
+|---|---|
+| For | Who the link is for, e.g. *Anna*. Telegram shows it in the group's list of invite links (32 characters) |
+| Valid for | 1 hour, 24 hours or 7 days |
+| Single use | On by default: the link stops working after one person joins |
+
+Copy the link and send it however you like. Anyone who has it can join until it is used, expires
+or is revoked, so treat it like a password. The list shows each link as *Active*, *Expired* or
+*Revoked*, with **Revoke** for active ones. Links are stored encrypted. The bot needs the
+**Invite users via link** admin right, and only people who may manage (see
+[Who may use it](installation.md#who-may-use-it)) see Invites.
 
 Next: [manage topics and route events](routing-and-topics.md).

@@ -109,6 +109,14 @@ class OpsNotifyPage extends Page implements HasTable
                 ->schema(fn (): array => app(BotProfileForm::class)->components())
                 ->action(fn (array $data) => app(BotProfileForm::class)->apply($data)),
 
+            Action::make('invites')
+                ->authorize(fn (): bool => static::canManage())
+                ->label(Trans::get('invites.title'))
+                ->icon(Heroicon::OutlinedLink)
+                ->color('gray')
+                ->visible(fn (): bool => $this->telegramIsConfigured())
+                ->url(fn (): string => OpsNotifyInvitesPage::getUrl()),
+
             Action::make('sendTest')
                 ->authorize(fn (): bool => static::canManage())
                 ->label(Trans::get('actions.send_test'))

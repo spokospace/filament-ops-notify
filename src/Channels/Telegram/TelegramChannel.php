@@ -221,6 +221,33 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
     }
 
     /**
+     * An invite link to the configured chat. The bot needs the "Invite users via link" admin right.
+     * Telegram limits the link's name to 32 characters.
+     *
+     * @return string The invite link, e.g. https://t.me/+AbCd…
+     */
+    public function createInviteLink(string $name, ?\DateTimeInterface $expiresAt = null, ?int $memberLimit = null): string
+    {
+        $payload = ['chat_id' => $this->chatId(), 'name' => mb_substr($name, 0, 32)];
+
+        if ($expiresAt !== null) {
+            $payload['expire_date'] = $expiresAt->getTimestamp();
+        }
+
+        if ($memberLimit !== null) {
+            $payload['member_limit'] = max(1, min(99999, $memberLimit));
+        }
+
+        return (string) $this->call('createChatInviteLink', $payload)['invite_link'];
+    }
+
+    /** Stops an invite link from working. */
+    public function revokeInviteLink(string $link): void
+    {
+        $this->call('revokeChatInviteLink', ['chat_id' => $this->chatId(), 'invite_link' => $link]);
+    }
+
+    /**
      * Creates a forum topic in the configured chat. The bot needs the "Manage topics" admin right.
      *
      * @return string The new topic's id (message_thread_id).

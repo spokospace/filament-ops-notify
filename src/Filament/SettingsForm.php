@@ -325,7 +325,6 @@ class SettingsForm
         return app(OpsNotifier::class)->telegram();
     }
 
-    /** Disables a field whose value comes from .env/config, and says so. */
     /**
      * A section around one list: collapsed on load once the list has saved items, with the
      * items summarised in the header so they read without expanding. Empty, it stays open.
@@ -360,6 +359,7 @@ class SettingsForm
         return is_array($value) ? $value : [];
     }
 
+    /** Disables a field whose value comes from .env/config, and says so. */
     private function locked(Field $field, ?string $hint = null): Field
     {
         $isLocked = $this->store->isLocked($field->getName());

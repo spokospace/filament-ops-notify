@@ -8,6 +8,7 @@ use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Gate;
+use Spokospace\OpsNotify\Filament\Pages\OpsNotifyInvitesPage;
 use Spokospace\OpsNotify\Filament\Pages\OpsNotifyPage;
 use UnitEnum;
 
@@ -63,7 +64,7 @@ class OpsNotifyPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
-        $panel->pages([OpsNotifyPage::class]);
+        $panel->pages([OpsNotifyPage::class, OpsNotifyInvitesPage::class]);
     }
 
     public function boot(Panel $panel): void {}
