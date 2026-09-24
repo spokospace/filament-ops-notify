@@ -60,6 +60,24 @@ it('skips the horizon checks for other drivers', function () {
         ->and(queueStatus()->horizon())->toBeNull();
 });
 
+it('memoises the horizon status instead of resolving it on every call', function () {
+    // summary() and warning() both call horizon() on every render; it must cost one lookup, not two.
+    $status = app(QueueStatus::class);
+
+    // Prime the memo with a value resolveHorizon() would never return here (Horizon isn't installed,
+    // so a fresh resolve yields null). horizon() returning it proves the cached value is reused.
+    (function () {
+        $this->horizonResolved = true;
+        $this->horizonStatus = 'running';
+    })->call($status);
+
+    expect($status->horizon())->toBe('running');
+});
+
+it('shares one QueueStatus per request, so the horizon check is not repeated', function () {
+    expect(app(QueueStatus::class))->toBe(app(QueueStatus::class));
+});
+
 it('warns when messages sit in the queue', function () {
     config(['queue.default' => 'database']);
     OpsNotifyLog::query()->create(['channel' => 'telegram', 'event' => 'x', 'level' => 'info', 'payload' => [], 'status' => DeliveryStatus::Queued])

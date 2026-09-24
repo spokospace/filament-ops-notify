@@ -20,6 +20,7 @@ use Spokospace\OpsNotify\Listeners\ForwardLaravelNotification;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\Notifications\OpsChannel;
 use Spokospace\OpsNotify\Settings\SettingsStore;
+use Spokospace\OpsNotify\Support\QueueStatus;
 
 class OpsNotifyServiceProvider extends PackageServiceProvider
 {
@@ -49,6 +50,9 @@ class OpsNotifyServiceProvider extends PackageServiceProvider
         $this->app->singleton(SettingsStore::class);
         $this->app->singleton(ChannelManager::class);
         $this->app->singleton(OpsNotifier::class);
+        // Scoped, not singleton: one instance per request so its memoised Horizon status is shared
+        // by summary() and warning() in a render, but never carried across requests.
+        $this->app->scoped(QueueStatus::class);
     }
 
     public function packageBooted(): void
