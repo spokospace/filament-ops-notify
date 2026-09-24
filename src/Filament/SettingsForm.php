@@ -11,6 +11,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
@@ -21,6 +22,8 @@ use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\OpsNotifier;
 use Spokospace\OpsNotify\Settings\SettingsStore;
 use Spokospace\OpsNotify\Support\Locales;
+use Spokospace\OpsNotify\Support\PatternMap;
+use Spokospace\OpsNotify\Support\SeenEvents;
 use Spokospace\OpsNotify\Support\Trans;
 
 /**
@@ -35,6 +38,7 @@ class SettingsForm
     public function components(): array
     {
         $saved = $this->store->formValues();
+        $seenEvents = SeenEvents::counts();
 
         // One line per list item: the section header lists them, and each collapsed row shows its own.
         $describeTopic = fn (array $row): string => trim(($row['name'] ?? '').' #'.($row['id'] ?? ''));
@@ -122,7 +126,13 @@ class SettingsForm
                         $this->compact(Repeater::make('events'), 'pattern', $describeRule)
                             ->hiddenLabel()
                             ->schema([
-                                TextInput::make('pattern')->label(Trans::get('settings.pattern'))->required()->placeholder('inquiry.*'),
+                                TextInput::make('pattern')
+                                    ->label(Trans::get('settings.pattern'))
+                                    ->required()
+                                    ->placeholder('inquiry.*')
+                                    ->datalist(SeenEvents::patterns($seenEvents))
+                                    // Refreshes the "seen recently" line below, which marks unmatched events.
+                                    ->live(onBlur: true),
                                 $this->topicSelect('topic', '../../telegram_topics')->label(Trans::get('settings.topic')),
                                 Toggle::make('enabled')->label(Trans::get('page.enabled'))->default(true)->inline(false),
                             ])
@@ -131,6 +141,9 @@ class SettingsForm
                             ->addActionLabel(Trans::get('settings.add_rule')),
                         Trans::get('settings.routing_description'),
                     ),
+                    Text::make(fn (Get $get): string => $this->describeSeenEvents($seenEvents, $get('events')))
+                        ->key('seen_events')
+                        ->visible($seenEvents !== []),
                 ]),
 
             $this->summarized(
@@ -145,10 +158,15 @@ class SettingsForm
                         $this->compact(Repeater::make('forward_map'), 'title', $describeForward)
                             ->hiddenLabel()
                             ->schema([
-                                TextInput::make('title')->label(Trans::get('table.title'))->required()->placeholder(Trans::get('settings.forward_title_placeholder')),
+                                TextInput::make('title')
+                                    ->label(Trans::get('table.title'))
+                                    ->required()
+                                    ->placeholder(Trans::get('settings.forward_title_placeholder'))
+                                    ->datalist(SeenEvents::titles()),
                                 TextInput::make('event')
                                     ->label(Trans::get('table.event'))
                                     ->placeholder('inquiry.created')
+                                    ->datalist(array_keys($seenEvents))
                                     ->required(fn (Get $get): bool => (bool) $get('forward')),
                                 Toggle::make('forward')->label(Trans::get('settings.forward'))->default(true)->inline(false),
                             ])
@@ -240,6 +258,37 @@ class SettingsForm
         }
 
         return $data;
+    }
+
+    /**
+     * "Seen in the last 30 days: inquiry.created (12) · order_placed (3, default topic)". Marks
+     * the events that the rules in the form send to the default topic (no match, or a rule
+     * without a topic) or do not send at all (a disabled rule).
+     *
+     * @param  array<string, int>  $counts  SeenEvents::counts()
+     */
+    private function describeSeenEvents(array $counts, mixed $rules): string
+    {
+        // Pattern => rule, the shape PatternMap and OpsNotifier::destinationFor() work with.
+        $map = collect(self::rows($rules))
+            ->filter(fn (mixed $row): bool => is_array($row) && filled($row['pattern'] ?? null))
+            ->mapWithKeys(fn (array $row): array => [trim((string) $row['pattern']) => $row])
+            ->all();
+
+        $events = collect($counts)->map(function (int $count, string|int $event) use ($map): string {
+            $key = PatternMap::firstKey($map, (string) $event);
+            $rule = $key === null ? [] : $map[$key];
+
+            $note = match (true) {
+                ! ($rule['enabled'] ?? true) => Trans::get('page.disabled'),
+                blank($rule['topic'] ?? null) => Trans::get('settings.seen_default'),
+                default => null,
+            };
+
+            return "{$event} ({$count}".($note === null ? '' : ", {$note}").')';
+        });
+
+        return Trans::get('settings.seen_events', ['days' => SeenEvents::days(), 'events' => $events->implode(' · ')]);
     }
 
     /**

@@ -39,9 +39,9 @@ it('sums the rights up in one line', function (array $member, string $text, bool
 
     expect(telegram()->rightsSummary())->toBe(['text' => $text, 'ok' => $ok]);
 })->with([
-    'admin with both' => [['status' => 'administrator', 'can_manage_topics' => true, 'can_invite_users' => true], 'Admin with all needed rights', true],
-    'creator' => [['status' => 'creator'], 'Admin with all needed rights', true],
-    'admin missing one' => [['status' => 'administrator', 'can_manage_topics' => true, 'can_invite_users' => false], 'Admin, missing: Invite users via link', false],
+    'admin with both' => [['status' => 'administrator', 'can_manage_topics' => true, 'can_invite_users' => true], 'All rights', true],
+    'creator' => [['status' => 'creator'], 'All rights', true],
+    'admin missing one' => [['status' => 'administrator', 'can_manage_topics' => true, 'can_invite_users' => false], 'Missing: Invite users via link', false],
     'plain member' => [['status' => 'member'], 'Not an admin of the chat', false],
     'removed' => [['status' => 'kicked'], 'Not in the chat', false],
 ]);
@@ -87,7 +87,7 @@ describe('page', function () {
     it('shows the bot rights in the status', function () {
         fakeMember(['status' => 'administrator', 'can_manage_topics' => true, 'can_invite_users' => false]);
 
-        Livewire::test(OpsNotifyPage::class)->assertSee('Admin, missing: Invite users via link');
+        Livewire::test(OpsNotifyPage::class)->assertSee('Missing: Invite users via link');
     });
 
     it('explains a missing invite right when creating a link', function () {

@@ -27,6 +27,24 @@ empty.
 Routing rules pick topics by name ("Inquiries #3"), and the history shows the name as well.
 Removing a topic from the list does not delete it in Telegram.
 
+## Where event names come from
+
+- `OpsMessage::make('inquiry.created')`: the name you pass.
+- A notification sent through the `ops` channel, or a forwarded Laravel notification:
+  `opsEvent()` if the notification defines it, else the class name in snake case
+  (`App\Notifications\OrderPlaced` → `order_placed`).
+- A Filament bell notification: the event its title rule gives it
+  ([Forwarding Filament notifications](#forwarding-filament-notifications)), else
+  `filament.notification`.
+
+The history on the plugin's page shows each message's event. Settings also suggests them: the
+**Pattern** field offers event names sent in the last 30 days (or fewer, if `log.prune_after_days` is lower; most frequent first), together
+with the wildcard form of each prefix (`inquiry.created` also offers `inquiry.*`). A line under
+the list counts these events, e.g. `inquiry.created (12) · order_placed (3, default topic)`.
+*default topic* marks events that no rule matches, or whose rule has no topic; *Disabled* marks
+events a disabled rule drops. The suggestions are refreshed every five minutes. Typing a name that
+was never sent is fine.
+
 ## Event routing
 
 **Settings → Event routing** is a list of rules. Each rule has a `Str::is()` pattern, a topic and an
@@ -77,6 +95,10 @@ identical copy through, using `Cache::add`. So:
 
 Titles that no rule matches use `default_event` (`filament.notification`). Set it to `null` to
 forward only the titles you listed.
+
+Title patterns work like event patterns: `*` matches anything, so `New inquiry*` also matches
+"New inquiry from Anna". The **Title** field suggests the titles of recent bell notifications that
+no rule renamed yet, i.e. those sent as `filament.notification`.
 
 The title rules pair with event routing. `New inquiry*` becomes `inquiry.created`, and
 `inquiry.*` sends it to the Inquiries topic.
