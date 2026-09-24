@@ -79,8 +79,7 @@ class SettingsForm
                         Select::make('locale')
                             ->label(Trans::get('settings.locale'))
                             ->options(Locales::options())
-                            ->placeholder(Trans::get('settings.locale_default', ['locale' => config('app.locale')]))
-                            ->columnSpanFull(),
+                            ->placeholder(Trans::get('settings.locale_default', ['locale' => config('app.locale')])),
                         Trans::get('settings.locale_help'),
                     ),
                     $this->locked(
@@ -88,8 +87,7 @@ class SettingsForm
                             ->label(Trans::get('settings.bot_token'))
                             ->password()
                             ->autocomplete('off')
-                            ->placeholder($this->store->hasStored('telegram_bot_token') ? Trans::get('settings.bot_token_saved') : '123456789:AA...')
-                            ->columnSpanFull(),
+                            ->placeholder($this->store->hasStored('telegram_bot_token') ? Trans::get('settings.bot_token_saved') : '123456789:AA...'),
                         in_array('telegram_bot_token', $this->store->unreadableSecrets(), true)
                             ? Trans::get('settings.bot_token_unreadable')
                             : null,
