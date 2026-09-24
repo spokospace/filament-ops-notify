@@ -2,6 +2,7 @@
 
 namespace Spokospace\OpsNotify;
 
+use Illuminate\Support\Facades\Log;
 use Spokospace\OpsNotify\Enums\Level;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\Support\Button;
@@ -164,16 +165,23 @@ final class OpsMessage
         return implode("\n", $this->lines);
     }
 
-    /** Queue the message. Returns the log row, or null when notifications or this event are disabled. */
     /**
      * Queues the message; never throws. An identical message sent again within
      * ops-notify.dedupe_seconds is dropped (returns null), so code that runs once per user or
-     * per retry does not repeat itself in the chat.
+     * per retry does not repeat itself in the chat. Null is also returned when notifications or
+     * this event are disabled (see OpsNotifier::send()).
      */
     public function send(): ?OpsNotifyLog
     {
-        if (! Support\Dedupe::isFirst('message', $this->toArray())) {
-            return null;
+        try {
+            if (! Support\Dedupe::isFirst('message', $this->toArray())) {
+                return null;
+            }
+        } catch (\Throwable $e) {
+            // The dedupe check hits the cache; a cache outage must not fail the request that
+            // triggered the message (saving an inquiry, finishing a build). Send it anyway so
+            // the "never throws" promise holds — a duplicate is better than a lost 500.
+            Log::warning('[ops-notify] Dedupe check failed for "'.$this->event.'": '.$e->getMessage());
         }
 
         return app(OpsNotifier::class)->send($this);
