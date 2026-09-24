@@ -4,6 +4,7 @@ namespace Spokospace\OpsNotify\Notifications;
 
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
 use LogicException;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\OpsNotifier;
@@ -54,8 +55,14 @@ class OpsChannel
         $message->topic ??= isset($route['topic']) ? (string) $route['topic'] : null;
 
         // Notification::send($admins, ...) calls this once per admin; send one message.
-        if (Dedupe::isFirst('channel', $message->toArray())) {
-            $this->notifier->send($message);
+        try {
+            if (Dedupe::isFirst('channel', $message->toArray())) {
+                $this->notifier->send($message);
+            }
+        } catch (\Throwable $e) {
+            // A dead cache here would otherwise abort Laravel's loop over notifiables, so the
+            // remaining admins would lose their other channels (database, mail) too.
+            Log::warning('[ops-notify] Could not deliver the ops channel notification: '.$e->getMessage());
         }
     }
 }

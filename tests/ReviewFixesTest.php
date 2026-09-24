@@ -3,6 +3,7 @@
 use Filament\Facades\Filament;
 use Illuminate\Http\Client\Request;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Livewire\Livewire;
@@ -23,6 +24,31 @@ class DeployFailed extends Notification
     public function toOps(object $notifiable): OpsMessage
     {
         return OpsMessage::make('build.failed')->error()->title('Deploy failed');
+    }
+}
+
+/** A second channel, so a test can prove the ops channel's failure does not stop the others. */
+class RecordingChannel
+{
+    public static int $count = 0;
+
+    public function send(object $notifiable, Notification $notification): void
+    {
+        self::$count++;
+    }
+}
+
+class BuildBroke extends Notification
+{
+    public function via(object $notifiable): array
+    {
+        // ops first: if it throws, Laravel never reaches the recording channel.
+        return ['ops', RecordingChannel::class];
+    }
+
+    public function toOps(object $notifiable): OpsMessage
+    {
+        return OpsMessage::make('build.failed')->error()->title('Build broke');
     }
 }
 
@@ -134,4 +160,39 @@ it('marks a rate-limited message failed on the sync queue instead of losing it',
 
     expect($log->status)->toBe(DeliveryStatus::Failed)
         ->and($log->error)->toContain('Too Many Requests');
+});
+
+it('sends the message instead of a 500 when the dedupe cache is down', function () {
+    Http::fake(['api.telegram.org/*' => Http::response(['ok' => true, 'result' => ['message_id' => 1]])]);
+
+    // Only the dedupe lookup is broken; everything else in the cache keeps working.
+    $store = Cache::store();
+    Cache::partialMock()
+        ->shouldReceive('add')
+        ->andReturnUsing(function (string $key, ...$args) use ($store) {
+            if (str_starts_with($key, 'ops-notify:dedupe:')) {
+                throw new RuntimeException('Connection refused [tcp://redis:6379]');
+            }
+
+            return $store->add($key, ...$args);
+        });
+
+    $log = OpsMessage::make('inquiry.created')->title('New inquiry')->send();
+
+    expect($log)->not->toBeNull()
+        ->and($log->fresh()->status)->toBe(DeliveryStatus::Sent);
+    Http::assertSentCount(1);
+});
+
+it('keeps the other channels when the ops channel cannot reach the cache', function () {
+    RecordingChannel::$count = 0;
+    // Every cache write fails, so the ops channel's dedupe check throws.
+    Cache::partialMock()
+        ->shouldReceive('add')
+        ->andThrow(new RuntimeException('cache down'));
+
+    NotificationFacade::send([$this->admin(), $this->admin()], new BuildBroke);
+
+    // Both notifiables still reached the recording channel; the ops failure did not abort the loop.
+    expect(RecordingChannel::$count)->toBe(2);
 });
