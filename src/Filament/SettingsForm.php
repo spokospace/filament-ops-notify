@@ -104,7 +104,7 @@ class SettingsForm
                         $this->topicSelect('telegram_topic', 'telegram_topics')->label(Trans::get('settings.default_topic')),
                         Trans::get('settings.default_topic_help'),
                     ),
-                    $this->locked(Toggle::make('enabled')->label(Trans::get('settings.enabled'))),
+                    $this->locked(Toggle::make('enabled')->label(Trans::get('settings.enabled'))->columnSpanFull()),
                     // Both are parts of the "*" template (toSettings()), so templates set in config lock them.
                     $this->locked(
                         Toggle::make('show_service')->label(Trans::get('settings.show_service', ['service' => (string) $saved['service']])),
