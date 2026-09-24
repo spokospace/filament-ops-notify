@@ -15,7 +15,7 @@ use Spokospace\OpsNotify\Settings\SettingsStore;
  * is a creator receiving the container and the channel config (plus `service`, the label
  * prefixing messages). New drivers are added without touching the sending apps:
  *
- *     app(ChannelManager::class)->extend('whatsapp', fn ($app, array $config) => new WhatsAppChannel($config));
+ *     app(ChannelManager::class)->extend('webhook', fn ($app, array $config) => new WebhookChannel($config));
  */
 class ChannelManager
 {

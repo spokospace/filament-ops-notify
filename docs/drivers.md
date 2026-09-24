@@ -1,7 +1,7 @@
 # Drivers
 
-The core is channel-agnostic. Telegram is the built-in driver, and others (WhatsApp Cloud API,
-Slack, …) are added without changing the apps that send messages.
+Telegram is the built-in driver. A driver is a class that delivers an `OpsMessage` somewhere
+else, for example to your own webhook; apps that send messages do not change.
 
 ## Writing a driver
 
@@ -13,7 +13,7 @@ use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\Support\Destination;
 
-class WhatsAppChannel implements Channel
+class WebhookChannel implements Channel
 {
     public function __construct(private array $config) {}
 
@@ -22,12 +22,12 @@ class WhatsAppChannel implements Channel
         // Deliver, and return the provider's message id.
         // Throw ChannelException on failure:
         //   retryAfter: seconds the provider asked to wait (rate limit)
-        //   permanent:  true when retrying cannot help (bad credentials, unknown recipient)
+        //   permanent:  true when retrying cannot help (bad URL, rejected payload)
     }
 
     public function isConfigured(): bool
     {
-        return filled($this->config['token'] ?? null);
+        return filled($this->config['url'] ?? null);
     }
 }
 ```
@@ -40,17 +40,17 @@ Register the driver and point a channel at it:
 ```php
 // In a service provider's boot()
 app(\Spokospace\OpsNotify\ChannelManager::class)
-    ->extend('whatsapp', fn ($app, array $config) => new WhatsAppChannel($config));
+    ->extend('webhook', fn ($app, array $config) => new WebhookChannel($config));
 ```
 
 ```php
 // config/ops-notify.php
 'channels' => [
     'telegram' => [/* … */],
-    'whatsapp' => ['driver' => 'whatsapp', 'token' => env('WHATSAPP_TOKEN')],
+    'webhook' => ['driver' => 'webhook', 'url' => env('OPS_WEBHOOK_URL')],
 ],
 'events' => [
-    'error.*' => ['channel' => 'whatsapp'],
+    'error.*' => ['channel' => 'webhook'],
 ],
 ```
 

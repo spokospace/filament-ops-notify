@@ -67,7 +67,7 @@ it('renders the page in the app locale', function () {
 
     // The page name is a product name and stays the same in every locale.
     Livewire::test(OpsNotifyPage::class)
-        ->assertSee('Spoko DashBot')
+        ->assertSee('Ops Notify')
         ->assertSee('Połączono jako @shop_bot')
         ->assertSee('Wyślij test')
         ->assertSee('Nie wysłano jeszcze żadnych powiadomień');

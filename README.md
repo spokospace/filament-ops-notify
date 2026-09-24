@@ -33,16 +33,15 @@ reach Telegram with no code changes.
 - **History.** Every message is logged with its status and Telegram error, and failed ones can be
   resent.
 - **`ops` notification channel and a fluent `OpsMessage`** for events that are not bell notifications.
-- **Channel-agnostic core.** Telegram today; other drivers plug in.
 
 ## Screenshots
 
-**The Spoko DashBot page:** the Telegram connection, where messages are delivered (queue and
+**The Ops Notify page:** the Telegram connection, where messages are delivered (queue and
 Horizon state), and the history of every message sent, with failed ones ready to resend.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/page-dark.png">
-  <img alt="Spoko DashBot page with the connection status and the message history" src="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/page-light.png">
+  <img alt="Ops Notify page with the connection status and the message history" src="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/page-light.png">
 </picture>
 
 **Settings:** bot token, chat id and message language, plus forum topics that can be created in
@@ -91,7 +90,7 @@ Delivery runs on the queue, so the app needs a worker (Horizon or `queue:work`) 
 
 1. Create a bot with [@BotFather](https://t.me/BotFather) and a Telegram group with **Topics**
    turned on. Add the bot and promote it to admin.
-2. In the panel, open **Spoko DashBot → Settings** and enter the bot token and chat id.
+2. In the panel, open **Ops Notify → Settings** and enter the bot token and chat id.
 3. Press **Send test**.
 
 The [setup checklist](docs/setup-checklist.md) has every step in order. Installing with an AI
@@ -128,10 +127,10 @@ with an **Open site** button below. The title and field labels are bold.
   instructions for AI agents
 - [Installation](docs/installation.md): requirements, migrations, plugin options
 - [Telegram setup](docs/telegram-setup.md): bot, group, topics, finding the chat id, bot profile
-- [Settings](docs/settings.md): panel vs `.env`, every option, languages, the Spoko DashBot page
+- [Settings](docs/settings.md): panel vs `.env`, every option, languages, the Ops Notify page
 - [Routing and topics](docs/routing-and-topics.md): topics, event rules, forwarding Filament notifications
 - [Sending messages](docs/sending.md): the `ops` channel, the `OpsMessage` API, delivery, tests
-- [Drivers](docs/drivers.md): adding a channel such as WhatsApp
+- [Drivers](docs/drivers.md): writing your own channel driver
 - [Troubleshooting](docs/troubleshooting.md): common Telegram and queue errors and fixes
 
 ## Testing

@@ -10,7 +10,7 @@ the rest is optional. Each step links to the details.
 | 1 | Server | Install the package and register the plugin in the panel ([Installation](installation.md)). Make sure a queue worker and the scheduler run |
 | 2 | Telegram, [@BotFather](https://t.me/BotFather) | Create a bot with `/newbot` and copy the token ([Create a bot](telegram-setup.md#1-create-a-bot)) |
 | 3 | Telegram | Create a group, turn on **Topics**, add the bot and **promote it to admin** ([Group](telegram-setup.md#2-create-a-group-with-topics)) |
-| 4 | Panel, **Spoko DashBot → Settings** | Paste the **bot token** and save |
+| 4 | Panel, **Ops Notify → Settings** | Paste the **bot token** and save |
 | 5 | Telegram and server | Send `/ping@your_bot` in the group and in each topic, then within 24 hours run `php artisan ops-notify:telegram-chats` to read the **chat id** ([Chat id](telegram-setup.md#3-find-the-chat-id)) |
 | 6 | Panel, **Settings** | Enter the chat id (the `-100…` one) and save |
 | 7 | Panel | Check that the status says **Connected as @your_bot**, then press **Send test** |
@@ -79,7 +79,7 @@ Part of the setup happens in Telegram and needs a human.
    php artisan ops-notify:test --queue
    ```
 
-   Then check that the queued row turns *Sent* in the history on the **Spoko DashBot** page.
+   Then check that the queued row turns *Sent* in the history on the **Ops Notify** page.
 6. Run `php artisan schedule:list` and check that `ops-notify:prune-log` is listed.
 
 ### Stop and ask the human to

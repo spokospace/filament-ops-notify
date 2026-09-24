@@ -20,7 +20,7 @@ use UnitEnum;
 class OpsNotifyPlugin implements Plugin
 {
     /** The page's name in the menu and title bar. A product name, so it is not translated. */
-    public const DEFAULT_NAVIGATION_LABEL = 'Spoko DashBot';
+    public const DEFAULT_NAVIGATION_LABEL = 'Ops Notify';
 
     protected ?string $navigationLabel = null;
 
