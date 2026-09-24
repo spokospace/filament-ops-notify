@@ -176,6 +176,8 @@ class OpsNotifyPage extends Page implements HasTable
                         ->label(Trans::get('rights.title'))
                         ->badge()
                         ->state(fn (): ?string => $this->botRights()['text'] ?? null)
+                        // The six-column layout can truncate a list of missing rights.
+                        ->tooltip(fn (?string $state): ?string => $state)
                         ->color(fn (): string => ($this->botRights()['ok'] ?? false) ? 'success' : 'warning')
                         ->visible(fn (): bool => $this->botRights() !== null),
                     TextEntry::make('delivery')

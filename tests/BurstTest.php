@@ -11,6 +11,7 @@ use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\OpsNotifier;
 use Spokospace\OpsNotify\Support\BurstGuard;
 use Spokospace\OpsNotify\Support\Destination;
+use Spokospace\OpsNotify\Support\SeenEvents;
 
 beforeEach(function () {
     config(['queue.default' => 'database', 'ops-notify.burst' => ['max_per_event' => 2, 'window_minutes' => 5]]);
@@ -81,6 +82,18 @@ it('counts bell notifications without a title rule per title', function () {
     Queue::assertPushed(SendOpsMessage::class, fn (SendOpsMessage $job): bool => $job->message->event === 'filament.notification'
         && $job->message->title === '1 more "Build completed" message was held back in 5 minutes'
         && $job->message->lines === []);
+});
+
+it('marks the digest in the log, so Settings does not suggest its title', function () {
+    burst(3, 'filament.notification', 'Build completed');
+
+    $digest = Queue::pushed(SendBurstDigest::class)->first();
+    $digest->handle(app(OpsNotifier::class), app(BurstGuard::class));
+
+    $marked = OpsNotifyLog::query()->where('payload->'.OpsNotifyLog::DIGEST, true)->pluck('title')->all();
+
+    expect($marked)->toBe(['1 more "Build completed" message was held back in 5 minutes'])
+        ->and(SeenEvents::titles())->toBe(['Build completed']);
 });
 
 it('still counts named events as a whole, whatever the titles', function () {

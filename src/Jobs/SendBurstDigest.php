@@ -50,7 +50,7 @@ class SendBurstDigest implements ShouldQueue
             // Counted per title, every held message had this title: no breakdown to list.
             ->lines($this->title === null ? $this->topTitles() : []));
 
-        $notifier->queue($message, $this->destination);
+        $notifier->queue($message, $this->destination, digest: true);
     }
 
     /** @return list<string> e.g. "12× Database connection lost", most frequent first. */

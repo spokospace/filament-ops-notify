@@ -15,8 +15,8 @@ use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\Settings\SettingsStore;
 use Spokospace\OpsNotify\Support\BurstGuard;
 use Spokospace\OpsNotify\Support\Destination;
-use Spokospace\OpsNotify\Support\PatternMap;
 use Spokospace\OpsNotify\Support\QueueStatus;
+use Spokospace\OpsNotify\Support\RoutingRules;
 use Throwable;
 
 class OpsNotifier
@@ -110,10 +110,12 @@ class OpsNotifier
     /**
      * @internal Queues a message that has already passed routing and the burst guard, such as
      *           a burst digest. May throw on the sync queue.
+     *
+     * @param  bool  $digest  Marks the log row as a burst digest.
      */
-    public function queue(OpsMessage $message, Destination $destination): ?OpsNotifyLog
+    public function queue(OpsMessage $message, Destination $destination, bool $digest = false): ?OpsNotifyLog
     {
-        $log = $this->createLog($message, $destination);
+        $log = $this->createLog($message, $destination, digest: $digest);
         $this->dispatch($message, $destination, $log);
 
         return $log;
@@ -153,11 +155,9 @@ class OpsNotifier
             return null;
         }
 
-        $events = (array) config('ops-notify.events', []);
-        $key = PatternMap::firstKey($events, $message->event);
-        $rule = $key === null ? [] : (array) $events[$key];
+        $rule = RoutingRules::ruleFor((array) config('ops-notify.events', []), $message->event);
 
-        if (($rule['enabled'] ?? true) === false) {
+        if (! RoutingRules::sends($rule)) {
             return null;
         }
 
@@ -241,7 +241,7 @@ class OpsNotifier
             ->onQueue(config('ops-notify.queue.name'));
     }
 
-    private function createLog(OpsMessage $message, Destination $destination, DeliveryStatus $status = DeliveryStatus::Queued): ?OpsNotifyLog
+    private function createLog(OpsMessage $message, Destination $destination, DeliveryStatus $status = DeliveryStatus::Queued, bool $digest = false): ?OpsNotifyLog
     {
         if (! config('ops-notify.log.enabled')) {
             return null;
@@ -250,12 +250,12 @@ class OpsNotifier
         return OpsNotifyLog::query()->create([
             'channel' => $destination->channel,
             'topic' => $destination->topic,
-            'event' => Str::limit($message->event, 120, ''),
+            'event' => Str::limit($message->event, OpsNotifyLog::EVENT_LENGTH, ''),
             'level' => $message->level,
-            'title' => filled($message->title) ? Str::limit($message->title, 250) : null,
+            'title' => filled($message->title) ? Str::limit($message->title, OpsNotifyLog::TITLE_LENGTH, OpsNotifyLog::TITLE_END) : null,
             // TEXT holds 64 KB; a stack trace could overflow it and fail the whole send.
             'body' => Str::limit($message->body(), 10000) ?: null,
-            'payload' => $message->toArray(),
+            'payload' => $message->toArray() + ($digest ? [OpsNotifyLog::DIGEST => true] : []),
             'status' => $status,
         ]);
     }
