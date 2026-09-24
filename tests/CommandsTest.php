@@ -32,6 +32,18 @@ it('refuses when the event is disabled', function () {
     Http::assertNothingSent();
 });
 
+it('reports failure when --queue queues nothing because the event is disabled', function () {
+    Http::fake();
+    config(['ops-notify.events' => ['ops.*' => ['enabled' => false]]]);
+
+    // Previously this always said "Queued" and exited 0, even though nothing was queued.
+    $this->artisan('ops-notify:test', ['--queue' => true])
+        ->expectsOutputToContain('Nothing was queued')
+        ->assertFailed();
+
+    Http::assertNothingSent();
+});
+
 it('holds the discovery lock for the whole worst-case scan, not just 60s', function () {
     // 10 pages x 10 s each: the lock must outlast the run, not expire at 60 s and let a second
     // discovery start and clobber the first one's writes.

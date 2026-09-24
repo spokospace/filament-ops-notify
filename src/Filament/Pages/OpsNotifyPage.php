@@ -303,6 +303,22 @@ class OpsNotifyPage extends Page implements HasTable
         // send() logs and swallows its own errors; the row it returns shows where the message is.
         $log = $notifier->send($message);
 
+        // No row means nothing was queued (a DB or dispatch error send() swallowed). Say so and
+        // return false, so the caller keeps the original row Failed with its Resend button.
+        if ($log === null) {
+            Notification::make()->danger()->title(Trans::get('actions.not_sent'))->send();
+
+            return false;
+        }
+
+        // The burst guard held it instead of queueing it; it will be counted in the digest, but it
+        // was not actually re-sent, so do not mark the original Resent.
+        if ($log->status === DeliveryStatus::Suppressed) {
+            Notification::make()->warning()->title(Trans::get('actions.not_sent'))->body(Trans::get('table.suppressed_help'))->send();
+
+            return false;
+        }
+
         Notification::make()->success()->title(Trans::get('actions.queued'))->body(Trans::get('actions.queued_body'))->send();
 
         return true;
