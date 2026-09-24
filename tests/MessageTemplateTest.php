@@ -1,6 +1,7 @@
 <?php
 
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Text;
 use Illuminate\Http\Client\Request;
@@ -187,54 +188,6 @@ function templateSettings(): mixed
     return settingsForm();
 }
 
-it('saves templates from the settings page in config shape', function () {
-    templateSettings()
-        ->fillForm([
-            'telegram_bot_token' => '999:PANEL',
-            'telegram_chat_id' => '-1',
-            'templates' => [
-                'a' => ['pattern' => ' inquiry.* ', 'title' => 'From :field.Name', 'body' => "Line\r\nTwo", 'show_body' => true, 'fields' => ['Name', ' '], 'show_fields' => true, 'hashtag' => false, 'service' => true],
-                'b' => ['pattern' => 'debug.*', 'title' => '', 'body' => 'ignored', 'show_body' => false, 'fields' => ['Name'], 'show_fields' => false, 'hashtag' => true, 'service' => false],
-            ],
-        ], 'mountedActionSchema0')
-        ->callMountedAction()
-        ->assertHasNoActionErrors();
-
-    expect(app(SettingsStore::class)->formValues()['templates'])->toBe([
-        'inquiry.*' => ['title' => 'From :field.Name', 'body' => "Line\nTwo", 'fields' => ['Name'], 'hashtag' => false],
-        'debug.*' => ['body' => false, 'fields' => [], 'service' => false],
-    ]);
-});
-
-it('previews a template under its row, on the latest message of a matching event', function () {
-    loggedInquiry();
-
-    templateSettings()->fillForm(['templates' => [
-        'a' => ['pattern' => 'inquiry.*', 'title' => 'First'],
-        'b' => ['pattern' => 'inquiry.created', 'title' => '<b>From :field.Name</b>', 'show_body' => false, 'fields' => [], 'show_fields' => true, 'hashtag' => true, 'service' => true],
-    ]], 'mountedActionSchema0')
-        ->assertSchemaComponentExists('templates.templates.b.preview', 'mountedActionSchema0', fn (Text $text): bool => str_contains($html = (string) $text->getContent(), '&lt;b&gt;From Anna&lt;/b&gt;')
-            // The first row matches inquiry.created too, so the chat gets that one.
-            && str_contains($html, 'The template inquiry.* above matches inquiry.created first')
-            && ! str_contains($html, 'Hello'))
-        // Under the title field, the title as it comes out.
-        ->assertSchemaComponentExists('templates.templates.b.title', 'mountedActionSchema0', fn (TextInput $field): bool => str_contains((string) $field->getChildSchema(TextInput::BELOW_CONTENT_SCHEMA_KEY)?->toHtmlString(), '→ [test-app] &lt;b&gt;From Anna&lt;/b&gt;'));
-});
-
-it('rejects two template rows with the same pattern, since only the upper one could apply', function () {
-    templateSettings()
-        ->fillForm([
-            'telegram_bot_token' => '999:PANEL',
-            'telegram_chat_id' => '-1',
-            'templates' => [
-                'a' => ['pattern' => 'inquiry.*', 'title' => 'Upper'],
-                'b' => ['pattern' => 'inquiry.*', 'title' => 'Lower'],
-            ],
-        ], 'mountedActionSchema0')
-        ->callMountedAction()
-        ->assertHasActionErrors(['templates.a.pattern', 'templates.b.pattern']);
-});
-
 it('reads a hyphen after a bare field label as text, and one inside it as part of the label', function () {
     $message = inquiry()->field('E-mail', 'x@y.pl');
 
@@ -263,14 +216,6 @@ it('shows every field when the fields list is a map, not a list', function () {
         ->toBe((new TelegramFormatter)->format(inquiry(), 'panel'));
 });
 
-it('previews with the service name typed in the form, before it is saved', function () {
-    loggedInquiry();
-
-    templateSettings()
-        ->fillForm(['service' => 'Typed', 'templates' => ['a' => ['pattern' => 'inquiry.*', 'title' => ':title', 'show_body' => true, 'show_fields' => true, 'hashtag' => true, 'service' => true]]], 'mountedActionSchema0')
-        ->assertSchemaComponentExists('templates.templates.a.preview', 'mountedActionSchema0', fn (Text $text): bool => str_contains((string) $text->getContent(), '[Typed] New inquiry'));
-});
-
 it('sends test messages without a template, so a catch-all cannot hide them', function () {
     config(['ops-notify.templates' => ['*' => ['title' => 'Templated', 'body' => false, 'fields' => []]]]);
     Http::fake(['api.telegram.org/*' => Http::response(['ok' => true, 'result' => ['message_id' => 1, 'username' => 'bot']])]);
@@ -287,6 +232,110 @@ it('sends test messages without a template, so a catch-all cannot hide them', fu
     Http::assertSent($plain('pong'));
 });
 
+it('lists the placeholders a message offers, a label with spaces in braces', function () {
+    expect(MessageTemplate::placeholders(inquiry()->field('Order number', '7')))
+        ->toBe([':title', ':body', ':event', ':service', ':level', ':field.Name', ':field.Email', ':field.Phone', ':field.{Order number}']);
+});
+
+it('saves templates from the settings page in config shape', function () {
+    templateSettings()
+        ->fillForm([
+            'telegram_bot_token' => '999:PANEL',
+            'telegram_chat_id' => '-1',
+            'templates' => [
+                'a' => ['pattern' => 'inquiry.*', 'title_mode' => 'change', 'title' => 'From :field.Name', 'body_mode' => 'change', 'body' => "Line\r\nTwo", 'fields_mode' => 'choose', 'fields' => ['Name', ' '], 'hashtag' => false, 'service' => true],
+                'b' => ['pattern' => 'debug.*', 'title_mode' => 'keep', 'title' => 'ignored', 'body_mode' => 'leave_out', 'body' => 'ignored', 'fields_mode' => 'leave_out', 'fields' => ['Name'], 'hashtag' => true, 'service' => false],
+            ],
+        ], 'mountedActionSchema0')
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    expect(app(SettingsStore::class)->formValues()['templates'])->toBe([
+        'inquiry.*' => ['title' => 'From :field.Name', 'body' => "Line\nTwo", 'fields' => ['Name'], 'hashtag' => false],
+        'debug.*' => ['body' => false, 'fields' => [], 'service' => false],
+    ]);
+});
+
+it('edits the default look without a pattern, tries it on the latest logged message, and saves it last', function () {
+    loggedInquiry();
+    $store = app(SettingsStore::class);
+
+    // Untouched, the default look stores nothing.
+    templateSettings()
+        ->fillForm(['telegram_bot_token' => '999:PANEL', 'telegram_chat_id' => '-1'], 'mountedActionSchema0')
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    expect($store->formValues()['templates'] ?? [])->toBe([]);
+
+    templateSettings()->fillForm([
+        'telegram_bot_token' => '999:PANEL',
+        'telegram_chat_id' => '-1',
+        'template_default' => ['title_mode' => 'change', 'title' => 'Hey :title', 'body_mode' => 'keep', 'fields_mode' => 'choose', 'fields' => ['Email'], 'hashtag' => false, 'service' => true],
+        'templates' => ['a' => ['pattern' => 'build.*', 'title_mode' => 'keep', 'body_mode' => 'leave_out', 'fields_mode' => 'all', 'hashtag' => true, 'service' => true]],
+    ], 'mountedActionSchema0')
+        ->assertSchemaComponentExists('templates.default.preview', 'mountedActionSchema0', fn (Text $text): bool => str_contains($html = (string) $text->getContent(), '<b>[test-app] Hey New inquiry</b>')
+            && str_contains($html, 'The latest inquiry.created message')
+            && str_contains($html, '<b>Email:</b> a@b.pl')
+            && ! str_contains($html, 'Name')
+            && ! str_contains($html, '#inquiry_created'))
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    expect($store->formValues()['templates'])->toBe([
+        'build.*' => ['body' => false],
+        '*' => ['title' => 'Hey :title', 'fields' => ['Email'], 'hashtag' => false],
+    ]);
+
+    // Back in the form: the default look in its own fieldset, the exception in the list.
+    $filled = (new SettingsForm($store))->fill();
+
+    expect($filled['template_default'])->toBe(['title_mode' => 'change', 'title' => 'Hey :title', 'body_mode' => 'keep', 'body' => ":body\n\nEvent :event on :service.", 'fields_mode' => 'choose', 'fields' => ['Email'], 'hashtag' => false, 'service' => true])
+        ->and(array_column($filled['templates'], 'pattern'))->toBe(['build.*']);
+});
+
+it('uses the "*" template last, wherever it is stored', function () {
+    expect(formatWith(['*' => ['title' => 'Any'], 'inquiry.*' => ['title' => 'Inquiry']], inquiry()))->toContain('<b>[panel] Inquiry</b>')
+        ->and(formatWith(['*' => ['title' => 'Any']], OpsMessage::make('build.failed')->title('x')))->toContain('<b>[panel] Any</b>');
+});
+
+it('previews an exception under its row, on the latest message of a matching event', function () {
+    loggedInquiry();
+
+    templateSettings()->fillForm(['templates' => [
+        'a' => ['pattern' => 'inquiry.*', 'title_mode' => 'change', 'title' => 'First'],
+        'b' => ['pattern' => 'inquiry.created', 'title_mode' => 'change', 'title' => '<b>From :field.Name</b>', 'body_mode' => 'leave_out', 'fields_mode' => 'all', 'hashtag' => true, 'service' => true],
+    ]], 'mountedActionSchema0')
+        ->assertSchemaComponentExists('templates.exceptions.templates.b.preview', 'mountedActionSchema0', fn (Text $text): bool => str_contains($html = (string) $text->getContent(), '&lt;b&gt;From Anna&lt;/b&gt;')
+            // The row above matches inquiry.created too, so the chat gets that one.
+            && str_contains($html, 'The exception inquiry.* matches inquiry.created first')
+            && ! str_contains($html, 'Hello'))
+        // Under the title field, the title as it comes out.
+        ->assertSchemaComponentExists('templates.exceptions.templates.b.title', 'mountedActionSchema0', fn (TextInput $field): bool => str_contains((string) $field->getChildSchema(TextInput::BELOW_CONTENT_SCHEMA_KEY)?->toHtmlString(), '→ [test-app] &lt;b&gt;From Anna&lt;/b&gt;'));
+});
+
+it('rejects two exception rows for the same messages, since only the upper one could apply', function () {
+    templateSettings()
+        ->fillForm([
+            'telegram_bot_token' => '999:PANEL',
+            'telegram_chat_id' => '-1',
+            'templates' => [
+                'a' => ['pattern' => 'inquiry.*', 'title_mode' => 'change', 'title' => 'Upper'],
+                'b' => ['pattern' => 'inquiry.*', 'title_mode' => 'change', 'title' => 'Lower'],
+            ],
+        ], 'mountedActionSchema0')
+        ->callMountedAction()
+        ->assertHasActionErrors(['templates.a.pattern', 'templates.b.pattern']);
+});
+
+it('previews with the service name typed in the form, before it is saved', function () {
+    loggedInquiry();
+
+    templateSettings()
+        ->fillForm(['service' => 'Typed', 'templates' => ['a' => ['pattern' => 'inquiry.*', 'hashtag' => true, 'service' => true]]], 'mountedActionSchema0')
+        ->assertSchemaComponentExists('templates.exceptions.templates.a.preview', 'mountedActionSchema0', fn (Text $text): bool => str_contains((string) $text->getContent(), '[Typed] New inquiry'));
+});
+
 it('keeps the upper of two rows with the same key, the one the chat gets', function () {
     $settings = (new SettingsForm(app(SettingsStore::class)))->toSettings([
         'events' => [
@@ -294,8 +343,8 @@ it('keeps the upper of two rows with the same key, the one the chat gets', funct
             ['pattern' => ' inquiry.* ', 'topic' => '2', 'enabled' => true],
         ],
         'templates' => [
-            ['pattern' => 'inquiry.*', 'title' => 'Upper'],
-            ['pattern' => ' inquiry.* ', 'title' => 'Lower'],
+            ['pattern' => 'inquiry.*', 'title_mode' => 'change', 'title' => 'Upper'],
+            ['pattern' => ' inquiry.* ', 'title_mode' => 'change', 'title' => 'Lower'],
         ],
         'forward_map' => [
             ['title' => 'Backup', 'event' => 'backup.done', 'forward' => true],
@@ -310,57 +359,67 @@ it('keeps the upper of two rows with the same key, the one the chat gets', funct
     ]);
 });
 
-it('starts a new template row as an example in the message language, tried on a sample message', function () {
+it('starts a new exception with the message kept as it is, and an example ready behind "Change it"', function () {
     config(['ops-notify.locale' => 'pl']);
 
     $form = templateSettings()
         ->fillForm(['telegram_bot_token' => '999:PANEL', 'telegram_chat_id' => '-1'], 'mountedActionSchema0')
-        ->callFormComponentAction('templates.templates', 'add', formName: 'mountedActionSchema0');
+        ->callFormComponentAction('templates.exceptions.templates', 'add', formName: 'mountedActionSchema0');
 
     $path = $form->instance()->mountedActionSchema0->getStatePath().'.templates';
     $key = array_key_first($form->get($path));
 
-    expect($form->get("{$path}.{$key}"))->toMatchArray(['title' => ':title (:level)', 'body' => ":body\n\nZdarzenie :event z :service.", 'show_body' => true, 'show_fields' => true]);
+    expect($form->get("{$path}.{$key}"))->toMatchArray(['title_mode' => 'keep', 'title' => ':title (:level)', 'body_mode' => 'keep', 'body' => ":body\n\nZdarzenie :event z :service.", 'fields_mode' => 'all', 'hashtag' => true, 'service' => true]);
 
-    // Nothing is logged yet, so the example is a sample message, in the message language too.
-    $form->assertSchemaComponentExists("templates.templates.{$key}.preview", 'mountedActionSchema0', fn (Text $text): bool => str_contains($html = (string) $text->getContent(), 'Nowe zapytanie (info)')
+    // Nothing is logged yet, so the row is tried on a sample message, in the message language too.
+    $form->assertSchemaComponentExists("templates.exceptions.templates.{$key}.preview", 'mountedActionSchema0', fn (Text $text): bool => str_contains($html = (string) $text->getContent(), '<b>[test-app] Nowe zapytanie</b>')
         && str_contains($html, 'Anna pyta o produkt.')
-        && str_contains($html, 'Zdarzenie inquiry.created z')
-        && str_contains($html, 'Enter a pattern first.'));
+        && str_contains($html, 'Choose the messages first.'));
 
     $form->set("{$path}.{$key}.pattern", 'inquiry.*')
         ->callMountedAction()
         ->assertHasNoActionErrors();
 
-    expect(app(SettingsStore::class)->formValues()['templates'])->toBe(['inquiry.*' => ['title' => ':title (:level)', 'body' => ":body\n\nZdarzenie :event z :service."]]);
+    expect(app(SettingsStore::class)->formValues()['templates'])->toBe(['inquiry.*' => []]);
 });
 
-it('spells the default parts out as :title and :body, and saves them as no change', function () {
+it('shows a saved default part as kept, with the example text ready behind "Change it"', function () {
     $store = app(SettingsStore::class);
     $store->save(['templates' => ['inquiry.*' => ['hashtag' => false]]]);
 
-    expect(array_values((new SettingsForm($store))->fill()['templates'])[0])->toMatchArray(['pattern' => 'inquiry.*', 'title' => ':title', 'body' => ':body', 'hashtag' => false])
+    expect(array_values((new SettingsForm($store))->fill()['templates'])[0])->toMatchArray(['pattern' => 'inquiry.*', 'title_mode' => 'keep', 'title' => ':title (:level)', 'body_mode' => 'keep', 'fields_mode' => 'all', 'hashtag' => false])
         ->and(MessageTemplate::fromArray(['title' => ':title', 'body' => ':body'])->toArray())->toBe([])
         ->and(formatWith(['inquiry.*' => ['title' => ':title', 'body' => ':body']], inquiry()))->toBe((new TelegramFormatter)->format(inquiry(), 'panel'));
 });
 
-it('resets a row to the default layout, and the chips append placeholders to a field', function () {
-    $form = templateSettings()->fillForm(['templates' => ['a' => ['pattern' => 'inquiry.*', 'title' => 'Hi', 'body' => 'x', 'show_body' => false, 'fields' => ['Name'], 'show_fields' => true, 'hashtag' => false, 'service' => false]]], 'mountedActionSchema0');
+it('goes back to the default look, and offers a chip per placeholder of the message the row is tried on', function () {
+    $form = templateSettings()->fillForm(['templates' => ['a' => ['pattern' => 'inquiry.*', 'title_mode' => 'change', 'title' => 'Hi', 'body_mode' => 'leave_out', 'fields_mode' => 'choose', 'fields' => ['Name'], 'hashtag' => false, 'service' => false]]], 'mountedActionSchema0');
     $path = $form->instance()->mountedActionSchema0->getStatePath().'.templates.a';
 
-    $form->callFormComponentAction('templates.templates', 'defaultTemplate', arguments: ['item' => 'a'], formName: 'mountedActionSchema0');
+    $form->callFormComponentAction('templates.exceptions.templates.a.defaults', 'defaultTemplate', formName: 'mountedActionSchema0');
 
-    expect($form->get($path))->toMatchArray(['pattern' => 'inquiry.*', 'title' => ':title', 'body' => ':body', 'fields' => [], 'show_body' => true, 'show_fields' => true, 'hashtag' => true, 'service' => true]);
+    expect($form->get($path))->toMatchArray(['pattern' => 'inquiry.*', 'title_mode' => 'keep', 'body_mode' => 'keep', 'fields_mode' => 'all', 'fields' => [], 'hashtag' => true, 'service' => true]);
 
     // The chips: the fixed placeholders, then one per field of the sample message, as data for the browser.
-    $form->assertSchemaComponentExists('templates.templates.a.title', 'mountedActionSchema0', function (TextInput $field): bool {
-        $chips = (string) $field->getChildSchema(TextInput::ABOVE_CONTENT_SCHEMA_KEY)?->toHtmlString();
+    $form->set("{$path}.title_mode", 'change')
+        ->assertSchemaComponentExists('templates.exceptions.templates.a.title', 'mountedActionSchema0', function (TextInput $field): bool {
+            $chips = (string) $field->getChildSchema(TextInput::ABOVE_CONTENT_SCHEMA_KEY)?->toHtmlString();
 
-        return str_contains($chips, 'data-token=":level"') && str_contains($chips, 'data-token=":field.Name"') && str_contains($chips, 'data-token=":field.Email"');
-    });
+            return str_contains($chips, 'data-token=":level"') && str_contains($chips, 'data-token=":field.Name"') && str_contains($chips, 'data-token=":field.Email"');
+        });
 });
 
-it('lists the placeholders a message offers, a label with spaces in braces', function () {
-    expect(MessageTemplate::placeholders(inquiry()->field('Order number', '7')))
-        ->toBe([':title', ':body', ':event', ':service', ':level', ':field.Name', ':field.Email', ':field.Phone', ':field.{Order number}']);
+it('offers the routing rules, named by their topic, then the events seen recently, as the messages an exception is for', function () {
+    loggedInquiry();
+
+    templateSettings()
+        ->fillForm([
+            'telegram_topics' => [['id' => '3', 'name' => 'Inquiries']],
+            'events' => [['pattern' => 'inquiry.*', 'topic' => '3', 'enabled' => true], ['pattern' => 'build.*', 'topic' => null, 'enabled' => true]],
+            'templates' => ['a' => ['pattern' => 'from.config']],
+        ], 'mountedActionSchema0')
+        ->assertSchemaComponentExists('templates.exceptions.templates.a.pattern', 'mountedActionSchema0', fn (Select $select): bool => $select->getOptions() === [
+            'By where they go' => ['inquiry.*' => 'Inquiries #3 · inquiry.*', 'build.*' => 'General · build.*'],
+            'By event' => ['inquiry.created' => 'inquiry.created', 'from.config' => 'from.config'],
+        ]);
 });

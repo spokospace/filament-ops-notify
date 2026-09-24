@@ -153,7 +153,7 @@ class TelegramFormatter
     }
 
     /** "inquiry.created" → "inquiry_created", so every event is searchable in the chat. */
-    private function hashtag(string $event): string
+    public function hashtag(string $event): string
     {
         return trim((string) preg_replace('/[^\pL\pN_]+/u', '_', $event), '_') ?: 'ops';
     }

@@ -52,8 +52,8 @@ final class MessageTemplate
     ) {}
 
     /**
-     * The template of the first pattern that matches the event, or null when none does (the
-     * default layout). A message sent withoutTemplate() never gets one.
+     * The template of the first pattern that matches the event, then the "*" template if there
+     * is one, or null (the default layout). A message sent withoutTemplate() never gets one.
      *
      * @param  array<string, mixed>  $templates  Pattern => template (config('ops-notify.templates')).
      */
@@ -63,7 +63,9 @@ final class MessageTemplate
             return null;
         }
 
-        $key = PatternMap::firstKey($templates, $message->event);
+        // "*" is the default look: it applies when no other pattern does, wherever it is stored.
+        $key = PatternMap::firstKey(array_diff_key($templates, ['*' => true]), $message->event)
+            ?? (array_key_exists('*', $templates) ? '*' : null);
 
         return $key === null ? null : self::fromArray($templates[$key]);
     }

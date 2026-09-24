@@ -4,16 +4,20 @@ namespace Spokospace\OpsNotify\Filament;
 
 use Closure;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Field;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
@@ -43,7 +47,7 @@ use Spokospace\OpsNotify\Support\Trans;
  * The settings slide-over on the plugin's page. Maps between SettingsStore values
  * (config-shaped: pattern-keyed arrays) and form state (repeater rows).
  *
- * @phpstan-type TriedRow array{template: MessageTemplate, message: OpsMessage, log: OpsNotifyLog|null, service: string, parts: array<string, mixed>}
+ * @phpstan-type TriedRow array{template: MessageTemplate, message: OpsMessage, log: OpsNotifyLog|null, service: string, parts: array<string, mixed>, hashtag: string}
  */
 class SettingsForm
 {
@@ -56,11 +60,8 @@ class SettingsForm
     /** The Routing section's key. */
     private const ROUTING_KEY = 'routing';
 
-    /** The Templates list, relative to a field in a template row (row → list). */
-    private const TEMPLATES_LIST = '../';
-
-    /** The form root, relative to a field in a template row (row → list → root). */
-    private const FORM_ROOT = '../../';
+    /** The fields of a template editor, see row(). The pattern comes from the row or the scope. */
+    private const ROW_KEYS = ['title_mode', 'title', 'body_mode', 'body', 'fields_mode', 'fields', 'hashtag', 'service'];
 
     /** The key of the rendered message under a template row. */
     private const TEMPLATE_PREVIEW = 'preview';
@@ -87,8 +88,14 @@ class SettingsForm
     /** @var array<string, array{OpsMessage, OpsNotifyLog|null}> The message a pattern's rows are tried on, see example(). */
     private array $examples = [];
 
-    /** @var array<string, TriedRow> What a row's fields and preview show, by row and service, see tried(). */
+    /** @var array<string, TriedRow> What a row's fields and preview show, by row and service, see triedRow(). */
     private array $tried = [];
+
+    /** @var array<string, string> Package strings in the message language, by key, see messageText(). */
+    private array $texts = [];
+
+    /** @var array<string, array{array<string, string>, list<string>}> The rule and event groups of patternOptions(), by the rules and topics they come from. */
+    private array $patternGroups = [];
 
     public function __construct(private readonly SettingsStore $store) {}
 
@@ -111,8 +118,7 @@ class SettingsForm
             .(($row['enabled'] ?? true) ? '' : ' ('.Trans::get('page.disabled').')');
         $describeForward = fn (array $row): string => ($row['title'] ?? '')
             .(($row['forward'] ?? true) ? ' → '.($row['event'] ?? '') : ' ('.Trans::get('page.disabled').')');
-        $describeTemplate = fn (array $row): string => ($row['pattern'] ?? '')
-            .(filled($row['title'] ?? null) ? ' → '.$row['title'] : '');
+        $describeTemplate = fn (array $row): string => filled($row['pattern'] ?? null) ? $row['pattern'].' → '.$this->describedTitle((string) $row['pattern'], $row) : '';
 
         return [
             Section::make(Trans::get('settings.telegram'))
@@ -215,70 +221,7 @@ class SettingsForm
                         ->visible($seenEvents !== []),
                 ]),
 
-            $this->summarized(
-                Section::make(Trans::get('settings.templates'))->key('templates'),
-                $saved,
-                'templates',
-                $describeTemplate,
-            )
-                ->schema([
-                    $this->locked(
-                        $this->compact(Repeater::make('templates'), 'pattern', $describeTemplate)
-                            ->hiddenLabel()
-                            ->schema([
-                                // Every change re-renders the list: the message under each row, and
-                                // the chips and result lines, which come from that message.
-                                $this->refreshesTemplates(TextInput::make('pattern')
-                                    ->label(Trans::get('settings.pattern'))
-                                    ->required()
-                                    ->placeholder('inquiry.*')
-                                    ->datalist($patterns)
-                                    ->distinct()
-                                    ->live(onBlur: true))
-                                    ->columnSpanFull(),
-                                // A new row starts as an example template in the message language, so
-                                // the text shows what is fixed and what a placeholder is.
-                                $this->refreshesTemplates(TextInput::make('title')
-                                    ->label(Trans::get('settings.template_title'))
-                                    ->default(fn (): string => $this->messageText('settings.template_default_title'))
-                                    ->placeholder(':title')
-                                    ->maxLength(500)
-                                    ->live(onBlur: true))
-                                    ->aboveContent(fn (Get $get): Htmlable => $this->placeholderChips($get))
-                                    // helperText() is a Text in belowContent too, so the hint keeps its look.
-                                    ->belowContent(fn (Get $get): array => [$this->renderedPart('title', $get), Text::make(Trans::get('settings.template_placeholders'))])
-                                    ->columnSpanFull(),
-                                $this->refreshesTemplates(Textarea::make('body')
-                                    ->label(Trans::get('settings.template_body'))
-                                    ->default(fn (): string => $this->messageText('settings.template_default_body'))
-                                    ->placeholder(':body')
-                                    ->rows(3)
-                                    ->maxLength(3000)
-                                    ->live(onBlur: true))
-                                    ->aboveContent(fn (Get $get): Htmlable => $this->placeholderChips($get))
-                                    ->belowContent(fn (Get $get): array => [$this->renderedPart('body', $get), Text::make(Trans::get('settings.template_body_help'))])
-                                    ->visible(fn (Get $get): bool => (bool) $get('show_body'))
-                                    ->columnSpanFull(),
-                                $this->refreshesTemplates(TagsInput::make('fields')
-                                    ->label(Trans::get('settings.template_fields'))
-                                    ->helperText(Trans::get('settings.template_fields_help'))
-                                    ->live())
-                                    ->visible(fn (Get $get): bool => (bool) $get('show_fields'))
-                                    ->columnSpanFull(),
-                                ...array_map(fn (string $name): Field => $this->refreshesTemplates(
-                                    Toggle::make($name)->label(Trans::get("settings.template_{$name}"))->default(true)->inline(false)->live(),
-                                ), ['show_body', 'show_fields', 'hashtag', 'service']),
-                                Text::make(fn (Get $get, Text $component): Htmlable => $this->preview($get, (string) str($component->getContainer()->getStatePath())->afterLast('.')))
-                                    ->key(self::TEMPLATE_PREVIEW)
-                                    ->columnSpanFull(),
-                            ])
-                            ->columns(4)
-                            ->defaultItems(0)
-                            ->extraItemActions([$this->defaultTemplateAction()])
-                            ->addActionLabel(Trans::get('settings.add_template')),
-                        Trans::get('settings.templates_description'),
-                    ),
-                ]),
+            $this->templatesSection($saved, $patterns, $describeTemplate),
 
             $this->summarized(
                 Section::make(Trans::get('settings.forwarding'))->key('forwarding'),
@@ -336,6 +279,7 @@ class SettingsForm
     public function fill(): array
     {
         $values = $this->store->formValues();
+        $templates = self::rows($values['templates'] ?? null);
 
         return [
             ...$values,
@@ -346,8 +290,11 @@ class SettingsForm
                     // As routing reads it: a config rule's 'enabled' => 0 still sends.
                     'enabled' => RoutingRules::sends($rule),
                 ])->values()->all(),
-            'templates' => collect(self::rows($values['templates'] ?? null))
-                ->map(fn (mixed $data, string|int $pattern): array => self::row((string) $pattern, MessageTemplate::fromArray($data)))
+            // The "*" template is the default look, edited on its own; the rest are exceptions.
+            'template_default' => array_diff_key($this->row('*', MessageTemplate::fromArray($templates['*'] ?? null)), ['pattern' => true]),
+            'templates' => collect($templates)
+                ->except('*')
+                ->map(fn (mixed $data, string|int $pattern): array => $this->row((string) $pattern, MessageTemplate::fromArray($data)))
                 ->values()
                 ->all(),
             'forward_map' => collect(self::rows($values['forward_map'] ?? null))
@@ -381,8 +328,12 @@ class SettingsForm
             ], fn (mixed $value): bool => $value !== null));
         }
 
-        if (array_key_exists('templates', $data)) {
-            $data['templates'] = self::keyed($data['templates'] ?? null, 'pattern', fn (array $row): array => self::template($row)->toArray());
+        if (array_key_exists('templates', $data) || array_key_exists('template_default', $data)) {
+            $templates = self::keyed($data['templates'] ?? null, 'pattern', fn (array $row): array => self::template($row)->toArray());
+            // The default look goes last, after the exceptions: the first matching key wins.
+            $default = self::template(self::rows($data['template_default'] ?? null))->toArray();
+            unset($data['template_default']);
+            $data['templates'] = $default === [] ? $templates : [...$templates, '*' => $default];
         }
 
         if (array_key_exists('forward_map', $data)) {
@@ -445,7 +396,7 @@ class SettingsForm
     private function seenEventTags(array $events, array $counts, ?array $lockedRules, Get $get): array
     {
         $rules = $lockedRules ?? $this->formRules($get('events'));
-        $topics = self::topicNames($get);
+        $topics = self::topicNames($get('telegram_topics'));
         $tags = [];
 
         foreach ($events as $event) {
@@ -522,7 +473,7 @@ class SettingsForm
                 }, [
                     'pattern' => $existing,
                     'event' => $event,
-                    'topic' => self::topicLabel($rule, self::topicNames($get)),
+                    'topic' => self::topicLabel($rule, self::topicNames($get('telegram_topics'))),
                 ]))
                 ->send();
 
@@ -563,101 +514,309 @@ class SettingsForm
     }
 
     /**
-     * The template a form row describes. A part switched off is false (body) or [] (fields); an
-     * empty field list with the toggle on means all fields.
+     * Message templates: how every message looks (the "*" template, edited without a pattern),
+     * then exceptions for some events. Both are edited on the message itself: the message as it
+     * will look comes first, and a part changes only once it is switched to "Change it".
+     *
+     * @param  array<string, mixed>  $saved  SettingsStore::formValues()
+     * @param  list<string>  $patterns  SeenEvents::patterns()
+     * @param  Closure(array<string, mixed>): string  $describe  A row's one-line summary.
+     */
+    private function templatesSection(array $saved, array $patterns, Closure $describe): Section
+    {
+        $locked = $this->store->isLocked('templates');
+
+        return $this->summarized(
+            Section::make(Trans::get('settings.templates'))->key('templates'),
+            $saved,
+            'templates',
+            $describe,
+            fn (Get $get): string => self::template(self::rows($get('template_default')))->toArray() === []
+                ? ''
+                : Trans::get('settings.template_default_look').' → '.$this->describedTitle('*', self::rows($get('template_default'))),
+        )
+            ->schema([
+                Text::make(Trans::get('settings.templates_description')),
+                Fieldset::make(Trans::get('settings.template_default_look'))
+                    ->key('default')
+                    ->statePath('template_default')
+                    ->columns(1)
+                    ->disabled($locked)
+                    ->schema([
+                        ...$this->templateEditor(TemplateScope::DefaultLook, $locked),
+                        ...($locked ? [Text::make(Trans::get('settings.locked'))] : []),
+                    ]),
+                Section::make(Trans::get('settings.template_exceptions'))
+                    ->key('exceptions')
+                    ->collapsible()
+                    ->collapsed(filled($saved['templates'] ?? null))
+                    ->schema([
+                        $this->locked(
+                            $this->compact(Repeater::make('templates'), 'pattern', $describe)
+                                ->hiddenLabel()
+                                ->schema([
+                                    // Which messages: a routing rule, named by its topic, an event
+                                    // seen recently, or a pattern from config. A change re-renders
+                                    // the list: it picks the message the row is tried on, and it can
+                                    // shadow the rows below.
+                                    $this->refreshesTemplates(Select::make('pattern')
+                                        ->label(Trans::get('settings.template_which'))
+                                        ->options(fn (Get $get): array => $this->patternOptions($get, $patterns))
+                                        ->searchable()
+                                        ->required()
+                                        ->distinct()
+                                        ->live(), TemplateScope::Exception),
+                                    ...$this->templateEditor(TemplateScope::Exception, $locked),
+                                ])
+                                ->columns(1)
+                                ->defaultItems(0)
+                                ->addActionLabel(Trans::get('settings.add_template')),
+                            Trans::get('settings.template_exceptions_description'),
+                        ),
+                    ]),
+            ]);
+    }
+
+    /**
+     * The editor of one template, on the message it renders: the message as it will look, then
+     * each part with "Keep as it is / Change it / Leave it out". The title and text fields, with
+     * their placeholder chips and result lines, appear only for a part being changed.
+     *
+     * @return list<Component>
+     */
+    private function templateEditor(TemplateScope $scope, bool $locked): array
+    {
+        $mode = fn (string $part, string $label, string ...$modes): Field => $this->refreshesTemplates(
+            Radio::make("{$part}_mode")
+                ->label(Trans::get("settings.template_{$label}"))
+                ->options(array_combine($modes, array_map(fn (string $mode): string => Trans::get("settings.template_mode_{$mode}"), $modes)))
+                ->default($modes[0])
+                ->inline()
+                ->inlineLabel()
+                ->live(),
+            $scope,
+        );
+        // A field for a part being changed: an example to start from, chips that insert a
+        // placeholder, the result underneath, and a hint. helperText() is a Text in belowContent
+        // too, so the hint keeps its look.
+        $changed = fn (Field $field, string $part, string $hint): Field => $this->refreshesTemplates(
+            $field
+                ->hiddenLabel()
+                ->default(fn (): string => $this->messageText("settings.template_default_{$part}"))
+                ->live(onBlur: true)
+                ->visible(fn (Get $get): bool => $get("{$part}_mode") === 'change')
+                ->aboveContent(fn (Get $get): Htmlable => $this->placeholderChips($get, $scope))
+                ->belowContent(fn (Get $get): array => [$this->renderedPart($part, $get, $scope), Text::make(Trans::get("settings.{$hint}"))]),
+            $scope,
+        );
+
+        return [
+            Text::make(fn (Get $get, Text $component): Htmlable => $this->preview($get, $scope, (string) str($component->getContainer()->getStatePath())->afterLast('.')))
+                ->key(self::TEMPLATE_PREVIEW),
+            $mode('title', 'title', 'keep', 'change'),
+            $changed(TextInput::make('title')->maxLength(500), 'title', 'template_placeholders'),
+            $mode('body', 'text', 'keep', 'change', 'leave_out'),
+            $changed(Textarea::make('body')->rows(3)->maxLength(3000), 'body', 'template_body_help'),
+            $mode('fields', 'fields', 'all', 'choose', 'leave_out'),
+            $this->refreshesTemplates(CheckboxList::make('fields')
+                ->hiddenLabel()
+                ->options(fn (Get $get): array => $this->fieldOptions($get, $scope))
+                ->helperText(fn (Get $get): ?string => $this->fieldOptions($get, $scope) === [] ? Trans::get('settings.template_no_fields') : null)
+                ->columns(3)
+                ->live()
+                ->visible(fn (Get $get): bool => $get('fields_mode') === 'choose'), $scope),
+            $this->refreshesTemplates(Checkbox::make('hashtag')
+                ->label(fn (Get $get): string => Trans::get('settings.template_hashtag_shown', ['hashtag' => $this->tried($get, $scope)['hashtag']]))
+                ->default(true)
+                ->live(), $scope),
+            $this->refreshesTemplates(Checkbox::make('service')
+                ->label(fn (Get $get): string => Trans::get('settings.template_service_shown', ['service' => '['.$this->serviceName($get, $scope).']']))
+                ->default(true)
+                ->live(), $scope),
+            Actions::make([
+                Action::make('defaultTemplate')
+                    ->label(Trans::get('settings.template_default'))
+                    ->link()
+                    ->icon(Heroicon::OutlinedArrowUturnLeft)
+                    ->action(function (Set $set): void {
+                        foreach (array_diff_key($this->row('', new MessageTemplate), ['pattern' => true]) as $key => $value) {
+                            $set($key, $value);
+                        }
+                    }),
+            ])->key('defaults')->hidden($locked),
+        ];
+    }
+
+    /**
+     * Which messages an exception is for, grouped: the routing rules, named by their topic
+     * ("Inquiries #3 · inquiry.*"), then the events seen recently. The current value stays
+     * selectable when it is neither (a pattern from config). The groups are the same for every
+     * row, so they are built once per request.
+     *
+     * @param  list<string>  $patterns
+     * @return array<string, array<string, string>>
+     */
+    private function patternOptions(Get $get, array $patterns): array
+    {
+        $root = TemplateScope::Exception->root();
+        $groups = $this->patternGroups[serialize([$get("{$root}events"), $get("{$root}telegram_topics")])] ??= (function () use ($get, $root, $patterns): array {
+            $topics = self::topicNames($get("{$root}telegram_topics"));
+            $rules = [];
+
+            foreach (array_filter(self::rows($get("{$root}events")), 'is_array') as $rule) {
+                if (filled($pattern = trim((string) ($rule['pattern'] ?? '')))) {
+                    $topic = filled($rule['topic'] ?? null)
+                        ? TelegramChannel::formatTopic((string) $rule['topic'], $topics[(string) $rule['topic']] ?? null)
+                        : Trans::get('settings.general');
+                    $rules[$pattern] = "{$topic} · {$pattern}";
+                }
+            }
+
+            return [$rules, array_values(array_diff($patterns, array_keys($rules)))];
+        })();
+        [$rules, $events] = $groups;
+        $current = trim((string) $get('pattern'));
+
+        if ($current !== '' && ! isset($rules[$current]) && ! in_array($current, $events, true)) {
+            $events[] = $current;
+        }
+
+        return array_filter([
+            Trans::get('settings.template_by_rule') => $rules,
+            Trans::get('settings.template_by_event') => array_combine($events, $events),
+        ]);
+    }
+
+    /**
+     * The fields to choose from: those of the message the row is tried on, and any already
+     * chosen, so a saved choice never disappears.
+     *
+     * @return array<string, string>
+     */
+    private function fieldOptions(Get $get, TemplateScope $scope): array
+    {
+        $labels = array_values(array_unique(array_filter([
+            ...array_map(strval(...), array_keys($this->tried($get, $scope)['message']->fields)),
+            ...array_map(strval(...), self::rows($get('fields'))),
+        ])));
+
+        return array_combine($labels, $labels);
+    }
+
+    /**
+     * The template a form row describes.
      *
      * @param  array<string, mixed>  $row
      */
     private static function template(array $row): MessageTemplate
     {
-        $fields = self::rows($row['fields'] ?? null);
-
         return MessageTemplate::fromArray([
-            'title' => $row['title'] ?? null,
-            'body' => ($row['show_body'] ?? true) ? str_replace("\r\n", "\n", (string) ($row['body'] ?? '')) : false,
-            'fields' => ($row['show_fields'] ?? true) ? ($fields === [] ? null : $fields) : [],
+            'title' => ($row['title_mode'] ?? 'keep') === 'change' ? $row['title'] ?? null : null,
+            'body' => match ($row['body_mode'] ?? 'keep') {
+                'leave_out' => false,
+                'change' => str_replace("\r\n", "\n", (string) ($row['body'] ?? '')),
+                default => null,
+            },
+            'fields' => match ($row['fields_mode'] ?? 'all') {
+                'leave_out' => [],
+                'choose' => array_values(array_filter(array_map(strval(...), self::rows($row['fields'] ?? null)))),
+                default => null,
+            },
             'hashtag' => (bool) ($row['hashtag'] ?? true),
             'service' => (bool) ($row['service'] ?? true),
         ]);
     }
 
-    /** Resets a row to the default layout: ":title", ":body", every field and every part on. */
-    private function defaultTemplateAction(): Action
-    {
-        return Action::make('defaultTemplate')
-            ->label(Trans::get('settings.template_default'))
-            ->icon(Heroicon::OutlinedArrowUturnLeft)
-            ->color('gray')
-            ->action(function (array $arguments, Repeater $component): void {
-                $key = (string) ($arguments['item'] ?? '');
-
-                if (array_key_exists($key, self::rows($component->getRawState()))) {
-                    $component->getChildSchema($key)?->fill(self::row((string) (self::rows($component->getRawItemState($key))['pattern'] ?? ''), new MessageTemplate));
-                }
-            });
-    }
-
     /**
-     * A template in form shape: a row of the Templates list. A part switched off is show_body or
-     * show_fields false, and the default title and body are spelled out, so a field is never
-     * blank. The one place that knows the row's keys: template() reads them back.
+     * A template in form shape (ROW_KEYS). A part that is not changed keeps the example text of
+     * a new row in its hidden field, so switching it to "Change it" starts from an example, not
+     * from a blank. template() reads the row back.
      *
      * @return array<string, mixed>
      */
-    private static function row(string $pattern, MessageTemplate $template): array
+    private function row(string $pattern, MessageTemplate $template): array
     {
         return [
             'pattern' => $pattern,
-            'title' => $template->title ?? MessageTemplate::DEFAULT_TITLE,
-            'body' => $template->body === null ? MessageTemplate::DEFAULT_BODY : ($template->body ?: null),
-            'show_body' => $template->body !== false,
+            'title_mode' => $template->title === null ? 'keep' : 'change',
+            'title' => $template->title ?? $this->messageText('settings.template_default_title'),
+            'body_mode' => match (true) {
+                $template->body === false => 'leave_out',
+                is_string($template->body) => 'change',
+                default => 'keep',
+            },
+            'body' => is_string($template->body) ? $template->body : $this->messageText('settings.template_default_body'),
+            'fields_mode' => match (true) {
+                $template->fields === null => 'all',
+                $template->fields === [] => 'leave_out',
+                default => 'choose',
+            },
             'fields' => $template->fields ?? [],
-            'show_fields' => $template->fields !== [],
             'hashtag' => $template->hashtag,
             'service' => $template->service,
         ];
     }
 
-    /** @return array<string, mixed> The row a field's Get sees. */
-    private function rowFrom(Get $get): array
+    /** @return array<string, mixed> The row a field's Get sees, its pattern from the scope. */
+    private function rowFrom(Get $get, TemplateScope $scope): array
     {
-        $row = [];
+        $row = ['pattern' => $scope->pattern($get)];
 
-        foreach (array_keys(self::row('', new MessageTemplate)) as $key) {
+        foreach (self::ROW_KEYS as $key) {
             $row[$key] = $get($key);
         }
 
         return $row;
     }
 
+    /**
+     * A row's title as the chat shows it, for the collapsed row and the section header.
+     *
+     * @param  array<string, mixed>  $row
+     */
+    private function describedTitle(string $pattern, array $row): string
+    {
+        return Str::limit($this->triedRow(['pattern' => $pattern] + $row, (string) config('ops-notify.service'))['parts']['title'], 60);
+    }
+
     /** A package string in the message language, e.g. the example template of a new row. */
     private function messageText(string $key): string
     {
-        return app(OpsNotifier::class)->inMessageLocale(fn (): string => Trans::get($key));
+        return $this->texts[$key] ??= app(OpsNotifier::class)->inMessageLocale(fn (): string => Trans::get($key));
     }
 
     /**
-     * What a row's fields and preview show: the row as a template, the message it is tried on
-     * and the title and body as the chat would show them. Memoised per row and Service name,
-     * since the two result lines and the preview of a row all need it.
+     * What a row's fields and preview show: the row as a template, the message it is tried on,
+     * the title and body as the chat would show them, and the event's #hashtag.
      *
      * @return TriedRow
      */
-    private function tried(Get $get): array
+    private function tried(Get $get, TemplateScope $scope): array
     {
-        $row = $this->rowFrom($get);
-        $service = $this->serviceName($get);
+        return $this->triedRow($this->rowFrom($get, $scope), $this->serviceName($get, $scope));
+    }
 
+    /**
+     * Memoised per row and Service name, since every part of a row asks for it, and the row's
+     * label and the section header too.
+     *
+     * @param  array<string, mixed>  $row
+     * @return TriedRow
+     */
+    private function triedRow(array $row, string $service): array
+    {
         return $this->tried[serialize([$row, $service])] ??= (function () use ($row, $service): array {
             [$message, $log] = $this->example((string) ($row['pattern'] ?? ''));
             $template = self::template($row);
+            $formatter = new TelegramFormatter;
 
             return [
                 'template' => $template,
                 'message' => $message,
                 'log' => $log,
                 'service' => $service,
-                'parts' => app(OpsNotifier::class)->inMessageLocale(fn () => (new TelegramFormatter)->parts($message, $service, $template)),
+                'parts' => app(OpsNotifier::class)->inMessageLocale(fn () => $formatter->parts($message, $service, $template)),
+                'hashtag' => '#'.$formatter->hashtag($message->event),
             ];
         })();
     }
@@ -697,52 +856,54 @@ class SettingsForm
      * field of the message the row is tried on, so they show what the event carries. They work
      * in the browser (INSERT_PLACEHOLDER); a token is data, escaped into an attribute.
      */
-    private function placeholderChips(Get $get): Htmlable
+    private function placeholderChips(Get $get, TemplateScope $scope): Htmlable
     {
         $chips = array_map(
             fn (string $token): string => '<button type="button" class="fi-badge fi-size-sm fi-color fi-color-gray" x-on:click="'.e(self::INSERT_PLACEHOLDER).'" data-token="'.e($token).'">'.e($token).'</button>',
-            MessageTemplate::placeholders($this->tried($get)['message']),
+            MessageTemplate::placeholders($this->tried($get, $scope)['message']),
         );
 
         return new HtmlString('<div style="display: flex; flex-wrap: wrap; gap: .375rem; margin-bottom: .375rem">'.implode('', $chips).'</div>');
     }
 
     /** The row's title or body rendered on the message it is tried on, shown under the field. */
-    private function renderedPart(string $part, Get $get): Text
+    private function renderedPart(string $part, Get $get, TemplateScope $scope): Text
     {
-        return Text::make(new HtmlString('<span style="white-space: pre-wrap; overflow-wrap: anywhere">→ '.e($this->tried($get)['parts'][$part]).'</span>'))->size('sm');
+        return Text::make(new HtmlString('<span style="white-space: pre-wrap; overflow-wrap: anywhere">→ '.e($this->tried($get, $scope)['parts'][$part]).'</span>'))->size('sm');
     }
 
     /** The Service name as typed in the form, or the saved one when the field is blank. */
-    private function serviceName(Get $get): string
+    private function serviceName(Get $get, TemplateScope $scope): string
     {
-        $service = $get(self::FORM_ROOT.'service');
+        $service = $get($scope->root().'service');
 
         return filled($service) ? trim((string) $service) : (string) config('ops-notify.service');
     }
 
     /**
      * The row rendered on the message it is tried on, as the chat would show it: where that
-     * message comes from, a warning when a row above matches its event first (that one would
-     * be used instead), then the message.
+     * message comes from, a warning when another template matches its event first (that one
+     * would be used instead), then the message.
      *
-     * @param  string  $key  The row's key in the Templates list.
+     * @param  string  $key  The row's key in the exceptions list; the default look has none.
      */
-    private function preview(Get $get, string $key): Htmlable
+    private function preview(Get $get, TemplateScope $scope, string $key): Htmlable
     {
-        ['message' => $message, 'log' => $log, 'template' => $template, 'service' => $service] = $this->tried($get);
-        $pattern = trim((string) $get('pattern'));
+        ['message' => $message, 'log' => $log, 'template' => $template, 'service' => $service] = $this->tried($get, $scope);
+        $pattern = $scope->pattern($get);
         $note = fn (string $text, string $color = 'gray'): string => '<p style="color: var(--'.$color.'-500); margin-bottom: .75rem">'.e($text).'</p>';
 
         // The formatter escapes every part and adds only <b> tags, so its output is safe HTML.
         $text = app(OpsNotifier::class)->inMessageLocale(fn (): string => (new TelegramFormatter)->format($message, $service, template: $template));
 
-        $rows = self::rows($get(self::TEMPLATES_LIST));
-        $position = array_search($key, array_map(strval(...), array_keys($rows)), true);
-        $earlier = array_map(fn (mixed $row): string => trim((string) (self::rows($row)['pattern'] ?? '')), array_slice($rows, 0, $position === false ? 0 : $position));
-        $first = $log === null ? null : PatternMap::firstKey(array_fill_keys(array_filter($earlier), true), $log->event);
+        // The exception rows above shadow this one; every exception shadows the default look.
+        $rows = self::rows($get($scope->exceptions()));
+        $above = $scope === TemplateScope::Exception ? array_slice($rows, 0, (int) array_search($key, array_map(strval(...), array_keys($rows)), true)) : $rows;
+        $shadows = array_filter(array_map(fn (mixed $row): string => trim((string) (self::rows($row)['pattern'] ?? '')), $above));
+        $first = $log === null ? null : PatternMap::firstKey(array_fill_keys($shadows, true), $log->event);
         $source = match (true) {
             $pattern === '' => Trans::get('settings.preview_no_pattern'),
+            $log === null && $pattern === '*' => Trans::get('settings.preview_sample_any', ['date' => SeenEvents::since()->isoFormat('LL')]),
             $log === null => Trans::get('settings.preview_sample', ['pattern' => $pattern, 'date' => SeenEvents::since()->isoFormat('LL')]),
             default => Trans::get('settings.preview_from', ['event' => $log->event, 'date' => $log->created_at?->isoFormat('LLL')]),
         };
@@ -773,13 +934,12 @@ class SettingsForm
     }
 
     /**
-     * A template field whose changes re-render the Templates list alone: the chips, the result
-     * lines and the message under every row. The list, not the row: a key inside a repeater row
-     * cannot be resolved while the form is being filled.
+     * A template field whose changes re-render its editor's surroundings alone: the section for
+     * the default look, the exceptions list for a row (TemplateScope::refreshTarget()).
      */
-    private function refreshesTemplates(Field $field): Field
+    private function refreshesTemplates(Field $field, TemplateScope $scope): Field
     {
-        return $field->partiallyRenderComponentsAfterStateUpdated([self::TEMPLATES_LIST]);
+        return $field->partiallyRenderComponentsAfterStateUpdated([$scope->refreshTarget()]);
     }
 
     /**
@@ -896,20 +1056,19 @@ class SettingsForm
      *
      * @param  array<string, mixed>  $saved  SettingsStore::formValues()
      * @param  Closure(array<string, mixed>, array<string, string>): string  $describe  Row and topic names by id.
+     * @param  Closure(Get): string|null  $first  An item before the rows, e.g. the default look; '' for none.
      */
-    private function summarized(Section $section, array $saved, string $list, Closure $describe): Section
+    private function summarized(Section $section, array $saved, string $list, Closure $describe, ?Closure $first = null): Section
     {
         return $section
             ->collapsible()
             ->collapsed(filled($saved[$list] ?? null))
-            ->description(function (Get $get) use ($list, $describe): ?string {
+            ->description(function (Get $get) use ($list, $describe, $first): ?string {
                 $rows = array_filter((array) $get($list), 'is_array');
-                $topics = self::topicNames($get);
+                $topics = self::topicNames($get('telegram_topics'));
+                $items = collect([$first === null ? '' : $first($get), ...array_map(fn (array $row): string => $describe($row, $topics), $rows)])->filter();
 
-                return $rows === [] ? null : Str::limit(
-                    collect($rows)->map(fn (array $row): string => $describe($row, $topics))->filter()->implode(' · '),
-                    240,
-                );
+                return $items->isEmpty() ? null : Str::limit($items->implode(' · '), 240);
             });
     }
 
@@ -934,7 +1093,7 @@ class SettingsForm
                     && ! (($row['new'] ?? false) && $openUntil !== null && blank($row[$openUntil] ?? null));
             })
             ->itemLabel(fn (array $state, Get $get): ?string => filled($state[$required] ?? null)
-                ? $describe($state, self::topicNames($get))
+                ? $describe($state, self::topicNames($get('telegram_topics')))
                 : null);
     }
 
@@ -943,9 +1102,9 @@ class SettingsForm
      *
      * @return array<string, string>
      */
-    private static function topicNames(Get $get): array
+    private static function topicNames(mixed $rows): array
     {
-        return collect(self::rows($get('telegram_topics')))
+        return collect(self::rows($rows))
             ->filter(fn (mixed $row): bool => is_array($row) && filled($row['id'] ?? null))
             ->mapWithKeys(fn (array $row): array => [(string) $row['id'] => (string) ($row['name'] ?? '')])
             ->all();

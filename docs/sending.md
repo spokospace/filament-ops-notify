@@ -126,12 +126,16 @@ template keeps the default layout.
 
 The level emoji and the buttons always stay.
 
-In Settings, a new row starts as an example template in the message language: `:title (:level)`,
-and `:body` followed by a line naming the event and the service. The text shows what stays fixed
-and what a placeholder is. Under each field, the title and the body appear as they come out, and
-the whole message is rendered under the row. Buttons above a field insert its placeholders, one per
-field of the message the row is tried on, so they show what the event carries. **Default layout**
-resets a row to `:title` and `:body`, which store nothing.
+In Settings, templates are edited on the message itself. **All messages** shows the latest logged
+message as it will look, with a choice per part: the title and the text can be kept, changed or
+(the text) left out; the fields can all be shown, chosen from the message's own fields, or left
+out; the `#hashtag` and the `[service]` prefix are checkboxes. Nothing changes until a part is
+switched to **Change it**, which opens a field prefilled with an example (`:title (:level)`, or
+`:body` and a line naming the event and the service), with buttons that insert the message's
+placeholders and the result shown underneath. **Some events, differently** holds the exceptions:
+pick the messages by routing rule (named by its topic) or by an event seen recently, then edit
+them the same way. Saved, that is the config above: the exceptions first, then `*` for all
+messages. **Back to the default look** resets one editor.
 
 - **Placeholders:** `:title`, `:body`, `:event`, `:service`, `:level` and `:field.Label`. For a label
   with spaces, use `:field.{Order number}`. Labels match ignoring case, and a missing field is left
@@ -140,10 +144,10 @@ resets a row to `:title` and `:body`, which store nothing.
   template can't produce HTML that Telegram rejects.
 - **Same limits.** A template is cut to the same length budgets as the default layout. Your fixed text
   is kept, and `:title` and `:body` are shortened to fit.
-- **Preview.** The message under a row is the latest logged message of an event the pattern matches,
-  or a sample message while nothing matching is logged. The form doesn't have to be saved first, and
-  the Service name typed in it is used. It also warns when a template higher up matches that event
-  first.
+- **Preview.** The message shown is the latest logged message of an event the pattern matches (any
+  event, for all messages), or a sample message while nothing matching is logged. The form doesn't
+  have to be saved first, and the Service name typed in it is used. It also warns when an exception
+  matches that event first.
 - **Resend** uses the current template, because the log keeps the message and not the rendered text.
 - Burst digests and the package's own test messages (**Send test**, `ops-notify:test`) don't use
   templates, so a catch-all template can't hide a connectivity test. Your own message can skip

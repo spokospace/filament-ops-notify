@@ -27,9 +27,9 @@ reach Telegram with no code changes.
   (`inquiry.*` → *Inquiries*). Filament notifications are routed by title.
 - **Settings in the panel.** Token (encrypted), chat id, service name, topics and rules, all without
   touching `.env`.
-- **Message templates.** Change an event's title, body, fields and hashtag by pattern
-  (`inquiry.*` → *New inquiry from :field.Name*), and preview it on the latest logged message
-  before saving ([Message templates](docs/sending.md#message-templates)).
+- **Message templates.** Change how messages look, on the message itself: keep, change or leave
+  out each part, for all messages or for some events, shown on the latest logged message as you
+  edit ([Message templates](docs/sending.md#message-templates)).
 - **Reliable delivery.** Queued, retried, rate-limit aware, and never breaks the request that sent it.
 - **Bot profile.** Pick an avatar (a preset or your own) and set the display name and
   descriptions from the panel.
