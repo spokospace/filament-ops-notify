@@ -111,7 +111,7 @@ return [
         'routing' => 'Usmerjanje dogodkov',
         'routing_description' => 'Vsako sporočilo ima ime dogodka, npr. inquiry.created. Pravilo pošlje ujemajoče se dogodke v temo; * se ujema s čimer koli, zato inquiry.* zajame vsak dogodek povpraševanja. Pravila se preverjajo od zgoraj in velja prvo ujemanje. Dogodki brez ujemanja gredo v privzeto temo.',
         'pattern' => 'Vzorec',
-        'seen_events' => 'Videno v zadnjih :days dneh: :events',
+        'seen_events' => 'Videno od :date: :events',
         'seen_default' => 'brez teme v pravilih',
         'add_rule' => 'Dodaj pravilo',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Pravice bota',
         'manage_topics' => 'Upravljanje tem',
         'invite_users' => 'Vabljenje uporabnikov prek povezave',
-        'all' => 'Vse pravice',
+        'all' => 'Vse potrebne pravice',
         'missing' => 'Manjka: :rights',
         'not_admin' => 'Ni skrbnik klepeta',
         'not_member' => 'Ni v klepetu',

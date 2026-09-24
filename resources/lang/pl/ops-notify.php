@@ -111,7 +111,7 @@ return [
         'routing' => 'Kierowanie zdarzeń',
         'routing_description' => 'Każda wiadomość ma nazwę zdarzenia, np. inquiry.created. Reguła kieruje pasujące zdarzenia do tematu; * pasuje do czegokolwiek, więc inquiry.* łapie każde zdarzenie zapytania. Reguły są sprawdzane od góry i wygrywa pierwsza pasująca. Zdarzenia bez dopasowania trafiają do domyślnego tematu.',
         'pattern' => 'Wzorzec',
-        'seen_events' => 'Widziane w ostatnich :days dniach: :events',
+        'seen_events' => 'Widziane od :date: :events',
         'seen_default' => 'brak tematu w regułach',
         'add_rule' => 'Dodaj regułę',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Uprawnienia bota',
         'manage_topics' => 'Zarządzać tematami',
         'invite_users' => 'Zapraszać użytkowników poprzez link',
-        'all' => 'Wszystkie uprawnienia',
+        'all' => 'Wszystkie potrzebne uprawnienia',
         'missing' => 'Brakuje: :rights',
         'not_admin' => 'Nie jest administratorem czatu',
         'not_member' => 'Nie należy do czatu',

@@ -111,7 +111,7 @@ return [
         'routing' => 'Események irányítása',
         'routing_description' => 'Minden üzenetnek van eseményneve, például inquiry.created. Egy szabály az illeszkedő eseményeket egy témába küldi; a * bármire illeszkedik, így az inquiry.* minden ajánlatkérési eseményt elkap. A szabályokat felülről ellenőrizzük, az első találat érvényes. A találat nélküli események az alapértelmezett témába kerülnek.',
         'pattern' => 'Minta',
-        'seen_events' => 'Az elmúlt :days napban látott: :events',
+        'seen_events' => 'Látott :date óta: :events',
         'seen_default' => 'nincs téma a szabályokban',
         'add_rule' => 'Szabály hozzáadása',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'A bot jogai',
         'manage_topics' => 'Témák kezelése',
         'invite_users' => 'Felhasználók meghívása linkkel',
-        'all' => 'Minden jog',
+        'all' => 'Minden szükséges jog',
         'missing' => 'Hiányzik: :rights',
         'not_admin' => 'Nem adminja a csevegésnek',
         'not_member' => 'Nincs a csevegésben',

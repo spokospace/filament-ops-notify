@@ -111,7 +111,7 @@ return [
         'routing' => 'Sündmuste suunamine',
         'routing_description' => 'Igal sõnumil on sündmuse nimi, näiteks inquiry.created. Reegel saadab sobivad sündmused teemasse; * sobib kõigega, nii et inquiry.* püüab kinni iga päringu sündmuse. Reegleid kontrollitakse ülalt alla ja kehtib esimene vaste. Vasteta sündmused lähevad vaiketeemasse.',
         'pattern' => 'Muster',
-        'seen_events' => 'Nähtud viimase :days päeva jooksul: :events',
+        'seen_events' => 'Nähtud alates :date: :events',
         'seen_default' => 'reeglites teemat pole',
         'add_rule' => 'Lisa reegel',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Boti õigused',
         'manage_topics' => 'Teemade haldamine',
         'invite_users' => 'Kasutajate kutsumine lingiga',
-        'all' => 'Kõik õigused',
+        'all' => 'Kõik vajalikud õigused',
         'missing' => 'Puudu: :rights',
         'not_admin' => 'Pole vestluse administraator',
         'not_member' => 'Pole vestluses',

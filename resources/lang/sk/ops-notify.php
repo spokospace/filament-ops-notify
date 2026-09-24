@@ -111,7 +111,7 @@ return [
         'routing' => 'Smerovanie udalostí',
         'routing_description' => 'Každá správa má názov udalosti, napr. inquiry.created. Pravidlo posiela zodpovedajúce udalosti do témy; * zodpovedá čomukoľvek, takže inquiry.* zachytí každú udalosť dopytu. Pravidlá sa kontrolujú zhora a platí prvá zhoda. Udalosti bez zhody idú do predvolenej témy.',
         'pattern' => 'Vzor',
-        'seen_events' => 'Videné za posledných :days dní: :events',
+        'seen_events' => 'Videné od :date: :events',
         'seen_default' => 'bez témy v pravidlách',
         'add_rule' => 'Pridať pravidlo',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Oprávnenia bota',
         'manage_topics' => 'Spravovať témy',
         'invite_users' => 'Pozývať používateľov cez odkaz',
-        'all' => 'Všetky oprávnenia',
+        'all' => 'Všetky potrebné oprávnenia',
         'missing' => 'Chýba: :rights',
         'not_admin' => 'Nie je administrátorom chatu',
         'not_member' => 'Nie je v chate',

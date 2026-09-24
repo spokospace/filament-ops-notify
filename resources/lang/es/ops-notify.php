@@ -111,7 +111,7 @@ return [
         'routing' => 'Enrutamiento de eventos',
         'routing_description' => 'Cada mensaje tiene un nombre de evento, como inquiry.created. Una regla envía los eventos que coinciden a un tema; * coincide con cualquier cosa, así que inquiry.* captura todos los eventos de consultas. Las reglas se revisan de arriba abajo y gana la primera que coincida. Los eventos sin coincidencia van al tema predeterminado.',
         'pattern' => 'Patrón',
-        'seen_events' => 'Vistos en los últimos :days días: :events',
+        'seen_events' => 'Vistos desde el :date: :events',
         'seen_default' => 'sin tema en las reglas',
         'add_rule' => 'Añadir regla',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Permisos del bot',
         'manage_topics' => 'Gestionar temas',
         'invite_users' => 'Invitar usuarios mediante enlace',
-        'all' => 'Todos los permisos',
+        'all' => 'Todos los permisos necesarios',
         'missing' => 'Falta: :rights',
         'not_admin' => 'No es administrador del chat',
         'not_member' => 'No está en el chat',

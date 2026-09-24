@@ -9,7 +9,7 @@ use Spokospace\OpsNotify\OpsNotifier;
 use Spokospace\OpsNotify\Settings\SettingsStore;
 use Spokospace\OpsNotify\Support\Dedupe;
 use Spokospace\OpsNotify\Support\FilamentNotificationConverter;
-use Spokospace\OpsNotify\Support\PatternMap;
+use Spokospace\OpsNotify\Support\TitleRules;
 use Throwable;
 
 /**
@@ -46,7 +46,7 @@ class ForwardFilamentDatabaseNotification
             return;
         }
 
-        $opsEvent = $this->eventFor((string) ($data['title'] ?? ''), $config);
+        $opsEvent = TitleRules::eventFor((string) ($data['title'] ?? ''), $config);
 
         if ($opsEvent === null) {
             return;
@@ -60,25 +60,5 @@ class ForwardFilamentDatabaseNotification
         } catch (Throwable $e) {
             Log::warning('[ops-notify] Could not forward Filament notification: '.$e->getMessage());
         }
-    }
-
-    /**
-     * First title pattern in `map` wins: a string renames the event (for routing to a topic),
-     * false drops the notification. Unmatched titles use `default_event`; null forwards nothing
-     * but the mapped ones.
-     *
-     * @param  array<string, mixed>  $config
-     */
-    private function eventFor(string $title, array $config): ?string
-    {
-        $map = (array) ($config['map'] ?? []);
-
-        if (($key = PatternMap::firstKey($map, $title)) !== null) {
-            return is_string($map[$key]) ? $map[$key] : null;
-        }
-
-        $default = $config['default_event'] ?? null;
-
-        return is_string($default) && $default !== '' ? $default : null;
     }
 }

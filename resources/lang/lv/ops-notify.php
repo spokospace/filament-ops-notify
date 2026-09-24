@@ -111,7 +111,7 @@ return [
         'routing' => 'Notikumu maršrutēšana',
         'routing_description' => 'Katram ziņojumam ir notikuma nosaukums, piemēram, inquiry.created. Noteikums sūta atbilstošos notikumus uz tēmu; * atbilst jebkam, tāpēc inquiry.* notver katru pieprasījuma notikumu. Noteikumi tiek pārbaudīti no augšas, un tiek izmantota pirmā atbilstība. Notikumi bez atbilstības nonāk noklusējuma tēmā.',
         'pattern' => 'Šablons',
-        'seen_events' => 'Redzēti pēdējās :days dienās: :events',
+        'seen_events' => 'Redzēti kopš :date: :events',
         'seen_default' => 'noteikumos nav tēmas',
         'add_rule' => 'Pievienot noteikumu',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Bota tiesības',
         'manage_topics' => 'Pārvaldīt tēmas',
         'invite_users' => 'Uzaicināt lietotājus ar saiti',
-        'all' => 'Visas tiesības',
+        'all' => 'Visas vajadzīgās tiesības',
         'missing' => 'Trūkst: :rights',
         'not_admin' => 'Nav tērzēšanas administrators',
         'not_member' => 'Nav tērzēšanā',

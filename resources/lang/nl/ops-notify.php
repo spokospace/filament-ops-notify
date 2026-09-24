@@ -111,7 +111,7 @@ return [
         'routing' => 'Routering van gebeurtenissen',
         'routing_description' => 'Elk bericht heeft een gebeurtenisnaam, zoals inquiry.created. Een regel stuurt overeenkomende gebeurtenissen naar een onderwerp; * past op alles, dus inquiry.* vangt elke aanvraaggebeurtenis. Regels worden van boven af gecontroleerd en de eerste overeenkomende wint. Gebeurtenissen zonder overeenkomst gaan naar het standaardonderwerp.',
         'pattern' => 'Patroon',
-        'seen_events' => 'Gezien in de afgelopen :days dagen: :events',
+        'seen_events' => 'Gezien sinds :date: :events',
         'seen_default' => 'geen onderwerp in de regels',
         'add_rule' => 'Regel toevoegen',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Rechten van de bot',
         'manage_topics' => 'Topics beheren',
         'invite_users' => 'Gebruikers uitnodigen via link',
-        'all' => 'Alle rechten',
+        'all' => 'Alle benodigde rechten',
         'missing' => 'Ontbreekt: :rights',
         'not_admin' => 'Geen beheerder van de chat',
         'not_member' => 'Niet in de chat',

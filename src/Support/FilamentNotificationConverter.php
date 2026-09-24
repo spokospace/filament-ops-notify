@@ -53,8 +53,11 @@ class FilamentNotificationConverter
         };
     }
 
-    /** Filament bodies may hold HTML or Markdown-rendered HTML; Telegram gets plain text. */
-    private function plain(mixed $value): ?string
+    /**
+     * Filament bodies may hold HTML or Markdown-rendered HTML; Telegram gets plain text. Title
+     * rules match this form too: it is the title the log and Settings show.
+     */
+    public static function plain(mixed $value): ?string
     {
         if (! is_string($value) || $value === '') {
             return null;

@@ -38,13 +38,21 @@ Removing a topic from the list does not delete it in Telegram.
   `default_event` (`filament.notification` unless you change it; with `null` it is not forwarded).
 
 The history on the plugin's page shows each message's event. Settings also suggests them: the
-**Pattern** field offers event names sent in the last 30 days (or fewer, if `log.prune_after_days` is lower; most frequent first), together
-with the wildcard form of each prefix (`inquiry.created` also offers `inquiry.*`). A line under
-the list counts these events, e.g. `inquiry.created (12) · order_placed (3, no topic in rules)`.
+**Pattern** field offers the 30 most frequent event names of the last 30 days (or fewer days, if
+`log.prune_after_days` is lower), together with the wildcard form of each prefix
+(`inquiry.created` also offers `inquiry.*`). A line under the list counts the messages of each
+event, e.g. `inquiry.created (12) · order_placed (3, no topic in rules)`. Messages held back
+during a burst are not counted.
+
 *no topic in rules* marks events that no rule matches, or whose rule has no topic: they go to the
-default topic, unless the message sets its own with `->topic()`. *Disabled* marks
-events a disabled rule drops. The suggestions are refreshed every five minutes. Typing a name that
-was never sent is fine.
+default topic, unless the message sets its own with `->topic()`. *Disabled* marks events a
+disabled rule drops, and `→ second` names the channel a config rule sends to. The line updates as
+you edit the rules, before you save. It lists the 30 most frequent events and, past those, every
+event it marks among the 200 most frequent, so a rare event with no topic still shows up.
+
+The log keeps the first 120 characters of an event name. A longer one is shown with `…`, offered
+as a pattern ending in `*`, and not marked when no rule matches, since its full name is unknown.
+The suggestions are refreshed every five minutes. Typing a name that was never sent is fine.
 
 ## Event routing
 
@@ -98,9 +106,11 @@ Titles that no rule matches use `default_event` (`filament.notification`). Set i
 forward only the titles you listed.
 
 Title patterns work like event patterns: `*` matches anything, so `New inquiry*` also matches
-"New inquiry from Anna". The **Title** field suggests the titles of recent bell notifications that
-no rule renamed yet, i.e. those sent as `default_event`. With `default_event` set to `null` there
-are none to suggest, because unmatched titles are not forwarded.
+"New inquiry from Anna". Rules match the title as sent and as the plain text the log shows (no
+HTML tags or entities). The **Title** field suggests the titles of recent bell notifications that
+no saved rule matches, i.e. those sent as `default_event`, without burst digests. A title the log
+cut at 250 characters is offered as its start followed by `*`. With `default_event` set to `null`
+there are none to suggest, because unmatched titles are not forwarded.
 
 The title rules pair with event routing. `New inquiry*` becomes `inquiry.created`, and
 `inquiry.*` sends it to the Inquiries topic.

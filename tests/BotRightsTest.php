@@ -39,8 +39,8 @@ it('sums the rights up in one line', function (array $member, string $text, bool
 
     expect(telegram()->rightsSummary())->toBe(['text' => $text, 'ok' => $ok]);
 })->with([
-    'admin with both' => [['status' => 'administrator', 'can_manage_topics' => true, 'can_invite_users' => true], 'All rights', true],
-    'creator' => [['status' => 'creator'], 'All rights', true],
+    'admin with both' => [['status' => 'administrator', 'can_manage_topics' => true, 'can_invite_users' => true], 'All needed rights', true],
+    'creator' => [['status' => 'creator'], 'All needed rights', true],
     'admin missing one' => [['status' => 'administrator', 'can_manage_topics' => true, 'can_invite_users' => false], 'Missing: Invite users via link', false],
     'plain member' => [['status' => 'member'], 'Not an admin of the chat', false],
     'removed' => [['status' => 'kicked'], 'Not in the chat', false],

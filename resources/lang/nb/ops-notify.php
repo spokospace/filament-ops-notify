@@ -111,7 +111,7 @@ return [
         'routing' => 'Ruting av hendelser',
         'routing_description' => 'Hver melding har et hendelsesnavn, for eksempel inquiry.created. En regel sender samsvarende hendelser til et emne; * samsvarer med alt, så inquiry.* fanger alle forespørselshendelser. Reglene sjekkes ovenfra, og første treff vinner. Hendelser uten treff går til standardemnet.',
         'pattern' => 'Mønster',
-        'seen_events' => 'Sett de siste :days dagene: :events',
+        'seen_events' => 'Sett siden :date: :events',
         'seen_default' => 'ikke noe emne i reglene',
         'add_rule' => 'Legg til regel',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Botens rettigheter',
         'manage_topics' => 'Administrere emner',
         'invite_users' => 'Invitere brukere via lenke',
-        'all' => 'Alle rettigheter',
+        'all' => 'Alle nødvendige rettigheter',
         'missing' => 'Mangler: :rights',
         'not_admin' => 'Ikke administrator i chatten',
         'not_member' => 'Ikke i chatten',

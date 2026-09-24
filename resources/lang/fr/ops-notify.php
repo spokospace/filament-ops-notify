@@ -111,7 +111,7 @@ return [
         'routing' => 'Routage des événements',
         'routing_description' => "Chaque message porte un nom d'événement, par exemple inquiry.created. Une règle envoie les événements correspondants vers un sujet ; * correspond à tout, donc inquiry.* capte tous les événements de demande. Les règles sont vérifiées de haut en bas et la première correspondante l'emporte. Les événements sans correspondance vont au sujet par défaut.",
         'pattern' => 'Motif',
-        'seen_events' => 'Vus ces :days derniers jours : :events',
+        'seen_events' => 'Vus depuis le :date : :events',
         'seen_default' => 'aucun sujet dans les règles',
         'add_rule' => 'Ajouter une règle',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Droits du bot',
         'manage_topics' => 'Gérer les sujets',
         'invite_users' => 'Inviter des utilisateurs via un lien',
-        'all' => 'Tous les droits',
+        'all' => 'Tous les droits nécessaires',
         'missing' => 'Manquant : :rights',
         'not_admin' => "N'est pas administrateur du chat",
         'not_member' => "N'est pas dans le chat",

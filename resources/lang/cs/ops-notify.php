@@ -111,7 +111,7 @@ return [
         'routing' => 'Směrování událostí',
         'routing_description' => 'Každá zpráva má název události, např. inquiry.created. Pravidlo posílá odpovídající události do tématu; * odpovídá čemukoli, takže inquiry.* zachytí každou událost poptávky. Pravidla se kontrolují shora a platí první shoda. Události bez shody jdou do výchozího tématu.',
         'pattern' => 'Vzor',
-        'seen_events' => 'Viděno za posledních :days dní: :events',
+        'seen_events' => 'Viděno od :date: :events',
         'seen_default' => 'bez tématu v pravidlech',
         'add_rule' => 'Přidat pravidlo',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Oprávnění bota',
         'manage_topics' => 'Spravovat témata',
         'invite_users' => 'Zvát uživatele přes odkaz',
-        'all' => 'Všechna oprávnění',
+        'all' => 'Všechna potřebná oprávnění',
         'missing' => 'Chybí: :rights',
         'not_admin' => 'Není administrátorem chatu',
         'not_member' => 'Není v chatu',

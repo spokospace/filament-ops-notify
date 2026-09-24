@@ -111,7 +111,7 @@ return [
         'routing' => 'Tapahtumien reititys',
         'routing_description' => 'Jokaisella viestillä on tapahtuman nimi, esimerkiksi inquiry.created. Sääntö lähettää vastaavat tapahtumat aiheeseen; * vastaa mitä tahansa, joten inquiry.* poimii jokaisen tiedustelutapahtuman. Säännöt tarkistetaan ylhäältä alkaen ja ensimmäinen osuma voittaa. Tapahtumat ilman osumaa menevät oletusaiheeseen.',
         'pattern' => 'Kaava',
-        'seen_events' => 'Nähty viimeisen :days päivän aikana: :events',
+        'seen_events' => 'Nähty alkaen :date: :events',
         'seen_default' => 'ei aihetta säännöissä',
         'add_rule' => 'Lisää sääntö',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Botin oikeudet',
         'manage_topics' => 'Hallitse aiheita',
         'invite_users' => 'Kutsu käyttäjiä linkillä',
-        'all' => 'Kaikki oikeudet',
+        'all' => 'Kaikki tarvittavat oikeudet',
         'missing' => 'Puuttuu: :rights',
         'not_admin' => 'Ei keskustelun ylläpitäjä',
         'not_member' => 'Ei keskustelussa',

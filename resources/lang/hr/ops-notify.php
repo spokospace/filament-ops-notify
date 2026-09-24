@@ -111,7 +111,7 @@ return [
         'routing' => 'Usmjeravanje događaja',
         'routing_description' => 'Svaka poruka ima naziv događaja, npr. inquiry.created. Pravilo šalje odgovarajuće događaje u temu; * odgovara bilo čemu, pa inquiry.* hvata svaki događaj upita. Pravila se provjeravaju odozgo i vrijedi prvo podudaranje. Događaji bez podudaranja idu u zadanu temu.',
         'pattern' => 'Uzorak',
-        'seen_events' => 'Viđeno u zadnjih :days dana: :events',
+        'seen_events' => 'Viđeno od :date: :events',
         'seen_default' => 'bez teme u pravilima',
         'add_rule' => 'Dodaj pravilo',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Prava bota',
         'manage_topics' => 'Upravljanje temama',
         'invite_users' => 'Pozivanje korisnika putem poveznice',
-        'all' => 'Sva prava',
+        'all' => 'Sva potrebna prava',
         'missing' => 'Nedostaje: :rights',
         'not_admin' => 'Nije administrator razgovora',
         'not_member' => 'Nije u razgovoru',

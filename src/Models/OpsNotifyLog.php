@@ -32,6 +32,17 @@ class OpsNotifyLog extends Model
 
     public const DIRECTION_OUT = 'out';
 
+    /** Characters of the event name kept, cut with no end marker (the column is 120 long). */
+    public const EVENT_LENGTH = 120;
+
+    /** Characters of the title kept; a longer one ends in TITLE_END. */
+    public const TITLE_LENGTH = 250;
+
+    public const TITLE_END = '...';
+
+    /** Payload key set on a burst digest, so it can be told apart from the messages it sums up. */
+    public const DIGEST = 'digest';
+
     protected $table = 'ops_notify_logs';
 
     protected $guarded = [];

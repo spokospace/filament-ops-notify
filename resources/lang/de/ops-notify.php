@@ -111,7 +111,7 @@ return [
         'routing' => 'Ereignis-Routing',
         'routing_description' => 'Jede Nachricht hat einen Ereignisnamen, z. B. inquiry.created. Eine Regel leitet passende Ereignisse an ein Thema; * passt auf alles, also erfasst inquiry.* jedes Anfrage-Ereignis. Die Regeln werden von oben geprüft, die erste passende gewinnt. Ereignisse ohne Treffer gehen an das Standardthema.',
         'pattern' => 'Muster',
-        'seen_events' => 'In den letzten :days Tagen gesehen: :events',
+        'seen_events' => 'Gesehen seit :date: :events',
         'seen_default' => 'kein Thema in den Regeln',
         'add_rule' => 'Regel hinzufügen',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Bot-Rechte',
         'manage_topics' => 'Themen verwalten',
         'invite_users' => 'Nutzer per Link einladen',
-        'all' => 'Alle Rechte',
+        'all' => 'Alle nötigen Rechte',
         'missing' => 'Es fehlt: :rights',
         'not_admin' => 'Kein Admin des Chats',
         'not_member' => 'Nicht im Chat',

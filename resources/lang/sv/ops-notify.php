@@ -111,7 +111,7 @@ return [
         'routing' => 'Routning av händelser',
         'routing_description' => 'Varje meddelande har ett händelsenamn, till exempel inquiry.created. En regel skickar matchande händelser till ett ämne; * matchar vad som helst, så inquiry.* fångar varje förfrågningshändelse. Reglerna kontrolleras uppifrån och första träffen gäller. Händelser utan träff går till standardämnet.',
         'pattern' => 'Mönster',
-        'seen_events' => 'Sedda de senaste :days dagarna: :events',
+        'seen_events' => 'Sedda sedan :date: :events',
         'seen_default' => 'inget ämne i reglerna',
         'add_rule' => 'Lägg till regel',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Botens rättigheter',
         'manage_topics' => 'Hantera ämnen',
         'invite_users' => 'Bjuda in användare via länk',
-        'all' => 'Alla rättigheter',
+        'all' => 'Alla nödvändiga rättigheter',
         'missing' => 'Saknas: :rights',
         'not_admin' => 'Inte administratör i chatten',
         'not_member' => 'Inte med i chatten',

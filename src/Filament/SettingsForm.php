@@ -22,7 +22,7 @@ use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\OpsNotifier;
 use Spokospace\OpsNotify\Settings\SettingsStore;
 use Spokospace\OpsNotify\Support\Locales;
-use Spokospace\OpsNotify\Support\PatternMap;
+use Spokospace\OpsNotify\Support\RoutingRules;
 use Spokospace\OpsNotify\Support\SeenEvents;
 use Spokospace\OpsNotify\Support\Trans;
 
@@ -32,6 +32,9 @@ use Spokospace\OpsNotify\Support\Trans;
  */
 class SettingsForm
 {
+    /** The Routing section, relative to a field in a rule row (row → Rules list → section). */
+    private const ROUTING_SECTION = '../../';
+
     public function __construct(private readonly SettingsStore $store) {}
 
     /** @return array<int, mixed> */
@@ -125,18 +128,16 @@ class SettingsForm
                     $this->locked(
                         $this->compact(Repeater::make('events'), 'pattern', $describeRule)
                             ->hiddenLabel()
-                            ->schema([
+                            ->schema(array_map($this->refreshesRouting(...), [
                                 TextInput::make('pattern')
                                     ->label(Trans::get('settings.pattern'))
                                     ->required()
                                     ->placeholder('inquiry.*')
-                                    ->datalist(SeenEvents::patterns($seenEvents))
-                                    // Refreshes the "seen recently" line below, which marks unmatched events.
+                                    ->datalist(SeenEvents::patterns(SeenEvents::suggested($seenEvents)))
                                     ->live(onBlur: true),
-                                // Live for the same line: it marks rules without a topic and disabled rules.
                                 $this->topicSelect('topic', '../../telegram_topics')->label(Trans::get('settings.topic'))->live(),
                                 Toggle::make('enabled')->label(Trans::get('page.enabled'))->default(true)->inline(false)->live(),
-                            ])
+                            ]))
                             ->columns(3)
                             ->defaultItems(0)
                             ->addActionLabel(Trans::get('settings.add_rule')),
@@ -167,7 +168,7 @@ class SettingsForm
                                 TextInput::make('event')
                                     ->label(Trans::get('table.event'))
                                     ->placeholder('inquiry.created')
-                                    ->datalist(array_keys($seenEvents))
+                                    ->datalist(array_keys(SeenEvents::suggested($seenEvents)))
                                     ->required(fn (Get $get): bool => (bool) $get('forward')),
                                 Toggle::make('forward')->label(Trans::get('settings.forward'))->default(true)->inline(false),
                             ])
@@ -209,7 +210,8 @@ class SettingsForm
                 ->map(fn (array $rule, string $pattern): array => [
                     'pattern' => $pattern,
                     'topic' => $rule['topic'] ?? null,
-                    'enabled' => $rule['enabled'] ?? true,
+                    // As routing reads it: a config rule's 'enabled' => 0 still sends.
+                    'enabled' => RoutingRules::sends($rule),
                 ])->values()->all(),
             'forward_map' => collect(self::rows($values['forward_map'] ?? null))
                 ->map(fn (string|false $event, string $title): array => [
@@ -262,35 +264,67 @@ class SettingsForm
     }
 
     /**
-     * "Seen in the last 30 days: inquiry.created (12) · order_placed (3, no topic in rules)".
-     * Marks the events that the rules in the form give no topic (no match, or a rule without a
-     * topic; the message's own topic or the default one applies) or do not send at all (a
-     * disabled rule).
+     * "Seen since August 25, 2026: inquiry.created (12) · order_placed (3, no topic in rules)".
+     * Marks the events that the rules give no topic (no match, or a rule without a topic; the
+     * message's own topic or the default one applies) or do not send at all (a disabled rule),
+     * and names the channel a rule sends to. Lists the most frequent events and, past those,
+     * only the marked ones: a rare event that no rule routes matters most.
      *
      * @param  array<string, int>  $counts  SeenEvents::counts()
+     * @param  mixed  $rows  The form's rule rows.
      */
-    private function describeSeenEvents(array $counts, mixed $rules): string
+    private function describeSeenEvents(array $counts, mixed $rows): string
     {
-        // Pattern => rule, the shape PatternMap and OpsNotifier::destinationFor() work with.
-        $map = collect(self::rows($rules))
-            ->filter(fn (mixed $row): bool => is_array($row) && filled($row['pattern'] ?? null))
-            ->mapWithKeys(fn (array $row): array => [trim((string) $row['pattern']) => $row])
-            ->all();
+        // The rules in effect: the form's, or the config's when they are locked there (a config
+        // rule may also set a channel, which the form has no field for).
+        $rules = $this->store->isLocked('events')
+            ? (array) config('ops-notify.events', [])
+            : $this->toSettings(['events' => array_filter(
+                self::rows($rows),
+                fn (mixed $row): bool => is_array($row) && filled($row['pattern'] ?? null),
+            )])['events'];
 
-        $events = collect($counts)->map(function (int $count, string|int $event) use ($map): string {
-            $key = PatternMap::firstKey($map, (string) $event);
-            $rule = $key === null ? [] : $map[$key];
+        $events = [];
 
-            $note = match (true) {
-                ! ($rule['enabled'] ?? true) => Trans::get('page.disabled'),
-                blank($rule['topic'] ?? null) => Trans::get('settings.seen_default'),
-                default => null,
-            };
+        $suggested = SeenEvents::suggested($counts);
 
-            return "{$event} ({$count}".($note === null ? '' : ", {$note}").')';
-        });
+        foreach ($counts as $event => $count) {
+            $event = (string) $event;
+            $truncated = SeenEvents::isTruncated($event);
+            $rule = RoutingRules::ruleFor($rules, $event);
 
-        return Trans::get('settings.seen_events', ['days' => SeenEvents::days(), 'events' => $events->implode(' · ')]);
+            $notes = array_filter([
+                filled($rule['channel'] ?? null) ? '→ '.$rule['channel'] : null,
+                match (true) {
+                    // The log cut the name short: an exact rule for the full name cannot be checked.
+                    $rule === [] && $truncated => null,
+                    ! RoutingRules::sends($rule) => Trans::get('page.disabled'),
+                    blank($rule['topic'] ?? null) => Trans::get('settings.seen_default'),
+                    default => null,
+                },
+            ]);
+
+            if ($notes === [] && ! isset($suggested[$event])) {
+                continue;
+            }
+
+            $events[] = ($truncated ? $event.'…' : $event).' ('.implode(', ', [$count, ...$notes]).')';
+        }
+
+        return Trans::get('settings.seen_events', [
+            'date' => SeenEvents::since()->isoFormat('LL'),
+            'events' => implode(' · ', $events),
+        ]);
+    }
+
+    /**
+     * A rule field whose changes refresh the "seen recently" line, which marks unmatched events,
+     * rules without a topic and disabled rules. Only the Routing section re-renders: the line,
+     * the row labels and the header. The field decides how live it is (a text field on blur).
+     */
+    private function refreshesRouting(Field $field): Field
+    {
+        return $field->partiallyRenderComponentsAfterStateUpdated([self::ROUTING_SECTION]);
     }
 
     /**

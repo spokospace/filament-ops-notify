@@ -111,7 +111,7 @@ return [
         'routing' => 'Rutarea evenimentelor',
         'routing_description' => 'Fiecare mesaj are un nume de eveniment, de exemplu inquiry.created. O regulă trimite evenimentele potrivite într-un subiect; * se potrivește cu orice, deci inquiry.* prinde orice eveniment de solicitare. Regulile sunt verificate de sus în jos și se aplică prima potrivire. Evenimentele fără potrivire merg în subiectul implicit.',
         'pattern' => 'Șablon',
-        'seen_events' => 'Văzute în ultimele :days zile: :events',
+        'seen_events' => 'Văzute din :date: :events',
         'seen_default' => 'fără subiect în reguli',
         'add_rule' => 'Adăugare regulă',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Drepturile botului',
         'manage_topics' => 'Gestionare subiecte',
         'invite_users' => 'Invitare utilizatori prin link',
-        'all' => 'Toate drepturile',
+        'all' => 'Toate drepturile necesare',
         'missing' => 'Lipsește: :rights',
         'not_admin' => 'Nu este administrator al chatului',
         'not_member' => 'Nu este în chat',

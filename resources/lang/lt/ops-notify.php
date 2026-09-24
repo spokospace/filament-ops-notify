@@ -111,7 +111,7 @@ return [
         'routing' => 'Įvykių nukreipimas',
         'routing_description' => 'Kiekviena žinutė turi įvykio pavadinimą, pvz., inquiry.created. Taisyklė siunčia atitinkančius įvykius į temą; * atitinka bet ką, todėl inquiry.* pagauna kiekvieną užklausos įvykį. Taisyklės tikrinamos iš viršaus ir taikoma pirma atitiktis. Įvykiai be atitikties patenka į numatytąją temą.',
         'pattern' => 'Šablonas',
-        'seen_events' => 'Matyti per paskutines :days d.: :events',
+        'seen_events' => 'Matyti nuo :date: :events',
         'seen_default' => 'taisyklėse nėra temos',
         'add_rule' => 'Pridėti taisyklę',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Boto teisės',
         'manage_topics' => 'Tvarkyti temas',
         'invite_users' => 'Kviesti naudotojus nuoroda',
-        'all' => 'Visos teisės',
+        'all' => 'Visos reikalingos teisės',
         'missing' => 'Trūksta: :rights',
         'not_admin' => 'Nėra pokalbio administratorius',
         'not_member' => 'Nėra pokalbyje',

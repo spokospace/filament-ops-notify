@@ -111,7 +111,7 @@ return [
         'routing' => 'Olay yönlendirme',
         'routing_description' => 'Her mesajın inquiry.created gibi bir olay adı vardır. Bir kural, eşleşen olayları bir konuya gönderir; * her şeyle eşleşir, bu yüzden inquiry.* tüm talep olaylarını yakalar. Kurallar yukarıdan aşağı kontrol edilir ve ilk eşleşme geçerli olur. Eşleşmeyen olaylar varsayılan konuya gider.',
         'pattern' => 'Desen',
-        'seen_events' => 'Son :days günde görülenler: :events',
+        'seen_events' => ':date tarihinden beri görülenler: :events',
         'seen_default' => 'kurallarda konu yok',
         'add_rule' => 'Kural ekle',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Bot yetkileri',
         'manage_topics' => 'Konuları yönetme',
         'invite_users' => 'Bağlantıyla kullanıcı davet etme',
-        'all' => 'Tüm yetkiler',
+        'all' => 'Gerekli tüm yetkiler',
         'missing' => 'Eksik: :rights',
         'not_admin' => 'Sohbetin yöneticisi değil',
         'not_member' => 'Sohbette değil',

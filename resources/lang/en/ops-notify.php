@@ -111,7 +111,7 @@ return [
         'routing' => 'Event routing',
         'routing_description' => 'Every message has an event name, such as inquiry.created. A rule sends matching events to a topic; * matches anything, so inquiry.* catches every inquiry event. Rules are checked from the top and the first match wins. Events with no match go to the default topic.',
         'pattern' => 'Pattern',
-        'seen_events' => 'Seen in the last :days days: :events',
+        'seen_events' => 'Seen since :date: :events',
         'seen_default' => 'no topic in rules',
         'add_rule' => 'Add rule',
 
@@ -155,7 +155,7 @@ return [
         'title' => 'Bot rights',
         'manage_topics' => 'Manage topics',
         'invite_users' => 'Invite users via link',
-        'all' => 'All rights',
+        'all' => 'All needed rights',
         'missing' => 'Missing: :rights',
         'not_admin' => 'Not an admin of the chat',
         'not_member' => 'Not in the chat',
