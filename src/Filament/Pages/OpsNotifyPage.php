@@ -73,10 +73,17 @@ class OpsNotifyPage extends Page implements HasTable
         return OpsNotifyPlugin::get()->isAuthorized();
     }
 
+    /** Settings, Bot profile, Send test and Resend; everyone who can open the page sees the rest. */
+    public static function canManage(): bool
+    {
+        return OpsNotifyPlugin::get()->canManage();
+    }
+
     protected function getHeaderActions(): array
     {
         return [
             Action::make('settings')
+                ->authorize(fn (): bool => static::canManage())
                 ->label(Trans::get('actions.settings'))
                 ->icon(Heroicon::OutlinedCog6Tooth)
                 ->color('gray')
@@ -91,6 +98,7 @@ class OpsNotifyPage extends Page implements HasTable
                 }),
 
             Action::make('botProfile')
+                ->authorize(fn (): bool => static::canManage())
                 ->label(Trans::get('profile.title'))
                 ->icon(Heroicon::OutlinedUserCircle)
                 ->color('gray')
@@ -102,6 +110,7 @@ class OpsNotifyPage extends Page implements HasTable
                 ->action(fn (array $data) => app(BotProfileForm::class)->apply($data)),
 
             Action::make('sendTest')
+                ->authorize(fn (): bool => static::canManage())
                 ->label(Trans::get('actions.send_test'))
                 ->icon(Heroicon::OutlinedPaperAirplane)
                 ->schema([
@@ -217,6 +226,7 @@ class OpsNotifyPage extends Page implements HasTable
             ])
             ->recordActions([
                 Action::make('resend')
+                    ->authorize(fn (): bool => static::canManage())
                     ->label(Trans::get('actions.resend'))
                     ->icon(Heroicon::OutlinedArrowPath)
                     ->visible(fn (OpsNotifyLog $record): bool => $record->status === DeliveryStatus::Failed)

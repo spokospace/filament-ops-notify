@@ -67,9 +67,10 @@ Part of the setup happens in Telegram and needs a human.
 
 1. Run `composer require spokospace/filament-ops-notify`.
 2. Run `php artisan migrate`.
-3. Register the plugin in the app's existing `app/Providers/Filament/*PanelProvider.php`. Adapt the
-   `authorize()` closure to the app's own admin check (an existing gate, role, `is_admin` column
-   or policy). Never call `isAdmin()` or any other method the `User` model does not define.
+3. Register the plugin in the app's existing `app/Providers/Filament/*PanelProvider.php`, and
+   define the `viewOpsNotify` gate in a service provider, based on the app's own admin check (an
+   existing gate, role, `is_admin` column or policy). Without it the page stays closed outside
+   `local`. Never call `isAdmin()` or any other method the `User` model does not define.
 4. Check that a queue worker (Horizon or `queue:work`) and the scheduler run on the server.
 5. After the human has finished the Telegram steps below, run:
 

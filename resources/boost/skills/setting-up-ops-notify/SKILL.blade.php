@@ -14,18 +14,19 @@ Part of the setup happens in Telegram and needs a human. Do the app side, then s
 
 ## 1. App side (the agent does this)
 
-Register the plugin in the existing panel provider (`app/Providers/Filament/*PanelProvider.php`). Base `authorize()` on the app's own admin check: read the User model first and never call a method it does not define, because `canAccess()` runs on every navigation render and a missing method breaks the whole panel.
+Register the plugin in the existing panel provider (`app/Providers/Filament/*PanelProvider.php`), then define who may use it. Without the `viewOpsNotify` gate (or `->authorize()`), the page stays closed outside the `local` environment. Base the gate on the app's own admin check: read the User model first and never call a method it does not define, because the check runs on every navigation render and a missing method breaks the whole panel. `manageOpsNotify` optionally limits Settings, Bot profile, Send test and Resend; it defaults to `viewOpsNotify`.
 
 @verbatim
-<code-snippet name="Register the plugin" lang="php">
+<code-snippet name="Register the plugin and its gate" lang="php">
+// app/Providers/Filament/AdminPanelProvider.php
 use Spokospace\OpsNotify\Filament\OpsNotifyPlugin;
 
-->plugin(
-    OpsNotifyPlugin::make()
-        ->navigationGroup('System')
-        // Define the gate (Gate::define('viewOpsNotify', ...)) or use the app's existing admin check.
-        ->authorize(fn (): bool => auth()->user()?->can('viewOpsNotify') ?? false),
-)
+->plugin(OpsNotifyPlugin::make()->navigationGroup('System'))
+
+// app/Providers/AppServiceProvider.php, boot()
+use Illuminate\Support\Facades\Gate;
+
+Gate::define('viewOpsNotify', fn (User $user): bool => $user->is_admin); // the app's real check
 </code-snippet>
 @endverbatim
 

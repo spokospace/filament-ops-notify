@@ -54,8 +54,7 @@ public function panel(Panel $panel): Panel
         ->plugin(
             OpsNotifyPlugin::make()
                 ->navigationGroup('System')
-                ->navigationSort(90)
-                ->authorize(fn (): bool => auth()->user()?->can('viewOpsNotify') ?? false),
+                ->navigationSort(90),
         );
 }
 ```
@@ -64,21 +63,40 @@ The plugin adds one page, **Ops Notify**, at `{panel path}/ops-notify` (for exam
 `/admin/ops-notify`). It has the connection status, a *Send test* button, the message history and
 the *Settings* slide-over.
 
-`authorize()` decides who can open the page. Without it, every user of the panel can, and the page
-holds the bot token, so restrict it.
+## Who may use it
 
-**Use your app's own admin check.** Do not copy `isAdmin()` unless your `User` model defines it.
-The closure runs on every navigation render, so a call to a missing method breaks the whole panel,
-not just this page. Two options that work everywhere:
+Two permissions, the way Horizon and Telescope do it:
+
+| Ability | Allows | Default |
+|---|---|---|
+| `viewOpsNotify` | Opening the page: status and message history | Nobody, except in the `local` environment |
+| `manageOpsNotify` | *Settings*, *Bot profile*, *Send test*, *Resend* | Whoever has `viewOpsNotify` |
+
+Define them in a service provider's `boot()`, with your app's own admin check:
 
 ```php
-// A gate or policy ability, defined in a service provider:
-// Gate::define('viewOpsNotify', fn (User $user): bool => $user->is_admin);
-->authorize(fn (): bool => auth()->user()?->can('viewOpsNotify') ?? false)
+use Illuminate\Support\Facades\Gate;
 
-// An email allowlist:
-->authorize(fn (): bool => in_array(auth()->user()?->email, ['ops@shop.example'], true))
+Gate::define('viewOpsNotify', fn (User $user): bool => $user->is_admin);
+
+// Optional: let more people see the history than change the settings.
+Gate::define('manageOpsNotify', fn (User $user): bool => $user->is_owner);
 ```
+
+With [Filament Shield](https://github.com/bezhanSalleh/filament-shield) or spatie/laravel-permission,
+point the gates at permissions: `fn (User $user): bool => $user->can('view_ops_notify')`.
+
+Or decide in the panel provider; a closure there wins over the gate:
+
+```php
+OpsNotifyPlugin::make()
+    ->authorize(fn (): bool => auth()->user()?->is_admin ?? false)
+    ->authorizeManagement(fn (): bool => auth()->user()?->is_owner ?? false)
+```
+
+**Use checks your `User` model really has.** The page's access check runs on every navigation
+render, so calling a method the model does not define (for example `isAdmin()`) breaks the whole
+panel, not just this page. Hidden actions are also blocked: Filament refuses to run them.
 
 | Method | Default |
 |---|---|
@@ -86,7 +104,8 @@ not just this page. Two options that work everywhere:
 | `navigationLabel(?string)` | `Ops Notify` (not translated; pass your own, e.g. a translated string) |
 | `navigationSort(?int)` | none |
 | `navigationIcon(string\|BackedEnum\|null)` | `Heroicon::OutlinedBellAlert` |
-| `authorize(?Closure)` | every panel user |
+| `authorize(?Closure)` | the `viewOpsNotify` gate, else only `local` |
+| `authorizeManagement(?Closure)` | the `manageOpsNotify` gate, else the same as `authorize` |
 
 ## What else the package registers
 
