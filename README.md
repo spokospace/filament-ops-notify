@@ -73,16 +73,18 @@ php artisan migrate
 ```php
 use Spokospace\OpsNotify\Filament\OpsNotifyPlugin;
 
-$panel->plugin(
-    OpsNotifyPlugin::make()
-        ->navigationGroup('System')
-        ->authorize(fn (): bool => auth()->user()?->can('viewOpsNotify') ?? false),
-);
+$panel->plugin(OpsNotifyPlugin::make()->navigationGroup('System'));
 ```
 
-`authorize()` runs on every navigation render, so it must work for every user. Use your app's
-own admin check (a gate, a role, an email allowlist). Do not copy `isAdmin()` from other examples
-unless your `User` model defines it. See [Installation](docs/installation.md#register-the-filament-plugin).
+Then say who may use it. Until you do, the page opens only in the `local` environment:
+
+```php
+// In a service provider's boot(), with your app's own admin check:
+Gate::define('viewOpsNotify', fn (User $user): bool => $user->is_admin);
+```
+
+`manageOpsNotify` can limit *Settings*, *Bot profile*, *Send test* and *Resend* further. See
+[Who may use it](docs/installation.md#who-may-use-it).
 
 Delivery runs on the queue, so the app needs a worker (Horizon or `queue:work`) and the scheduler.
 
