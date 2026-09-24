@@ -53,7 +53,7 @@ Horizon state), and the history of every message sent, with failed ones ready to
 Telegram or imported from it, routing rules and forwarding rules. Filled lists collapse to a
 one-line summary.
 
-<img alt="Settings slide-over with the Telegram connection and the topics list" src="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/settings-light.png" width="600">
+<img alt="Settings slide-over with the Telegram connection, the two message toggles and the topics list" src="https://raw.githubusercontent.com/spokospace/filament-ops-notify/main/art/screenshots/settings-light.png" width="600">
 
 **Bot profile:** pick a preset avatar or upload your own, and set the name and descriptions
 Telegram shows.
