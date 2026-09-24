@@ -3,6 +3,18 @@
     "description": "Operational notifications (inquiries, errors, builds) for Laravel + Filament panels, delivered to Telegram forum topics.",
     "type": "library",
     "license": "MIT",
+    "homepage": "https://github.com/spokospace/filament-ops-notify",
+    "authors": [
+        {
+            "name": "spoko.space",
+            "homepage": "https://spoko.space"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/spokospace/filament-ops-notify/issues",
+        "source": "https://github.com/spokospace/filament-ops-notify",
+        "docs": "https://github.com/spokospace/filament-ops-notify/tree/main/docs"
+    },
     "keywords": ["laravel", "filament", "filament-plugin", "telegram", "telegram-bot", "notifications", "alerts", "monitoring"],
     "require": {
         "php": "^8.3",

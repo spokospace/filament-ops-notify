@@ -139,6 +139,11 @@ with an **Open site** button below. The title and field labels are bold.
 composer test
 ```
 
+## Credits
+
+Built and maintained by [spoko.space](https://spoko.space), where it runs in production on our
+own Filament panels.
+
 ## License
 
 MIT, see [LICENSE.md](LICENSE.md).
