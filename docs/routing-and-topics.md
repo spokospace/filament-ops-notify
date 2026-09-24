@@ -88,3 +88,28 @@ What a forwarded notification keeps:
 - actions with a URL, which become inline buttons. A relative URL is made absolute with
   `APP_URL`. If Telegram rejects a button URL (for example `localhost`), the message is sent again
   with the links as text.
+
+## Forwarding other Laravel notifications
+
+Not every app uses Filament's bell. **Settings → Other Laravel notifications** forwards any Laravel
+notification sent through the channels you pick, such as `mail`, `vonage` (SMS), `broadcast` (push)
+or `database`, with no code changes. It is off by default.
+
+- **One message per notification.** Laravel gives each send one id, shared by all its recipients
+  and channels, so an e-mail to five admins arrives once.
+- **What the message is built from**, in this order:
+  1. `toOps($notifiable)`, if the notification defines it;
+  2. for `mail`, the mail message: subject as the title, its lines, and its button;
+  3. otherwise `toArray()` / `toDatabase()`: `title` (or `subject`), `body` (or `message`) and a
+     `url`, if present.
+- **Event name:** `opsEvent()` if the notification defines it, else the class name in snake case
+  (`App\Notifications\OrderPlaced` → `order_placed`). Route it like any other event, for example
+  `order_placed` → *Orders*.
+- **Never forwarded:** password resets, e-mail verification, one-time codes and magic links
+  (`forward_notifications.except` in the config, by class pattern), because their content is
+  secret. Keep these patterns when you extend the list.
+- Notifications that already use the `ops` channel, and Filament bell notifications, have their
+  own path and are not forwarded twice.
+
+`forward_notifications.only` (class patterns) limits forwarding to chosen notifications, for
+example `['App\Notifications\Order*']`.

@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Transférer les notifications de la cloche',
         'forward_title_placeholder' => 'Nouvelle demande*',
         'forward' => 'Transférer',
+
+        'laravel_forwarding' => 'Autres notifications Laravel',
+        'laravel_forwarding_description' => "Pour les applications sans cloche : transférer les notifications envoyées par e-mail, SMS, broadcast et d'autres canaux Laravel.",
+        'laravel_forward_enabled' => 'Transférer les autres notifications',
+        'laravel_forward_channels' => 'Canaux',
+        'laravel_forward_channels_help' => "Chaque notification envoyée par ces canaux n'arrive qu'une fois, quel que soit le nombre de destinataires. Les réinitialisations de mot de passe, la vérification d'e-mail et les codes à usage unique ne sont jamais transférés.",
     ],
 
     'profile' => [

@@ -9,6 +9,7 @@ use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\OpsNotifier;
 use Spokospace\OpsNotify\Support\Dedupe;
 use Spokospace\OpsNotify\Support\FilamentNotificationConverter;
+use Spokospace\OpsNotify\Support\LaravelNotificationConverter;
 
 /**
  * Laravel notification channel, registered as "ops". A notification opts in with:
@@ -39,7 +40,7 @@ class OpsChannel
         $message = $notification->toOps($notifiable);
 
         if ($message instanceof FilamentNotification) {
-            $message = $this->converter->fromNotification($message, $this->eventName($notification));
+            $message = $this->converter->fromNotification($message, LaravelNotificationConverter::eventName($notification));
         }
 
         if (! $message instanceof OpsMessage) {
@@ -56,13 +57,5 @@ class OpsChannel
         if (Dedupe::isFirst('channel', $message->toArray())) {
             $this->notifier->send($message);
         }
-    }
-
-    /** App\Notifications\BuildFailed → "build_failed". */
-    private function eventName(Notification $notification): string
-    {
-        return method_exists($notification, 'opsEvent')
-            ? (string) $notification->opsEvent()
-            : str(class_basename($notification))->snake()->toString();
     }
 }

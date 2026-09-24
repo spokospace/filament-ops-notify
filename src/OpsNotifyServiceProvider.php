@@ -16,6 +16,7 @@ use Spokospace\OpsNotify\Commands\SendTestCommand;
 use Spokospace\OpsNotify\Http\AvatarThumbnailController;
 use Spokospace\OpsNotify\Jobs\SendOpsMessage;
 use Spokospace\OpsNotify\Listeners\ForwardFilamentDatabaseNotification;
+use Spokospace\OpsNotify\Listeners\ForwardLaravelNotification;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Spokospace\OpsNotify\Notifications\OpsChannel;
 use Spokospace\OpsNotify\Settings\SettingsStore;
@@ -58,6 +59,7 @@ class OpsNotifyServiceProvider extends PackageServiceProvider
         });
 
         Event::listen(NotificationSent::class, ForwardFilamentDatabaseNotification::class);
+        Event::listen(NotificationSent::class, ForwardLaravelNotification::class);
 
         // Per-destination send rate for SendOpsMessage (its RateLimited middleware uses this name).
         RateLimiter::for(SendOpsMessage::RATE_LIMITER, fn (SendOpsMessage $job): array|Unlimited => SendOpsMessage::limits($job));

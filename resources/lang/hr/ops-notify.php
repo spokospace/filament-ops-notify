@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Prosljeđuj obavijesti sa zvona',
         'forward_title_placeholder' => 'Novi upit*',
         'forward' => 'Prosljeđuj',
+
+        'laravel_forwarding' => 'Ostale Laravel obavijesti',
+        'laravel_forwarding_description' => 'Za aplikacije bez zvona: prosljeđuj obavijesti poslane e-poštom, SMS-om, broadcastom i drugim Laravel kanalima.',
+        'laravel_forward_enabled' => 'Prosljeđuj ostale obavijesti',
+        'laravel_forward_channels' => 'Kanali',
+        'laravel_forward_channels_help' => 'Svaka obavijest poslana ovim kanalima stiže jednom, bez obzira na to koliko je ljudi prima. Ponovno postavljanje lozinke, potvrda e-pošte i jednokratni kodovi nikad se ne prosljeđuju.',
     ],
 
     'profile' => [

@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Harang-értesítések továbbítása',
         'forward_title_placeholder' => 'Új érdeklődés*',
         'forward' => 'Továbbítás',
+
+        'laravel_forwarding' => 'Egyéb Laravel-értesítések',
+        'laravel_forwarding_description' => 'Harang nélküli alkalmazásokhoz: az e-mailben, SMS-ben, broadcasttal és más Laravel-csatornákon küldött értesítések továbbítása.',
+        'laravel_forward_enabled' => 'Egyéb értesítések továbbítása',
+        'laravel_forward_channels' => 'Csatornák',
+        'laravel_forward_channels_help' => 'Az ezeken a csatornákon küldött értesítések egyszer érkeznek meg, akárhány címzettjük is van. A jelszó-visszaállítások, az e-mail-ellenőrzések és az egyszer használatos kódok soha nem kerülnek továbbításra.',
     ],
 
     'profile' => [

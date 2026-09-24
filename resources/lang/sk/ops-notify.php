@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Preposielať oznámenia zo zvončeka',
         'forward_title_placeholder' => 'Nový dopyt*',
         'forward' => 'Preposielať',
+
+        'laravel_forwarding' => 'Ďalšie oznámenia Laravelu',
+        'laravel_forwarding_description' => 'Pre aplikácie bez zvončeka: preposielať oznámenia odosielané e-mailom, SMS, broadcastom a ďalšími kanálmi Laravelu.',
+        'laravel_forward_enabled' => 'Preposielať ďalšie oznámenia',
+        'laravel_forward_channels' => 'Kanály',
+        'laravel_forward_channels_help' => 'Každé oznámenie odoslané týmito kanálmi príde iba raz, bez ohľadu na počet príjemcov. Obnovenie hesla, overenie e-mailu a jednorazové kódy sa nikdy nepreposielajú.',
     ],
 
     'profile' => [

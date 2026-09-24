@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Inoltra le notifiche della campanella',
         'forward_title_placeholder' => 'Nuova richiesta*',
         'forward' => 'Inoltra',
+
+        'laravel_forwarding' => 'Altre notifiche di Laravel',
+        'laravel_forwarding_description' => 'Per le app senza campanella: inoltra le notifiche inviate via e-mail, SMS, broadcast e altri canali di Laravel.',
+        'laravel_forward_enabled' => 'Inoltra le altre notifiche',
+        'laravel_forward_channels' => 'Canali',
+        'laravel_forward_channels_help' => "Ogni notifica inviata tramite questi canali arriva una sola volta, indipendentemente da quante persone la ricevono. Reimpostazioni della password, verifiche dell'e-mail e codici monouso non vengono mai inoltrati.",
     ],
 
     'profile' => [

@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Pārsūtīt zvaniņa paziņojumus',
         'forward_title_placeholder' => 'Jauns pieprasījums*',
         'forward' => 'Pārsūtīt',
+
+        'laravel_forwarding' => 'Citi Laravel paziņojumi',
+        'laravel_forwarding_description' => 'Lietotnēm bez zvaniņa: pārsūtīt paziņojumus, kas nosūtīti pa e-pastu, SMS, broadcast un citiem Laravel kanāliem.',
+        'laravel_forward_enabled' => 'Pārsūtīt citus paziņojumus',
+        'laravel_forward_channels' => 'Kanāli',
+        'laravel_forward_channels_help' => 'Katrs pa šiem kanāliem nosūtītais paziņojums pienāk vienu reizi neatkarīgi no saņēmēju skaita. Paroles atiestatīšana, e-pasta verifikācija un vienreizējie kodi nekad netiek pārsūtīti.',
     ],
 
     'profile' => [

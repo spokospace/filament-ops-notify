@@ -3,6 +3,7 @@
 namespace Spokospace\OpsNotify\Filament;
 
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -155,6 +156,24 @@ class SettingsForm
                             ->defaultItems(0)
                             ->addActionLabel(Trans::get('settings.add_rule')),
                         Trans::get('settings.forwarding_description'),
+                    ),
+                ]),
+
+            Section::make(Trans::get('settings.laravel_forwarding'))
+                ->key('laravel_forwarding')
+                ->description(Trans::get('settings.laravel_forwarding_description'))
+                ->collapsible()
+                ->collapsed(! ($saved['forward_other_enabled'] ?? false))
+                ->schema([
+                    $this->locked(Toggle::make('forward_other_enabled')->label(Trans::get('settings.laravel_forward_enabled'))->live()),
+                    $this->locked(
+                        CheckboxList::make('forward_other_channels')
+                            ->label(Trans::get('settings.laravel_forward_channels'))
+                            // Laravel's channel names; the app's own custom channels can go in the config.
+                            ->options(['mail' => 'mail', 'database' => 'database', 'broadcast' => 'broadcast', 'vonage' => 'vonage (SMS)', 'slack' => 'slack'])
+                            ->columns(3)
+                            ->visible(fn (Get $get): bool => (bool) $get('forward_other_enabled')),
+                        Trans::get('settings.laravel_forward_channels_help'),
                     ),
                 ]),
         ];

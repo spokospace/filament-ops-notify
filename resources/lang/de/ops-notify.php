@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Glocken-Benachrichtigungen weiterleiten',
         'forward_title_placeholder' => 'Neue Anfrage*',
         'forward' => 'Weiterleiten',
+
+        'laravel_forwarding' => 'Weitere Laravel-Benachrichtigungen',
+        'laravel_forwarding_description' => 'Für Apps ohne Glocke: Benachrichtigungen weiterleiten, die per E-Mail, SMS, Broadcast und über andere Laravel-Kanäle gesendet werden.',
+        'laravel_forward_enabled' => 'Weitere Benachrichtigungen weiterleiten',
+        'laravel_forward_channels' => 'Kanäle',
+        'laravel_forward_channels_help' => 'Jede über diese Kanäle gesendete Benachrichtigung kommt nur einmal an, egal wie viele Personen sie erhalten. Passwort-Resets, E-Mail-Bestätigungen und Einmalcodes werden nie weitergeleitet.',
     ],
 
     'profile' => [

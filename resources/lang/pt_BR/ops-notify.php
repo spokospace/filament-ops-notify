@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Encaminhar notificações do sino',
         'forward_title_placeholder' => 'Nova consulta*',
         'forward' => 'Encaminhar',
+
+        'laravel_forwarding' => 'Outras notificações do Laravel',
+        'laravel_forwarding_description' => 'Para apps sem o sino: encaminhar notificações enviadas por e-mail, SMS, broadcast e outros canais do Laravel.',
+        'laravel_forward_enabled' => 'Encaminhar outras notificações',
+        'laravel_forward_channels' => 'Canais',
+        'laravel_forward_channels_help' => 'Cada notificação enviada por esses canais chega uma única vez, não importa quantas pessoas a recebam. Redefinições de senha, verificação de e-mail e códigos de uso único nunca são encaminhados.',
     ],
 
     'profile' => [

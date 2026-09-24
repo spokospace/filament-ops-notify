@@ -118,6 +118,12 @@ return [
         'forward_enabled' => 'Edasta kellukese teated',
         'forward_title_placeholder' => 'Uus päring*',
         'forward' => 'Edasta',
+
+        'laravel_forwarding' => 'Muud Laraveli teated',
+        'laravel_forwarding_description' => 'Kellukeseta rakendustele: edasta e-posti, SMS-i, broadcasti ja muude Laraveli kanalite kaudu saadetud teated.',
+        'laravel_forward_enabled' => 'Edasta muud teated',
+        'laravel_forward_channels' => 'Kanalid',
+        'laravel_forward_channels_help' => 'Iga nende kanalite kaudu saadetud teade saabub ühe korra, olenemata saajate arvust. Parooli lähtestamisi, e-posti kinnitusi ja ühekordseid koode ei edastata kunagi.',
     ],
 
     'profile' => [
