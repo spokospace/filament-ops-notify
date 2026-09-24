@@ -60,8 +60,11 @@ return [
     ],
 
     /*
-    | [panel] Message templates per event. Keys are Str::is() patterns, first match wins; events
-    | that match nothing keep the default layout. Template text is plain text (no HTML).
+    | Message templates per event. Keys are Str::is() patterns, first match wins; "*" is checked
+    | last and is the look of every message no other pattern changes; events that match nothing
+    | keep the default layout. Template text is plain text (no HTML). Config-only, but for two
+    | parts of "*": the panel's "Start with [service]" and "End with #event" toggles store
+    | '*' => ['service' => false] and ['hashtag' => false]. Templates set here lock those toggles.
     |   title    Replaces the title. Placeholders: :title :body :event :service :level
     |            :field.Label (or :field.{Label with spaces}); a missing field is empty.
     |   body     Replaces the body, with the same placeholders; false = no body.
