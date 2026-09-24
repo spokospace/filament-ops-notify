@@ -5,8 +5,10 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification as NotificationFacade;
+use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 use Spokospace\OpsNotify\Enums\DeliveryStatus;
+use Spokospace\OpsNotify\Enums\Level;
 use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\Filament\Pages\OpsNotifyPage;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
@@ -125,6 +127,31 @@ it('marks the original row resent so it cannot be resent twice', function () {
     expect($failed->fresh())
         ->status->toBe(DeliveryStatus::Resent)
         ->error->toBe((string) $new->id);
+});
+
+it('does not mark a row resent when the burst guard holds the resend back', function () {
+    config(['queue.default' => 'database', 'ops-notify.burst' => ['max_per_event' => 1, 'window_minutes' => 5]]);
+    Queue::fake();
+    Http::fake(['*/getMe' => Http::response(['ok' => true, 'result' => ['username' => 'bot']])]);
+    Filament::setCurrentPanel('admin');
+    $this->actingAs($this->admin());
+
+    $failed = OpsNotifyLog::query()->create([
+        'channel' => 'telegram', 'event' => 'build.failed', 'level' => Level::Error,
+        'title' => 'Build failed', 'status' => DeliveryStatus::Failed,
+    ]);
+
+    // Push the event to its burst limit so the resend itself is the one that gets held.
+    OpsMessage::make('build.failed')->error()->title('Build failed')->send();
+
+    Livewire::test(OpsNotifyPage::class)
+        ->callTableAction('resend', $failed)
+        ->assertNotified('Not sent')
+        ->assertTableActionVisible('resend', $failed->fresh());
+
+    // The original keeps its Failed status (and Resend button); the held attempt is logged suppressed.
+    expect($failed->fresh()->status)->toBe(DeliveryStatus::Failed)
+        ->and(OpsNotifyLog::query()->where('status', DeliveryStatus::Suppressed)->count())->toBe(1);
 });
 
 it('marks a rate-limited message failed on the sync queue instead of losing it', function () {

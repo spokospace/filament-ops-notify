@@ -3,6 +3,7 @@
 namespace Spokospace\OpsNotify\Commands;
 
 use Illuminate\Console\Command;
+use Spokospace\OpsNotify\Enums\DeliveryStatus;
 use Spokospace\OpsNotify\Exceptions\MessageSkipped;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\OpsNotifier;
@@ -29,8 +30,21 @@ class SendTestCommand extends Command
             ->field(Trans::get('message.host'), gethostname() ?: null));
 
         if ($this->option('queue')) {
-            $notifier->send($message);
-            $this->components->info('Queued, unless the event is disabled; check the log on the Filament page.');
+            $log = $notifier->send($message);
+
+            if ($log === null) {
+                $this->components->warn('Nothing was queued: the event is disabled or the send failed. Check the log on the Filament page.');
+
+                return self::FAILURE;
+            }
+
+            if ($log->status === DeliveryStatus::Suppressed) {
+                $this->components->warn('Held back by the burst guard; it will be counted in the digest when the window ends.');
+
+                return self::SUCCESS;
+            }
+
+            $this->components->info('Queued; it changes to Sent once a worker picks it up. Check the log on the Filament page.');
 
             return self::SUCCESS;
         }

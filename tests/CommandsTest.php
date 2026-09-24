@@ -31,6 +31,18 @@ it('refuses when the event is disabled', function () {
     Http::assertNothingSent();
 });
 
+it('reports failure when --queue queues nothing because the event is disabled', function () {
+    Http::fake();
+    config(['ops-notify.events' => ['ops.*' => ['enabled' => false]]]);
+
+    // Previously this always said "Queued" and exited 0, even though nothing was queued.
+    $this->artisan('ops-notify:test', ['--queue' => true])
+        ->expectsOutputToContain('Nothing was queued')
+        ->assertFailed();
+
+    Http::assertNothingSent();
+});
+
 it('lists chats and forum topics the bot has seen', function () {
     Http::fake([
         '*/getMe' => Http::response(['ok' => true, 'result' => ['username' => 'polo_ops_bot']]),
