@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Lisää tapahtumalle reitityssääntö napsauttamalla sitä.',
         'seen_rule_added' => 'Sääntö :pattern lisätty: valitse sen aihe ja tallenna asetukset.',
         'seen_rule_exists' => ':pattern vastaa jo tapahtumaa :event: aseta aihe siinä säännössä.',
+        'seen_rule_routed' => ':pattern lähettää jo tapahtuman :event aiheeseen :topic.',
+        'seen_rule_disabled' => ':pattern vastaa jo tapahtumaa :event, mutta sääntö on pois päältä: ota se käyttöön, jotta tapahtuma lähetetään.',
+        'seen_rule_also' => 'Se kattaa myös :events. Jos haluat ohjata vain tapahtuman :event, vaihda kuvioksi sen nimi.',
         'seen_default' => 'ei aihetta säännöissä',
+        'seen_unknown' => 'nimi on lyhennetty, sääntöä ei löytynyt',
         'add_rule' => 'Lisää sääntö',
 
         'templates' => 'Viestipohjat',

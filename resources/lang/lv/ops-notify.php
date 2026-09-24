@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Noklikšķiniet uz notikuma, lai tam pievienotu maršrutēšanas kārtulu.',
         'seen_rule_added' => 'Kārtula :pattern pievienota: izvēlieties tēmu un saglabājiet iestatījumus.',
         'seen_rule_exists' => ':pattern jau atbilst :event: iestatiet tēmu tajā kārtulā.',
+        'seen_rule_routed' => ':pattern jau sūta :event uz :topic.',
+        'seen_rule_disabled' => ':pattern jau atbilst :event, bet kārtula ir izslēgta: ieslēdziet to, lai notikums tiktu sūtīts.',
+        'seen_rule_also' => 'Tā aptver arī :events. Lai novirzītu tikai :event, nomainiet šablonu uz šo nosaukumu.',
         'seen_default' => 'noteikumos nav tēmas',
+        'seen_unknown' => 'nosaukums saīsināts, kārtula nav atrasta',
         'add_rule' => 'Pievienot noteikumu',
 
         'templates' => 'Ziņojumu veidnes',

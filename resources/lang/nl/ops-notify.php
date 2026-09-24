@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Klik op een gebeurtenis om er een routeringsregel voor toe te voegen.',
         'seen_rule_added' => 'Regel :pattern toegevoegd: kies het onderwerp en sla de instellingen op.',
         'seen_rule_exists' => ':pattern past al op :event: stel het onderwerp in die regel in.',
+        'seen_rule_routed' => ':pattern stuurt :event al naar :topic.',
+        'seen_rule_disabled' => ':pattern past al op :event, maar de regel staat uit: zet hem aan om de gebeurtenis te versturen.',
+        'seen_rule_also' => 'Hij vangt ook :events. Wijzig het patroon in die naam om alleen :event te routeren.',
         'seen_default' => 'geen onderwerp in de regels',
+        'seen_unknown' => 'naam ingekort, geen regel gevonden',
         'add_rule' => 'Regel toevoegen',
 
         'templates' => 'Berichtsjablonen',

@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Klicka på en händelse för att lägga till en routningsregel för den.',
         'seen_rule_added' => 'Regeln :pattern har lagts till: välj ämne och spara inställningarna.',
         'seen_rule_exists' => ':pattern matchar redan :event: ange ämnet i den regeln.',
+        'seen_rule_routed' => ':pattern skickar redan :event till :topic.',
+        'seen_rule_disabled' => ':pattern matchar redan :event, men regeln är avstängd: slå på den för att skicka händelsen.',
+        'seen_rule_also' => 'Den fångar även :events. Ändra mönstret till namnet för att bara skicka :event.',
         'seen_default' => 'inget ämne i reglerna',
+        'seen_unknown' => 'namnet är förkortat, ingen regel hittad',
         'add_rule' => 'Lägg till regel',
 
         'templates' => 'Meddelandemallar',

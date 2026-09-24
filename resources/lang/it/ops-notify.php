@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Fai clic su un evento per aggiungere una regola di instradamento.',
         'seen_rule_added' => 'Regola :pattern aggiunta: scegli il suo argomento e salva le impostazioni.',
         'seen_rule_exists' => ':pattern corrisponde già a :event: imposta l’argomento in quella regola.',
+        'seen_rule_routed' => ':pattern invia già :event a :topic.',
+        'seen_rule_disabled' => ':pattern corrisponde già a :event, ma la regola è disattivata: attivala per inviare l’evento.',
+        'seen_rule_also' => 'Cattura anche :events. Per instradare solo :event, cambia il modello con quel nome.',
         'seen_default' => 'nessun argomento nelle regole',
+        'seen_unknown' => 'nome troncato, nessuna regola trovata',
         'add_rule' => 'Aggiungi regola',
 
         'templates' => 'Modelli dei messaggi',

@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Klik på en hændelse for at tilføje en routingregel for den.',
         'seen_rule_added' => 'Reglen :pattern er tilføjet: vælg dens emne, og gem indstillingerne.',
         'seen_rule_exists' => ':pattern matcher allerede :event: angiv emnet i den regel.',
+        'seen_rule_routed' => ':pattern sender allerede :event til :topic.',
+        'seen_rule_disabled' => ':pattern matcher allerede :event, men reglen er slået fra: slå den til for at sende hændelsen.',
+        'seen_rule_also' => 'Den fanger også :events. Skift mønsteret til navnet for kun at sende :event.',
         'seen_default' => 'intet emne i reglerne',
+        'seen_unknown' => 'navnet er afkortet, ingen regel fundet',
         'add_rule' => 'Tilføj regel',
 
         'templates' => 'Beskedskabeloner',

@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Kliknite dogodek, da zanj dodate pravilo usmerjanja.',
         'seen_rule_added' => 'Pravilo :pattern dodano: izberite temo in shranite nastavitve.',
         'seen_rule_exists' => ':pattern se že ujema z :event: nastavite temo v tem pravilu.',
+        'seen_rule_routed' => ':pattern že pošilja :event v :topic.',
+        'seen_rule_disabled' => ':pattern se že ujema z :event, vendar je pravilo izklopljeno: vklopite ga, da se dogodek pošilja.',
+        'seen_rule_also' => 'Zajame tudi :events. Če želite usmeriti samo :event, vzorec spremenite v to ime.',
         'seen_default' => 'brez teme v pravilih',
+        'seen_unknown' => 'ime skrajšano, pravilo ni najdeno',
         'add_rule' => 'Dodaj pravilo',
 
         'templates' => 'Predloge sporočil',

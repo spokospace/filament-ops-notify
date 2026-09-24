@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Yönlendirme kuralı eklemek için bir olaya tıklayın.',
         'seen_rule_added' => ':pattern kuralı eklendi: konusunu seçin ve ayarları kaydedin.',
         'seen_rule_exists' => ':pattern zaten :event ile eşleşiyor: konuyu o kuralda ayarlayın.',
+        'seen_rule_routed' => ':pattern zaten :event olayını :topic konusuna gönderiyor.',
+        'seen_rule_disabled' => ':pattern zaten :event ile eşleşiyor, ancak kural kapalı: olayın gönderilmesi için kuralı açın.',
+        'seen_rule_also' => 'Şunları da yakalar: :events. Yalnızca :event için yönlendirmek isterseniz kalıbı bu adla değiştirin.',
         'seen_default' => 'kurallarda konu yok',
+        'seen_unknown' => 'ad kısaltılmış, kural bulunamadı',
         'add_rule' => 'Kural ekle',
 
         'templates' => 'Mesaj şablonları',

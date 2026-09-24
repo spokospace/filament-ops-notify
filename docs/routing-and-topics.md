@@ -43,23 +43,28 @@ The history on the plugin's page shows each message's event. Settings also sugge
 (`inquiry.created` also offers `inquiry.*`). Under the list, each event is a tag with its message
 count, e.g. `inquiry.created (12)`. Messages held back during a burst are not counted.
 
-- **Grey:** a rule gives the event a topic. Hover the tag to see it (`→ Inquiries #3`).
-- **Amber** (*no topic in rules*): no rule matches the event, or its rule has no topic. It goes to
-  the default topic, unless the message sets its own with `->topic()`.
-- **Struck through** (*Disabled*): a disabled rule drops the event.
+- **Grey:** a rule gives the event a topic. Hover or focus the tag to see it (`→ Inquiries #3`).
+- **Amber**, `inquiry.created (12, no topic in rules)`: no rule matches the event, or its rule has
+  no topic. It goes to the default topic, unless the message sets its own with `->topic()`.
+- **Struck through**, `debug.dump (4, Disabled)`: a disabled rule drops the event.
 
-The tooltip also names the channel a config rule sends to (`→ second`). The tags update as you edit
-the rules, before you save. They show the 30 most frequent events and, past those, every amber or
-struck-through event among the 200 most frequent, so a rare event with no topic still shows up.
+A tag also names the channel a config rule sends to (`→ second`). The tags follow the rules and
+topics as you edit them, before you save. They show the 30 most frequent events and, past those, up
+to 30 more among the 200 most frequent that the saved rules leave amber or struck through, so a
+rare event with no topic still shows up.
 
 Click a tag to add a rule for its event. The pattern is filled in with the wildcard form of the
 nearest prefix (`inquiry.created` → `inquiry.*`), or with the name itself when it has no prefix.
-The new row stays open so you can pick its topic; save to keep it. The first matching rule wins, so
-if a rule in the list already matches the event, no row is added and the message names that rule.
-The tags cannot be clicked when the rules come from the config.
+If that pattern also catches other events no rule matches yet, the message names them: change the
+pattern to the full event name to route that event alone. The new row stays open until you pick
+its topic; save to keep it. The first matching rule wins, so if a rule in the list already matches
+the event, no row is added and the message says what that rule does: it has no topic, it is
+disabled, or it already sends the event to a topic. The tags cannot be clicked when the rules come
+from the config.
 
-The log keeps the first 120 characters of an event name. A longer one is shown with `…`, offered
-as a pattern ending in `*`, and not marked when no rule matches, since its full name is unknown.
+The log keeps the first 120 characters of an event name. A longer one is shown with `…` and offered
+as a pattern ending in `*`. A rule whose pattern starts with the kept part counts as its rule, since
+it may match the full name. When there is none, the tag says *name cut short, no rule found*.
 The suggestions are refreshed every five minutes. Typing a name that was never sent is fine.
 
 ## Event routing

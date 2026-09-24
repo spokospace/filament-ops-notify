@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Klicke auf ein Ereignis, um eine Routing-Regel dafür hinzuzufügen.',
         'seen_rule_added' => 'Regel :pattern hinzugefügt: wähle ihr Thema und speichere die Einstellungen.',
         'seen_rule_exists' => ':pattern passt bereits auf :event: lege das Thema in dieser Regel fest.',
+        'seen_rule_routed' => ':pattern sendet :event bereits an :topic.',
+        'seen_rule_disabled' => ':pattern passt bereits auf :event, aber die Regel ist deaktiviert: aktiviere sie, damit das Ereignis gesendet wird.',
+        'seen_rule_also' => 'Sie erfasst auch :events. Um nur :event zu leiten, ändere das Muster auf diesen Namen.',
         'seen_default' => 'kein Thema in den Regeln',
+        'seen_unknown' => 'Name gekürzt, keine Regel gefunden',
         'add_rule' => 'Regel hinzufügen',
 
         'templates' => 'Nachrichtenvorlagen',

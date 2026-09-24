@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Kliknutím na udalosť pre ňu pridáte pravidlo smerovania.',
         'seen_rule_added' => 'Pravidlo :pattern pridané: vyberte tému a uložte nastavenia.',
         'seen_rule_exists' => ':pattern už zodpovedá :event: nastavte tému v tomto pravidle.',
+        'seen_rule_routed' => ':pattern už posiela :event do :topic.',
+        'seen_rule_disabled' => ':pattern už zodpovedá :event, ale pravidlo je vypnuté: zapnite ho, aby sa udalosť posielala.',
+        'seen_rule_also' => 'Zachytí aj :events. Ak chcete smerovať iba :event, zmeňte vzor na tento názov.',
         'seen_default' => 'bez témy v pravidlách',
+        'seen_unknown' => 'názov skrátený, pravidlo sa nenašlo',
         'add_rule' => 'Pridať pravidlo',
 
         'templates' => 'Šablóny správ',

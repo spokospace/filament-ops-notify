@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Haz clic en un evento para añadir una regla de enrutamiento para él.',
         'seen_rule_added' => 'Regla :pattern añadida: elige su tema y guarda los ajustes.',
         'seen_rule_exists' => ':pattern ya coincide con :event: define el tema en esa regla.',
+        'seen_rule_routed' => ':pattern ya envía :event a :topic.',
+        'seen_rule_disabled' => ':pattern ya coincide con :event, pero la regla está desactivada: actívala para enviar el evento.',
+        'seen_rule_also' => 'También captura :events. Para enrutar solo :event, cambia el patrón a ese nombre.',
         'seen_default' => 'sin tema en las reglas',
+        'seen_unknown' => 'nombre recortado, sin regla encontrada',
         'add_rule' => 'Añadir regla',
 
         'templates' => 'Plantillas de mensajes',

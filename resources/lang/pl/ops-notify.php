@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Kliknij zdarzenie, aby dodać dla niego regułę routingu.',
         'seen_rule_added' => 'Dodano regułę :pattern: wybierz temat i zapisz ustawienia.',
         'seen_rule_exists' => ':pattern już pasuje do :event: ustaw temat w tej regule.',
+        'seen_rule_routed' => ':pattern już wysyła :event do :topic.',
+        'seen_rule_disabled' => ':pattern już pasuje do :event, ale reguła jest wyłączona: włącz ją, aby wysyłać to zdarzenie.',
+        'seen_rule_also' => 'Obejmie też :events. Aby kierować tylko :event, zmień wzorzec na tę nazwę.',
         'seen_default' => 'brak tematu w regułach',
+        'seen_unknown' => 'nazwa ucięta, nie znaleziono reguły',
         'add_rule' => 'Dodaj regułę',
 
         'templates' => 'Szablony wiadomości',

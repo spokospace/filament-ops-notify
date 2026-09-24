@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Klikk på en hendelse for å legge til en rutingsregel for den.',
         'seen_rule_added' => 'Regelen :pattern er lagt til: velg emne, og lagre innstillingene.',
         'seen_rule_exists' => ':pattern samsvarer allerede med :event: angi emnet i den regelen.',
+        'seen_rule_routed' => ':pattern sender allerede :event til :topic.',
+        'seen_rule_disabled' => ':pattern samsvarer allerede med :event, men regelen er slått av: slå den på for å sende hendelsen.',
+        'seen_rule_also' => 'Den fanger også :events. Endre mønsteret til navnet for å sende bare :event.',
         'seen_default' => 'ikke noe emne i reglene',
+        'seen_unknown' => 'navnet er forkortet, ingen regel funnet',
         'add_rule' => 'Legg til regel',
 
         'templates' => 'Meldingsmaler',

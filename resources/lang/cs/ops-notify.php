@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Kliknutím na událost pro ni přidáte pravidlo směrování.',
         'seen_rule_added' => 'Pravidlo :pattern přidáno: vyberte téma a uložte nastavení.',
         'seen_rule_exists' => ':pattern už odpovídá :event: nastavte téma v tomto pravidle.',
+        'seen_rule_routed' => ':pattern už posílá :event do :topic.',
+        'seen_rule_disabled' => ':pattern už odpovídá :event, ale pravidlo je vypnuté: zapněte ho, aby se událost posílala.',
+        'seen_rule_also' => 'Zachytí také :events. Chcete-li směrovat jen :event, změňte vzor na tento název.',
         'seen_default' => 'bez tématu v pravidlech',
+        'seen_unknown' => 'název zkrácen, pravidlo nenalezeno',
         'add_rule' => 'Přidat pravidlo',
 
         'templates' => 'Šablony zpráv',

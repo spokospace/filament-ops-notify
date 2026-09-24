@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Spustelėkite įvykį, kad pridėtumėte jam nukreipimo taisyklę.',
         'seen_rule_added' => 'Taisyklė :pattern pridėta: pasirinkite temą ir išsaugokite nustatymus.',
         'seen_rule_exists' => ':pattern jau atitinka :event: nustatykite temą toje taisyklėje.',
+        'seen_rule_routed' => ':pattern jau siunčia :event į :topic.',
+        'seen_rule_disabled' => ':pattern jau atitinka :event, bet taisyklė išjungta: įjunkite ją, kad įvykis būtų siunčiamas.',
+        'seen_rule_also' => 'Ji apims ir :events. Kad nukreiptumėte tik :event, pakeiskite šabloną į šį pavadinimą.',
         'seen_default' => 'taisyklėse nėra temos',
+        'seen_unknown' => 'pavadinimas sutrumpintas, taisyklė nerasta',
         'add_rule' => 'Pridėti taisyklę',
 
         'templates' => 'Žinučių maketai',

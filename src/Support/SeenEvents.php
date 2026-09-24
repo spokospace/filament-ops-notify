@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spokospace\OpsNotify\Enums\DeliveryStatus;
+use Spokospace\OpsNotify\Enums\SeenEventStatus;
 use Spokospace\OpsNotify\Models\OpsNotifyLog;
 use Throwable;
 
@@ -137,6 +138,44 @@ final class SeenEvents
     public static function rulePattern(string $event): string
     {
         return self::isTruncated($event) ? self::namePattern($event) : (self::prefixPatterns($event)[0] ?? $event);
+    }
+
+    /**
+     * The routing rule a logged event falls under, as RoutingRules::ruleFor() finds it. For a
+     * name the log cut short, also a rule that may match the full name: its pattern starts with
+     * the part that was kept.
+     *
+     * @param  array<array-key, mixed>  $rules  Pattern => rule.
+     */
+    public static function ruleKey(array $rules, string $event): ?string
+    {
+        return self::isTruncated($event) ? PatternMap::firstKeyForStart($rules, $event) : PatternMap::firstKey($rules, $event);
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $rules  Pattern => rule.
+     * @return array<string, mixed> ruleKey()'s rule, [] when none.
+     */
+    public static function ruleFor(array $rules, string $event): array
+    {
+        $key = self::ruleKey($rules, $event);
+
+        return $key === null ? [] : (array) $rules[$key];
+    }
+
+    /**
+     * What the routing rules do with a logged event.
+     *
+     * @param  array<string, mixed>  $rule  ruleFor()
+     */
+    public static function status(array $rule, string $event): SeenEventStatus
+    {
+        return match (true) {
+            $rule === [] && self::isTruncated($event) => SeenEventStatus::Unknown,
+            ! RoutingRules::sends($rule) => SeenEventStatus::Disabled,
+            blank($rule['topic'] ?? null) => SeenEventStatus::NoTopic,
+            default => SeenEventStatus::Routed,
+        };
     }
 
     /** The event name as a pattern: "its first 120 characters*" when the log cut it short. */

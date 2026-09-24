@@ -3,6 +3,7 @@
 use Filament\Actions\Action;
 use Filament\Actions\Testing\TestAction;
 use Filament\Forms\Components\Field;
+use Filament\Notifications\Livewire\Notifications;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Text;
 use Illuminate\Support\Facades\Schema;
@@ -162,9 +163,9 @@ it('lists recent events in Settings as tags and marks the ones no rule matches',
         ->assertSchemaComponentExists('routing.seen_events', 'mountedActionSchema0', fn (Text $text): bool => $text->getContent() === 'Events from the last 30 days, with their message counts.')
         ->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', hasSeenTags([
             'inquiry.created (2) gray: → #3',
-            'build.failed (1) warning: no topic in rules',
-            'debug.dump (1) gray struck: Disabled',
-            'order_placed (1) warning: no topic in rules',
+            'build.failed (1, no topic in rules) warning',
+            'debug.dump (1, Disabled) gray struck',
+            'order_placed (1, no topic in rules) warning',
         ]))
         ->assertActionDisabled(seenTag('order_placed'));
 });
@@ -178,7 +179,7 @@ it('describes events the way routing treats config rules', function () {
     settingsForm()
         ->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', hasSeenTags([
             'debug.dump (2) gray: → #5',
-            'alerts.disk (1) warning: → second, no topic in rules',
+            'alerts.disk (1, → second, no topic in rules) warning',
         ]))
         ->assertSchemaStateSet(function (array $state): void {
             expect(array_column($state['events'], 'enabled'))->toBe([true, true]);
@@ -197,7 +198,7 @@ it('lists rare events past the most frequent ones only when they are marked', fu
 
     settingsForm()->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', fn (Actions $component): bool => array_slice(seenTags($component), -2) === [
         'busy.e30 (2) gray: → #3',
-        'backup.failed (1) warning: no topic in rules',
+        'backup.failed (1, no topic in rules) warning',
     ] && count(seenTags($component)) === SeenEvents::SUGGESTED + 1);
 });
 
@@ -223,7 +224,7 @@ it('adds a routing rule for an event when its tag is clicked, and keeps the row 
     $key = array_key_first($form->instance()->mountedActionSchema0->getRawState()['events']);
 
     $form->assertSchemaComponentExists('routing.events', 'mountedActionSchema0', fn (Field $repeater): bool => ! $repeater->isCollapsed($repeater->getChildSchema($key)))
-        ->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', hasSeenTags(['inquiry.created (2) warning: no topic in rules']));
+        ->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', hasSeenTags(['inquiry.created (2, no topic in rules) warning']));
 
     // Saved, it is an ordinary rule.
     $path = $form->instance()->mountedActionSchema0->getStatePath();
@@ -250,6 +251,118 @@ it('points to the rule that already matches an event instead of adding one below
         }, 'mountedActionSchema0');
 });
 
+it('says what the rule that already matches an event does with it', function (array $rule, string $notice) {
+    seen('inquiry.created');
+
+    $form = settingsForm();
+    $path = $form->instance()->mountedActionSchema0->getStatePath();
+
+    $form->set("{$path}.telegram_topics", ['t' => ['id' => '3', 'name' => 'Inquiries']])
+        ->set("{$path}.events", ['row' => ['pattern' => 'inquiry.*', ...$rule]])
+        ->callAction(seenTag('inquiry.created'))
+        ->assertNotified($notice);
+})->with([
+    'with a topic' => [['topic' => '3', 'enabled' => true], 'inquiry.* already sends inquiry.created to Inquiries #3.'],
+    'disabled' => [['topic' => '3', 'enabled' => false], 'inquiry.* already matches inquiry.created, but the rule is disabled: turn it on to send the event.'],
+]);
+
+it('names the other events a new rule takes over', function () {
+    seen('inquiry.created', 3);
+    seen('inquiry.spam', 2);
+    seen('inquiry.updated');
+
+    $form = settingsForm();
+    $path = $form->instance()->mountedActionSchema0->getStatePath();
+
+    // inquiry.updated keeps its own rule, which comes first.
+    $form->set("{$path}.events", ['row' => ['pattern' => 'inquiry.updated', 'topic' => '5', 'enabled' => true]])
+        ->callAction(seenTag('inquiry.created'));
+
+    $notifications = new Notifications;
+    $notifications->mount();
+
+    expect($notifications->notifications->last()->getBody())
+        ->toBe('It also catches inquiry.spam. To route only inquiry.created, change the pattern to that name. Save the settings to keep it in the list.');
+});
+
+it('keeps a new row open until it has a topic', function () {
+    seen('inquiry.created');
+
+    $form = settingsForm()->callAction(seenTag('inquiry.created'));
+    $path = $form->instance()->mountedActionSchema0->getStatePath();
+    $key = array_key_first($form->instance()->mountedActionSchema0->getRawState()['events']);
+    $collapsed = fn (bool $expected): Closure => fn (Field $repeater): bool => $repeater->isCollapsed($repeater->getChildSchema($key)) === $expected;
+
+    $form->assertSchemaComponentExists('routing.events', 'mountedActionSchema0', $collapsed(false))
+        ->set("{$path}.events.{$key}.topic", '3')
+        ->assertSchemaComponentExists('routing.events', 'mountedActionSchema0', $collapsed(true));
+});
+
+it('checks an event name the log cut short against rules for the full name', function () {
+    $event = 'app.'.str_repeat('x', 116);
+    seen($event);
+
+    $form = settingsForm();
+    $path = $form->instance()->mountedActionSchema0->getStatePath();
+
+    // No rule: the tag says so, in words.
+    $form->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', hasSeenTags(["{$event}… (1, name cut short, no rule found) gray"]))
+        // An exact rule for the full name is its rule: no dead row below it.
+        ->set("{$path}.events", ['row' => ['pattern' => $event.'yz', 'topic' => null, 'enabled' => true]])
+        ->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', hasSeenTags(["{$event}… (1, no topic in rules) warning"]))
+        ->callAction(seenTag($event))
+        ->assertNotified("{$event}yz already matches {$event}: set the topic in that rule.")
+        ->assertSchemaStateSet(function (array $state): void {
+            expect($state['events'])->toHaveCount(1);
+        }, 'mountedActionSchema0');
+});
+
+it('keeps a rare tag clickable after an edit routes its event', function () {
+    foreach (range(1, SeenEvents::SUGGESTED) as $i) {
+        seen(sprintf('busy.e%02d', $i), 2);
+    }
+
+    seen('rare.x');
+
+    $form = settingsForm();
+    $path = $form->instance()->mountedActionSchema0->getStatePath();
+
+    $form->set("{$path}.events", ['row' => ['pattern' => 'rare.*', 'topic' => '4', 'enabled' => true]])
+        ->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', fn (Actions $component): bool => array_slice(seenTags($component), -1) === ['rare.x (1) gray: → #4'])
+        ->callAction(seenTag('rare.x'))
+        ->assertNotified('rare.* already sends rare.x to #4.');
+});
+
+it('lists at most as many rare events as frequent ones', function () {
+    foreach (range(1, SeenEvents::SUGGESTED * 3) as $i) {
+        seen(sprintf('e%03d', $i), $i <= SeenEvents::SUGGESTED ? 2 : 1);
+    }
+
+    settingsForm()->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', fn (Actions $component): bool => count(seenTags($component)) === SeenEvents::SUGGESTED * 2);
+});
+
+it('gives a tag whose topic is in the tooltip a full accessible name', function () {
+    config(['ops-notify.events' => ['inquiry.*' => ['topic' => '3']]]);
+    seen('inquiry.created');
+
+    settingsForm()->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', fn (Actions $component): bool => array_values($component->getChildSchema()->getComponents())[0]->getExtraAttributes() === ['aria-label' => 'inquiry.created (1), → #3']);
+});
+
+it('refreshes the tags when a topic is renamed', function () {
+    seen('inquiry.created');
+
+    $form = settingsForm();
+    $path = $form->instance()->mountedActionSchema0->getStatePath();
+    $form->set("{$path}.telegram_topics", ['t' => ['id' => '3', 'name' => 'Inquiries']]);
+
+    foreach (['name', 'id'] as $field) {
+        $form->assertSchemaComponentExists("topics.telegram_topics.t.{$field}", 'mountedActionSchema0', fn (Field $component): bool => $component->isLive()
+            && collect($component->getComponentsToPartiallyRenderAfterStateUpdated())
+                ->map(fn (string $key): ?string => $component->getLivewire()->getSchemaComponent($component->resolveRelativeKey($key), withHidden: true)?->getKey())
+                ->all() === ['mountedActionSchema0.routing']);
+    }
+});
+
 it('updates the tags as the rules are edited, before saving', function () {
     config(['ops-notify.events' => []]);
     seen('inquiry.created', 2);
@@ -259,11 +372,11 @@ it('updates the tags as the rules are edited, before saving', function () {
 
     $form->set("{$path}.telegram_topics", ['t' => ['id' => '3', 'name' => 'Inquiries']])
         ->set("{$path}.events", ['row' => ['pattern' => 'inquiry.*', 'topic' => null, 'enabled' => true]])
-        ->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', hasSeenTags(['inquiry.created (2) warning: no topic in rules']))
+        ->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', hasSeenTags(['inquiry.created (2, no topic in rules) warning']))
         ->set("{$path}.events.row.topic", '3')
         ->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', hasSeenTags(['inquiry.created (2) gray: → Inquiries #3']))
         ->set("{$path}.events.row.enabled", false)
-        ->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', hasSeenTags(['inquiry.created (2) gray struck: Disabled']));
+        ->assertSchemaComponentExists('routing.seen_event_tags', 'mountedActionSchema0', hasSeenTags(['inquiry.created (2, Disabled) gray struck']));
 
     $path .= '.events';
 

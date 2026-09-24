@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Cliquez sur un événement pour lui ajouter une règle de routage.',
         'seen_rule_added' => 'Règle :pattern ajoutée : choisissez son sujet et enregistrez les paramètres.',
         'seen_rule_exists' => ':pattern correspond déjà à :event : définissez le sujet dans cette règle.',
+        'seen_rule_routed' => ':pattern envoie déjà :event vers :topic.',
+        'seen_rule_disabled' => ':pattern correspond déjà à :event, mais la règle est désactivée : activez-la pour envoyer l’événement.',
+        'seen_rule_also' => 'Elle capte aussi :events. Pour router seulement :event, remplacez le motif par ce nom.',
         'seen_default' => 'aucun sujet dans les règles',
+        'seen_unknown' => 'nom tronqué, aucune règle trouvée',
         'add_rule' => 'Ajouter une règle',
 
         'templates' => 'Modèles de message',

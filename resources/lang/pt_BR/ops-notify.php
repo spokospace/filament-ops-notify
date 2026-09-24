@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Clique em um evento para adicionar uma regra de roteamento para ele.',
         'seen_rule_added' => 'Regra :pattern adicionada: escolha o tópico e salve as configurações.',
         'seen_rule_exists' => ':pattern já corresponde a :event: defina o tópico nessa regra.',
+        'seen_rule_routed' => ':pattern já envia :event para :topic.',
+        'seen_rule_disabled' => ':pattern já corresponde a :event, mas a regra está desativada: ative-a para enviar o evento.',
+        'seen_rule_also' => 'Ela também captura :events. Para rotear só :event, troque o padrão por esse nome.',
         'seen_default' => 'sem tópico nas regras',
+        'seen_unknown' => 'nome cortado, nenhuma regra encontrada',
         'add_rule' => 'Adicionar regra',
 
         'templates' => 'Modelos de mensagem',

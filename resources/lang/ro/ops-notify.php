@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Faceți clic pe un eveniment pentru a-i adăuga o regulă de rutare.',
         'seen_rule_added' => 'Regula :pattern a fost adăugată: alegeți subiectul și salvați setările.',
         'seen_rule_exists' => ':pattern se potrivește deja cu :event: setați subiectul în acea regulă.',
+        'seen_rule_routed' => ':pattern trimite deja :event în :topic.',
+        'seen_rule_disabled' => ':pattern se potrivește deja cu :event, dar regula este dezactivată: activați-o pentru a trimite evenimentul.',
+        'seen_rule_also' => 'Prinde și :events. Pentru a direcționa doar :event, schimbați modelul cu acest nume.',
         'seen_default' => 'fără subiect în reguli',
+        'seen_unknown' => 'nume trunchiat, nicio regulă găsită',
         'add_rule' => 'Adăugare regulă',
 
         'templates' => 'Modele de mesaje',

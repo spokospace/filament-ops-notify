@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Click an event to add a routing rule for it.',
         'seen_rule_added' => 'Rule :pattern added: pick its topic and save the settings.',
         'seen_rule_exists' => ':pattern already matches :event: set the topic in that rule.',
+        'seen_rule_routed' => ':pattern already sends :event to :topic.',
+        'seen_rule_disabled' => ':pattern already matches :event, but the rule is disabled: turn it on to send the event.',
+        'seen_rule_also' => 'It also catches :events. To route only :event, change the pattern to that name.',
         'seen_default' => 'no topic in rules',
+        'seen_unknown' => 'name cut short, no rule found',
         'add_rule' => 'Add rule',
 
         'templates' => 'Message templates',

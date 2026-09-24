@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Klõpsake sündmusel, et lisada sellele suunamisreegel.',
         'seen_rule_added' => 'Reegel :pattern lisatud: valige teema ja salvestage seaded.',
         'seen_rule_exists' => ':pattern sobib juba sündmusega :event: määrake teema selles reeglis.',
+        'seen_rule_routed' => ':pattern saadab sündmuse :event juba teemasse :topic.',
+        'seen_rule_disabled' => ':pattern sobib juba sündmusega :event, kuid reegel on välja lülitatud: lülitage see sisse, et sündmus saadetaks.',
+        'seen_rule_also' => 'See hõlmab ka :events. Et suunata ainult :event, muutke muster selleks nimeks.',
         'seen_default' => 'reeglites teemat pole',
+        'seen_unknown' => 'nimi on lühendatud, reeglit ei leitud',
         'add_rule' => 'Lisa reegel',
 
         'templates' => 'Sõnumimallid',

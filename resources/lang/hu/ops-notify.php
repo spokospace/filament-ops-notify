@@ -115,7 +115,11 @@ return [
         'seen_click' => 'Kattints egy eseményre, hogy útválasztási szabályt adj hozzá.',
         'seen_rule_added' => 'A(z) :pattern szabály hozzáadva: válassz témát, és mentsd a beállításokat.',
         'seen_rule_exists' => 'A(z) :pattern már illeszkedik erre: :event. A témát abban a szabályban állítsd be.',
+        'seen_rule_routed' => 'A(z) :pattern már a(z) :topic témába küldi ezt: :event.',
+        'seen_rule_disabled' => 'A(z) :pattern már illeszkedik erre: :event, de a szabály ki van kapcsolva. Kapcsold be, hogy az esemény elmenjen.',
+        'seen_rule_also' => 'Ezeket is elkapja: :events. Ha csak ezt akarod irányítani: :event, írd be a mintába a teljes nevet.',
         'seen_default' => 'nincs téma a szabályokban',
+        'seen_unknown' => 'a név le van vágva, nincs szabály',
         'add_rule' => 'Szabály hozzáadása',
 
         'templates' => 'Üzenetsablonok',
