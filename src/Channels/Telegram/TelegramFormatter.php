@@ -5,6 +5,7 @@ namespace Spokospace\OpsNotify\Channels\Telegram;
 use Illuminate\Support\Str;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\Support\Button;
+use Spokospace\OpsNotify\Support\MessageTemplate;
 use Spokospace\OpsNotify\Support\Trans;
 
 /**
@@ -13,6 +14,8 @@ use Spokospace\OpsNotify\Support\Trans;
  * Telegram limits a message to 4096 characters counted AFTER entity parsing, i.e. the visible
  * text. All budgets below are therefore measured on the raw text, and it is cut BEFORE escaping,
  * so a cut can never split an entity like "&amp;" (which makes Telegram reject the message).
+ * A message template (MessageTemplate) renders into the same budgets, and its text is escaped
+ * like any other: templates are plain text.
  */
 class TelegramFormatter
 {
@@ -31,15 +34,20 @@ class TelegramFormatter
 
     private const LINK_LIMIT = 300;
 
-    /** @param  bool  $linksAsText  Render buttons as text lines (fallback when Telegram rejects a button URL). */
-    public function format(OpsMessage $message, ?string $service, bool $linksAsText = false): string
+    /**
+     * @param  bool  $linksAsText  Render buttons as text lines (fallback when Telegram rejects a button URL).
+     * @param  MessageTemplate|null  $template  The event's template (MessageTemplate::for()); null = the default layout.
+     */
+    public function format(OpsMessage $message, ?string $service, bool $linksAsText = false, ?MessageTemplate $template = null): string
     {
-        $prefix = filled($service) ? '['.$service.'] ' : '';
-        $emoji = $message->level->emoji();
-        $title = $prefix.Str::limit($message->title ?? $message->event, self::TITLE_LIMIT);
-        $hashtag = '#'.$this->hashtag($message->event);
+        $template ??= new MessageTemplate;
 
-        $fields = $this->fieldLines($message->fields);
+        $prefix = $template->service && filled($service) ? '['.$service.'] ' : '';
+        $emoji = $message->level->emoji();
+        $title = $prefix.$template->title($message, $service, self::TITLE_LIMIT);
+        $hashtag = $template->hashtag ? '#'.$this->hashtag($message->event) : '';
+
+        $fields = $this->fieldLines($template->fields($message->fields));
         $links = $linksAsText ? $this->linkLines($message->buttons) : [];
 
         $used = mb_strlen($emoji.' '.$title) + mb_strlen($hashtag)
@@ -49,8 +57,8 @@ class TelegramFormatter
 
         $parts = [$emoji.' <b>'.$this->escape($title).'</b>'];
 
-        if (filled($body = $message->body()) && $bodyBudget > 0) {
-            $parts[] = $this->escape(Str::limit($body, $bodyBudget));
+        if (filled($body = $template->body($message, $service, $bodyBudget))) {
+            $parts[] = $this->escape($body);
         }
 
         if ($fields !== []) {
@@ -61,7 +69,9 @@ class TelegramFormatter
             $parts[] = $this->renderLines($links);
         }
 
-        $parts[] = $hashtag;
+        if ($hashtag !== '') {
+            $parts[] = $hashtag;
+        }
 
         return implode("\n\n", $parts);
     }

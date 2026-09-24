@@ -133,7 +133,7 @@ with an **Open site** button below. The title and field labels are bold.
 - [Telegram setup](docs/telegram-setup.md): bot, group, topics, finding the chat id, bot profile
 - [Settings](docs/settings.md): panel vs `.env`, every option, languages, the Ops Notify page
 - [Routing and topics](docs/routing-and-topics.md): topics, event rules, forwarding Filament notifications
-- [Sending messages](docs/sending.md): the `ops` channel, the `OpsMessage` API, delivery, tests
+- [Sending messages](docs/sending.md): the `ops` channel, the `OpsMessage` API, message templates, delivery, tests
 - [Drivers](docs/drivers.md): writing your own channel driver
 - [Troubleshooting](docs/troubleshooting.md): common Telegram and queue errors and fixes
 

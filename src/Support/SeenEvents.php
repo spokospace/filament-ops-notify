@@ -135,6 +135,36 @@ final class SeenEvents
     }
 
     /**
+     * The latest logged message of an event the pattern matches, burst digests aside, for a
+     * template preview. Looks among the events of counts(), so the lookup stays on the index.
+     * Null when there is none, or the log cannot be read.
+     */
+    public static function latestMessage(string $pattern): ?OpsNotifyLog
+    {
+        $events = array_values(array_filter(
+            array_map(strval(...), array_keys(self::counts())),
+            fn (string $event): bool => Str::is($pattern, $event),
+        ));
+
+        if ($events === []) {
+            return null;
+        }
+
+        try {
+            return OpsNotifyLog::query()
+                ->whereIn('event', $events)
+                ->where('created_at', '>=', self::since())
+                ->whereNull('payload->'.OpsNotifyLog::DIGEST)
+                ->latest('id')
+                ->first();
+        } catch (Throwable $e) {
+            Log::warning('[ops-notify] Could not read a message for the template preview: '.$e->getMessage());
+
+            return null;
+        }
+    }
+
+    /**
      * Counts of one column's values without held-back burst messages; for one event, also
      * without burst digests, whose titles are not notification titles. Settings must open even when the history table is missing or
      * unreadable, or the cache is down, so a failed read suggests nothing.

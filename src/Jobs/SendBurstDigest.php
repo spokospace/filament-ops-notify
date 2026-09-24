@@ -46,6 +46,8 @@ class SendBurstDigest implements ShouldQueue
 
         $message = $notifier->inMessageLocale(fn (): OpsMessage => OpsMessage::make($this->event)
             ->level($this->level)
+            // A template written for the event's own messages (":field.Name") would empty the digest.
+            ->withoutTemplate()
             ->title(Trans::choice('message.burst_title', $held, ['event' => $this->title ?? $this->event, 'minutes' => $guard->windowMinutes()]))
             // Counted per title, every held message had this title: no breakdown to list.
             ->lines($this->title === null ? $this->topTitles() : []));

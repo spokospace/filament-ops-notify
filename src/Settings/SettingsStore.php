@@ -34,6 +34,7 @@ class SettingsStore
         'telegram_topic' => 'ops-notify.channels.telegram.topic',
         'telegram_topics' => 'ops-notify.channels.telegram.topics',
         'events' => 'ops-notify.events',
+        'templates' => 'ops-notify.templates',
         'forward_enabled' => 'ops-notify.forward_database_notifications.enabled',
         'forward_map' => 'ops-notify.forward_database_notifications.map',
         'forward_other_enabled' => 'ops-notify.forward_notifications.enabled',

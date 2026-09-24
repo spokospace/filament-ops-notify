@@ -38,6 +38,9 @@ final class OpsMessage
     /** Overrides the topic resolved from config('ops-notify.events'). */
     public ?string $topic = null;
 
+    /** False: laid out the default way, whatever `ops-notify.templates` says for the event. */
+    public bool $templated = true;
+
     public function __construct(public readonly string $event) {}
 
     public static function make(string $event): self
@@ -148,6 +151,14 @@ final class OpsMessage
         return $this;
     }
 
+    /** Ignore the event's message template, e.g. for a message the package writes itself. */
+    public function withoutTemplate(): self
+    {
+        $this->templated = false;
+
+        return $this;
+    }
+
     public function body(): string
     {
         return implode("\n", $this->lines);
@@ -186,7 +197,7 @@ final class OpsMessage
             'buttons' => array_map(fn (Button $button): array => ['label' => $button->label, 'url' => $button->url], $this->buttons),
             'channel' => $this->channel,
             'topic' => $this->topic,
-        ];
+        ] + ($this->templated ? [] : ['templated' => false]);
     }
 
     /** @param  array<string, mixed>  $data */
@@ -201,6 +212,10 @@ final class OpsMessage
 
         if (filled($data['title'] ?? null)) {
             $message->title($data['title']);
+        }
+
+        if (($data['templated'] ?? true) === false) {
+            $message->withoutTemplate();
         }
 
         foreach ($data['buttons'] ?? [] as $button) {

@@ -97,6 +97,47 @@ Duration: 4m 12s
 - The last line is the event as a hashtag, so each event is searchable in the chat.
 - Buttons are inline buttons below the message.
 
+## Message templates
+
+A template changes that layout for one kind of event. You can set it in **Settings → Message
+templates** or in `config('ops-notify.templates')`. Keys are event patterns, and `*` matches
+anything, as in [event routing](routing-and-topics.md). Templates are checked from the top and the
+first match wins. An event that matches no template keeps the default layout.
+
+```php
+'templates' => [
+    'inquiry.*' => [
+        'title' => 'New inquiry from :field.Name',
+        'body' => ":body\n\nCall back within 1h",
+        'fields' => ['Name', 'Email'], // only these, in this order
+    ],
+    'debug.*' => ['body' => false, 'fields' => [], 'hashtag' => false],
+],
+```
+
+| Part | Leave it out | Change it |
+|---|---|---|
+| `title` | the message title, or the event name | text with placeholders |
+| `body` | the message body | text with placeholders, or `false` for no body |
+| `fields` | all fields | a list of labels in the order to show them, or `[]` for none |
+| `hashtag` | the `#event` line | `false` drops it |
+| `service` | the `[service]` prefix | `false` drops it |
+
+The level emoji and the buttons always stay.
+
+- **Placeholders:** `:title`, `:body`, `:event`, `:service`, `:level` and `:field.Label`. For a label
+  with spaces, use `:field.{Order number}`. Labels match ignoring case, and a missing field is left
+  empty. If the title comes out empty, the message title is used instead.
+- **Plain text.** Template text is escaped like everything else, so `<b>` is shown as typed. A
+  template can't produce HTML that Telegram rejects.
+- **Same limits.** A template is cut to the same length budgets as the default layout. Your fixed text
+  is kept, and `:title` and `:body` are shortened to fit.
+- **Preview.** In Settings, **Preview** on a template shows it rendered with the latest logged message
+  of a matching event. The form doesn't have to be saved first. It also warns when a template higher
+  up matches that event first.
+- **Resend** uses the current template, because the log keeps the message and not the rendered text.
+- Burst digests don't use templates. Your own message can skip them with `->withoutTemplate()`.
+
 ## The `OpsNotify` facade
 
 The facade is aliased automatically and proxies `OpsNotifier`:

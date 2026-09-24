@@ -18,6 +18,7 @@ not the values typed into the form, so save those first.
 | Topics | `channels.telegram.topics` | |
 | Notifications enabled | `enabled` | `OPS_NOTIFY_ENABLED` |
 | Event routing | `events` | |
+| Message templates ([Sending → Message templates](sending.md#message-templates)) | `templates` | |
 | Forward bell notifications | `forward_database_notifications.enabled` | `OPS_NOTIFY_FORWARD_DATABASE` |
 | Filament forwarding rules | `forward_database_notifications.map` | |
 | Forward other Laravel notifications | `forward_notifications.enabled` | `OPS_NOTIFY_FORWARD_NOTIFICATIONS` |

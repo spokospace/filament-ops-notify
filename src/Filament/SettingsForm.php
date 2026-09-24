@@ -7,6 +7,8 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
@@ -16,12 +18,18 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Spokospace\OpsNotify\Channels\Telegram\TelegramChannel;
+use Spokospace\OpsNotify\Channels\Telegram\TelegramFormatter;
 use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\OpsNotifier;
 use Spokospace\OpsNotify\Settings\SettingsStore;
+use Spokospace\OpsNotify\Support\Button;
 use Spokospace\OpsNotify\Support\Locales;
+use Spokospace\OpsNotify\Support\MessageTemplate;
+use Spokospace\OpsNotify\Support\PatternMap;
 use Spokospace\OpsNotify\Support\RoutingRules;
 use Spokospace\OpsNotify\Support\SeenEvents;
 use Spokospace\OpsNotify\Support\Trans;
@@ -42,6 +50,7 @@ class SettingsForm
     {
         $saved = $this->store->formValues();
         $seenEvents = SeenEvents::counts();
+        $patterns = SeenEvents::patterns(SeenEvents::suggested($seenEvents));
 
         // One line per list item: the section header lists them, and each collapsed row shows its own.
         $describeTopic = fn (array $row): string => trim(($row['name'] ?? '').' #'.($row['id'] ?? ''));
@@ -50,6 +59,8 @@ class SettingsForm
             .(($row['enabled'] ?? true) ? '' : ' ('.Trans::get('page.disabled').')');
         $describeForward = fn (array $row): string => ($row['title'] ?? '')
             .(($row['forward'] ?? true) ? ' → '.($row['event'] ?? '') : ' ('.Trans::get('page.disabled').')');
+        $describeTemplate = fn (array $row): string => ($row['pattern'] ?? '')
+            .(filled($row['title'] ?? null) ? ' → '.$row['title'] : '');
 
         return [
             Section::make(Trans::get('settings.telegram'))
@@ -133,7 +144,7 @@ class SettingsForm
                                     ->label(Trans::get('settings.pattern'))
                                     ->required()
                                     ->placeholder('inquiry.*')
-                                    ->datalist(SeenEvents::patterns(SeenEvents::suggested($seenEvents)))
+                                    ->datalist($patterns)
                                     ->live(onBlur: true),
                                 $this->topicSelect('topic', '../../telegram_topics')->label(Trans::get('settings.topic'))->live(),
                                 Toggle::make('enabled')->label(Trans::get('page.enabled'))->default(true)->inline(false)->live(),
@@ -146,6 +157,55 @@ class SettingsForm
                     Text::make(fn (Get $get): string => $this->describeSeenEvents($seenEvents, $get('events')))
                         ->key('seen_events')
                         ->visible($seenEvents !== []),
+                ]),
+
+            $this->summarized(
+                Section::make(Trans::get('settings.templates'))->key('templates'),
+                $saved,
+                'templates',
+                $describeTemplate,
+            )
+                ->schema([
+                    $this->locked(
+                        $this->compact(Repeater::make('templates'), 'pattern', $describeTemplate)
+                            ->hiddenLabel()
+                            ->schema([
+                                TextInput::make('pattern')
+                                    ->label(Trans::get('settings.pattern'))
+                                    ->required()
+                                    ->placeholder('inquiry.*')
+                                    ->datalist($patterns)
+                                    ->columnSpanFull(),
+                                TextInput::make('title')
+                                    ->label(Trans::get('settings.template_title'))
+                                    ->placeholder(':title')
+                                    ->maxLength(500)
+                                    ->helperText(Trans::get('settings.template_placeholders', ['placeholders' => implode(' ', MessageTemplate::PLACEHOLDERS)]))
+                                    ->columnSpanFull(),
+                                Textarea::make('body')
+                                    ->label(Trans::get('settings.template_body'))
+                                    ->placeholder(':body')
+                                    ->rows(3)
+                                    ->maxLength(3000)
+                                    ->helperText(Trans::get('settings.template_body_help'))
+                                    ->visible(fn (Get $get): bool => (bool) $get('show_body'))
+                                    ->columnSpanFull(),
+                                TagsInput::make('fields')
+                                    ->label(Trans::get('settings.template_fields'))
+                                    ->helperText(Trans::get('settings.template_fields_help'))
+                                    ->visible(fn (Get $get): bool => (bool) $get('show_fields'))
+                                    ->columnSpanFull(),
+                                Toggle::make('show_body')->label(Trans::get('settings.template_show_body'))->default(true)->inline(false)->live(),
+                                Toggle::make('show_fields')->label(Trans::get('settings.template_show_fields'))->default(true)->inline(false)->live(),
+                                Toggle::make('hashtag')->label(Trans::get('settings.template_hashtag'))->default(true)->inline(false),
+                                Toggle::make('service')->label(Trans::get('settings.template_service'))->default(true)->inline(false),
+                            ])
+                            ->columns(4)
+                            ->defaultItems(0)
+                            ->extraItemActions([$this->previewTemplateAction()])
+                            ->addActionLabel(Trans::get('settings.add_template')),
+                        Trans::get('settings.templates_description'),
+                    ),
                 ]),
 
             $this->summarized(
@@ -213,6 +273,21 @@ class SettingsForm
                     // As routing reads it: a config rule's 'enabled' => 0 still sends.
                     'enabled' => RoutingRules::sends($rule),
                 ])->values()->all(),
+            'templates' => collect(self::rows($values['templates'] ?? null))
+                ->map(function (mixed $data, string|int $pattern): array {
+                    $template = MessageTemplate::fromArray($data);
+
+                    return [
+                        'pattern' => (string) $pattern,
+                        'title' => $template->title,
+                        'body' => is_string($template->body) ? $template->body : null,
+                        'show_body' => $template->body !== false,
+                        'fields' => $template->fields ?? [],
+                        'show_fields' => $template->fields !== [],
+                        'hashtag' => $template->hashtag,
+                        'service' => $template->service,
+                    ];
+                })->values()->all(),
             'forward_map' => collect(self::rows($values['forward_map'] ?? null))
                 ->map(fn (string|false $event, string $title): array => [
                     'title' => $title,
@@ -243,6 +318,13 @@ class SettingsForm
                     'topic' => filled($row['topic'] ?? null) ? (string) $row['topic'] : null,
                     'enabled' => (bool) ($row['enabled'] ?? true),
                 ], fn (mixed $value): bool => $value !== null)])
+                ->all();
+        }
+
+        if (array_key_exists('templates', $data)) {
+            $data['templates'] = collect(self::rows($data['templates'] ?? null))
+                ->filter(fn (mixed $row): bool => is_array($row) && filled($row['pattern'] ?? null))
+                ->mapWithKeys(fn (array $row): array => [trim((string) $row['pattern']) => self::template($row)->toArray()])
                 ->all();
         }
 
@@ -315,6 +397,97 @@ class SettingsForm
             'date' => SeenEvents::since()->isoFormat('LL'),
             'events' => implode(' · ', $events),
         ]);
+    }
+
+    /**
+     * The template a form row describes. A part switched off is false (body) or [] (fields); an
+     * empty field list with the toggle on means all fields.
+     *
+     * @param  array<string, mixed>  $row
+     */
+    private static function template(array $row): MessageTemplate
+    {
+        $fields = self::rows($row['fields'] ?? null);
+
+        return MessageTemplate::fromArray([
+            'title' => $row['title'] ?? null,
+            'body' => ($row['show_body'] ?? true) ? str_replace("\r\n", "\n", (string) ($row['body'] ?? '')) : false,
+            'fields' => ($row['show_fields'] ?? true) ? ($fields === [] ? null : $fields) : [],
+            'hashtag' => (bool) ($row['hashtag'] ?? true),
+            'service' => (bool) ($row['service'] ?? true),
+        ]);
+    }
+
+    /**
+     * Renders a template row against the latest logged message of an event it matches, as the
+     * chat would show it. Works on the unsaved form, and says when a template above it matches
+     * that event first (that one would be used instead).
+     */
+    private function previewTemplateAction(): Action
+    {
+        return Action::make('previewTemplate')
+            ->label(Trans::get('settings.preview'))
+            ->icon(Heroicon::OutlinedEye)
+            ->color('gray')
+            ->modalHeading(Trans::get('settings.preview'))
+            ->modalSubmitAction(false)
+            ->modalCancelActionLabel(Trans::get('invites.close'))
+            ->modalContent(function (array $arguments, Repeater $component): Htmlable {
+                $earlier = [];
+
+                foreach (self::rows($component->getState()) as $key => $row) {
+                    $row = self::rows($row);
+
+                    if ((string) $key === (string) ($arguments['item'] ?? '')) {
+                        return $this->preview($row, $earlier);
+                    }
+
+                    $earlier[] = trim((string) ($row['pattern'] ?? ''));
+                }
+
+                return new HtmlString('');
+            });
+    }
+
+    /**
+     * @param  array<string, mixed>  $row  The template row.
+     * @param  list<string>  $earlier  Patterns of the rows above it.
+     */
+    private function preview(array $row, array $earlier): Htmlable
+    {
+        $pattern = trim((string) ($row['pattern'] ?? ''));
+        $note = fn (string $text, string $color = 'gray'): string => '<p style="color: var(--'.$color.'-500); margin-bottom: .75rem">'.e($text).'</p>';
+
+        if ($pattern === '') {
+            return new HtmlString($note(Trans::get('settings.preview_no_pattern')));
+        }
+
+        if (($log = SeenEvents::latestMessage($pattern)) === null) {
+            return new HtmlString($note(Trans::get('settings.preview_none', ['pattern' => $pattern, 'date' => SeenEvents::since()->isoFormat('LL')])));
+        }
+
+        $this->store->apply();
+        $message = $log->toMessage();
+
+        // The formatter escapes every part and adds only <b> tags, so its output is safe HTML.
+        $text = app(OpsNotifier::class)->inMessageLocale(fn (): string => (new TelegramFormatter)->format(
+            $message,
+            config('ops-notify.service'),
+            template: self::template($row),
+        ));
+
+        $first = PatternMap::firstKey(array_fill_keys(array_filter($earlier), true), $log->event);
+        $buttons = implode('', array_map(
+            fn (Button $button): string => '<span style="display: inline-block; margin: .5rem .5rem 0 0; padding: .25rem .75rem; border-radius: .5rem; border: 1px solid var(--gray-300)">'.e($button->label).'</span>',
+            $message->buttons,
+        ));
+
+        return new HtmlString(
+            $note(Trans::get('settings.preview_from', ['event' => $log->event, 'date' => $log->created_at?->isoFormat('LLL')]))
+            .($first !== null ? $note(Trans::get('settings.preview_shadowed', ['pattern' => $first, 'event' => $log->event]), 'warning') : '')
+            .'<div style="white-space: pre-wrap; overflow-wrap: anywhere; padding: .75rem; border-radius: .5rem; border: 1px solid var(--gray-200)">'.$text.'</div>'
+            .$buttons,
+        );
     }
 
     /**
