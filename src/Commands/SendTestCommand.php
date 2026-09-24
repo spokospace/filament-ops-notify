@@ -21,6 +21,8 @@ class SendTestCommand extends Command
     public function handle(OpsNotifier $notifier): int
     {
         $message = $notifier->inMessageLocale(fn (): OpsMessage => OpsMessage::make((string) $this->option('event'))
+            // A catch-all template must not hide what a connectivity test sends.
+            ->withoutTemplate()
             ->title(Trans::get('message.test_title'))
             ->line((string) ($this->argument('text') ?? Trans::get('actions.test_default_text')))
             ->field(Trans::get('message.environment'), app()->environment())

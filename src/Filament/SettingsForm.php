@@ -2,6 +2,7 @@
 
 namespace Spokospace\OpsNotify\Filament;
 
+use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Field;
@@ -145,6 +146,7 @@ class SettingsForm
                                     ->required()
                                     ->placeholder('inquiry.*')
                                     ->datalist($patterns)
+                                    ->distinct()
                                     ->live(onBlur: true),
                                 $this->topicSelect('topic', '../../telegram_topics')->label(Trans::get('settings.topic'))->live(),
                                 Toggle::make('enabled')->label(Trans::get('page.enabled'))->default(true)->inline(false)->live(),
@@ -175,6 +177,7 @@ class SettingsForm
                                     ->required()
                                     ->placeholder('inquiry.*')
                                     ->datalist($patterns)
+                                    ->distinct()
                                     ->columnSpanFull(),
                                 TextInput::make('title')
                                     ->label(Trans::get('settings.template_title'))
@@ -224,7 +227,8 @@ class SettingsForm
                                     ->label(Trans::get('table.title'))
                                     ->required()
                                     ->placeholder(Trans::get('settings.forward_title_placeholder'))
-                                    ->datalist(SeenEvents::titles()),
+                                    ->datalist(SeenEvents::titles())
+                                    ->distinct(),
                                 TextInput::make('event')
                                     ->label(Trans::get('table.event'))
                                     ->placeholder('inquiry.created')
@@ -313,27 +317,18 @@ class SettingsForm
         }
 
         if (array_key_exists('events', $data)) {
-            $data['events'] = collect(self::rows($data['events'] ?? null))
-                ->mapWithKeys(fn (array $row): array => [trim($row['pattern']) => array_filter([
-                    'topic' => filled($row['topic'] ?? null) ? (string) $row['topic'] : null,
-                    'enabled' => (bool) ($row['enabled'] ?? true),
-                ], fn (mixed $value): bool => $value !== null)])
-                ->all();
+            $data['events'] = self::keyed($data['events'] ?? null, 'pattern', fn (array $row): array => array_filter([
+                'topic' => filled($row['topic'] ?? null) ? (string) $row['topic'] : null,
+                'enabled' => (bool) ($row['enabled'] ?? true),
+            ], fn (mixed $value): bool => $value !== null));
         }
 
         if (array_key_exists('templates', $data)) {
-            $data['templates'] = collect(self::rows($data['templates'] ?? null))
-                ->filter(fn (mixed $row): bool => is_array($row) && filled($row['pattern'] ?? null))
-                ->mapWithKeys(fn (array $row): array => [trim((string) $row['pattern']) => self::template($row)->toArray()])
-                ->all();
+            $data['templates'] = self::keyed($data['templates'] ?? null, 'pattern', fn (array $row): array => self::template($row)->toArray());
         }
 
         if (array_key_exists('forward_map', $data)) {
-            $data['forward_map'] = collect(self::rows($data['forward_map'] ?? null))
-                ->mapWithKeys(fn (array $row): array => [
-                    trim($row['title']) => ($row['forward'] ?? true) ? trim((string) $row['event']) : false,
-                ])
-                ->all();
+            $data['forward_map'] = self::keyed($data['forward_map'] ?? null, 'title', fn (array $row): string|false => ($row['forward'] ?? true) ? trim((string) $row['event']) : false);
         }
 
         foreach (['telegram_chat_id', 'telegram_topic'] as $key) {
@@ -432,14 +427,15 @@ class SettingsForm
             ->modalHeading(Trans::get('settings.preview'))
             ->modalSubmitAction(false)
             ->modalCancelActionLabel(Trans::get('invites.close'))
-            ->modalContent(function (array $arguments, Repeater $component): Htmlable {
+            ->modalContent(function (array $arguments, Repeater $component, Get $get): Htmlable {
                 $earlier = [];
+                $service = filled($get('service')) ? trim((string) $get('service')) : null;
 
                 foreach (self::rows($component->getState()) as $key => $row) {
                     $row = self::rows($row);
 
                     if ((string) $key === (string) ($arguments['item'] ?? '')) {
-                        return $this->preview($row, $earlier);
+                        return $this->preview($row, $earlier, $service);
                     }
 
                     $earlier[] = trim((string) ($row['pattern'] ?? ''));
@@ -452,8 +448,9 @@ class SettingsForm
     /**
      * @param  array<string, mixed>  $row  The template row.
      * @param  list<string>  $earlier  Patterns of the rows above it.
+     * @param  string|null  $service  The Service name as typed in the form; null = the saved one.
      */
-    private function preview(array $row, array $earlier): Htmlable
+    private function preview(array $row, array $earlier, ?string $service): Htmlable
     {
         $pattern = trim((string) ($row['pattern'] ?? ''));
         $note = fn (string $text, string $color = 'gray'): string => '<p style="color: var(--'.$color.'-500); margin-bottom: .75rem">'.e($text).'</p>';
@@ -472,7 +469,7 @@ class SettingsForm
         // The formatter escapes every part and adds only <b> tags, so its output is safe HTML.
         $text = app(OpsNotifier::class)->inMessageLocale(fn (): string => (new TelegramFormatter)->format(
             $message,
-            config('ops-notify.service'),
+            $service ?? config('ops-notify.service'),
             template: self::template($row),
         ));
 
@@ -613,9 +610,9 @@ class SettingsForm
      * items summarised in the header so they read without expanding. Empty, it stays open.
      *
      * @param  array<string, mixed>  $saved  SettingsStore::formValues()
-     * @param  \Closure(array<string, mixed>, array<string, string>): string  $describe  Row and topic names by id.
+     * @param  Closure(array<string, mixed>, array<string, string>): string  $describe  Row and topic names by id.
      */
-    private function summarized(Section $section, array $saved, string $list, \Closure $describe): Section
+    private function summarized(Section $section, array $saved, string $list, Closure $describe): Section
     {
         return $section
             ->collapsible()
@@ -636,9 +633,9 @@ class SettingsForm
      * new, or not filled in yet, stays open for editing. Click a row to expand it.
      *
      * @param  string  $required  The field that marks a row as filled in.
-     * @param  \Closure(array<string, mixed>, array<string, string>): string  $describe  Row and topic names by id.
+     * @param  Closure(array<string, mixed>, array<string, string>): string  $describe  Row and topic names by id.
      */
-    private function compact(Repeater $repeater, string $required, \Closure $describe): Repeater
+    private function compact(Repeater $repeater, string $required, Closure $describe): Repeater
     {
         return $repeater
             ->collapsible()
@@ -670,6 +667,24 @@ class SettingsForm
     private static function rows(mixed $value): array
     {
         return is_array($value) ? $value : [];
+    }
+
+    /**
+     * Repeater rows as a config map: the trimmed $field of each row is the key, $value($row)
+     * the value. The first matching key wins wherever these maps are read, so of two rows with
+     * the same key only the upper one could ever apply: it is the one kept, as the preview
+     * says. The form's distinct() rule reports the duplicate before it gets this far.
+     *
+     * @param  Closure(array<string, mixed>): mixed  $value
+     * @return array<string, mixed>
+     */
+    private static function keyed(mixed $rows, string $field, Closure $value): array
+    {
+        return collect(self::rows($rows))
+            ->filter(fn (mixed $row): bool => is_array($row) && filled($row[$field] ?? null))
+            ->unique(fn (array $row): string => trim((string) $row[$field]))
+            ->mapWithKeys(fn (array $row): array => [trim((string) $row[$field]) => $value($row)])
+            ->all();
     }
 
     /** Disables a field whose value comes from .env/config, and says so. */

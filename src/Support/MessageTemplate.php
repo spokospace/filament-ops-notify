@@ -20,9 +20,10 @@ final class MessageTemplate
 
     /**
      * One pass over the template, so a value that contains a placeholder is not filled in again.
-     * A name must end there: ":titles" is text, not ":title" followed by "s".
+     * A name must end there: ":titles" is text, not ":title" followed by "s". A bare label may
+     * contain a hyphen (E-mail) but not end with one: ":field.Name-:field.Email" is two fields.
      */
-    private const PLACEHOLDER = '/:(?:field\.(?:\{([^}]*)\}|([\pL\pN_-]+))|(title|body|event|service|level)(?![\pL\pN_]))/u';
+    private const PLACEHOLDER = '/:(?:field\.(?:\{([^}]*)\}|([\pL\pN_]+(?:-[\pL\pN_]+)*))|(title|body|event|service|level)(?![\pL\pN_]))/u';
 
     /**
      * @param  string|null  $title  Null = the message title, or the event name.
@@ -69,7 +70,7 @@ final class MessageTemplate
         return new self(
             title: is_string($data['title'] ?? null) && trim($data['title']) !== '' ? $data['title'] : null,
             body: $body === false ? false : (is_string($body) && trim($body) !== '' ? $body : null),
-            fields: is_array($fields) ? array_values(array_filter(
+            fields: is_array($fields) && array_is_list($fields) ? array_values(array_filter(
                 array_map(fn (mixed $label): string => trim((string) $label), array_filter($fields, 'is_scalar')),
                 fn (string $label): bool => $label !== '',
             )) : null,
@@ -104,12 +105,12 @@ final class MessageTemplate
         $default = $message->title ?? $message->event;
 
         if ($this->title === null) {
-            return Str::limit($default, $limit);
+            return self::cut($default, $limit);
         }
 
         $title = trim($this->fill($this->title, $message, $service, $limit));
 
-        return $title !== '' ? $title : Str::limit($default, $limit);
+        return $title !== '' ? $title : self::cut($default, $limit);
     }
 
     /** The body, at most $limit characters; '' when there is none. */
@@ -117,7 +118,7 @@ final class MessageTemplate
     {
         return match (true) {
             $limit <= 0, $this->body === false => '',
-            $this->body === null => Str::limit($message->body(), $limit),
+            $this->body === null => self::cut($message->body(), $limit),
             default => trim($this->fill($this->body, $message, $service, $limit), "\n"),
         };
     }
@@ -153,15 +154,34 @@ final class MessageTemplate
     private function fill(string $template, OpsMessage $message, ?string $service, int $limit): string
     {
         $long = ['title' => $message->title ?? $message->event, 'body' => $message->body()];
-        $count = 0;
-        $fixed = $this->replace($template, $message, $service, ['title' => '', 'body' => ''], $count);
-
-        if ($count > 0) {
-            $share = intdiv(max(0, $limit - mb_strwidth($fixed)), $count);
-            $long = array_map(fn (string $value): string => self::cut($value, $share), $long);
-        }
+        $counts = [];
+        $fixed = $this->replace($template, $message, $service, ['title' => '', 'body' => ''], $counts);
+        $long = self::share($long, $counts, max(0, $limit - mb_strwidth($fixed)));
 
         return self::cut($this->replace($template, $message, $service, $long), $limit);
+    }
+
+    /**
+     * Cuts the long values into $budget characters, each counted once per occurrence. Every
+     * occurrence gets an equal share of what is left, shortest value first: what it leaves
+     * unused is still there for the longer ones, so a short title does not shorten the body.
+     *
+     * @param  array<string, string>  $values
+     * @param  array<string, int>  $counts  Occurrences of each value in the template.
+     * @return array<string, string>
+     */
+    private static function share(array $values, array $counts, int $budget): array
+    {
+        uksort($counts, fn (string $a, string $b): int => mb_strwidth($values[$a]) <=> mb_strwidth($values[$b]));
+        $occurrences = array_sum($counts);
+
+        foreach ($counts as $key => $count) {
+            $values[$key] = self::cut($values[$key], intdiv($budget, $occurrences));
+            $budget -= $count * mb_strwidth($values[$key]);
+            $occurrences -= $count;
+        }
+
+        return $values;
     }
 
     /** At most $limit characters, the "..." of a cut included (Str::limit adds it past the limit). */
@@ -175,12 +195,12 @@ final class MessageTemplate
     }
 
     /**
-     * @param  array{title: string, body: string}  $long
-     * @param  int  $longCount  Incremented for every :title and :body filled in.
+     * @param  array<string, string>  $long  The :title and :body values.
+     * @param  array<string, int>  $counts  Incremented for every :title and :body filled in.
      */
-    private function replace(string $template, OpsMessage $message, ?string $service, array $long, int &$longCount = 0): string
+    private function replace(string $template, OpsMessage $message, ?string $service, array $long, array &$counts = []): string
     {
-        return (string) preg_replace_callback(self::PLACEHOLDER, function (array $match) use ($message, $service, $long, &$longCount): string {
+        return (string) preg_replace_callback(self::PLACEHOLDER, function (array $match) use ($message, $service, $long, &$counts): string {
             if (($match[3] ?? '') === '') {
                 $label = ($match[1] ?? '') !== '' ? $match[1] : ($match[2] ?? '');
                 $key = self::fieldKey($message->fields, $label);
@@ -189,7 +209,7 @@ final class MessageTemplate
             }
 
             if ($match[3] === 'title' || $match[3] === 'body') {
-                $longCount++;
+                $counts[$match[3]] = ($counts[$match[3]] ?? 0) + 1;
 
                 return $long[$match[3]];
             }

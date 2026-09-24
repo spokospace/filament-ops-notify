@@ -192,3 +192,18 @@ it('updates the seen line as the rules are edited, before saving', function () {
                 ->all() === ['mountedActionSchema0.routing']);
     }
 });
+
+it('previews from any logged message the pattern matches, cached counts and held-back messages aside', function () {
+    seen('rare.event', status: DeliveryStatus::Suppressed);
+    expect(SeenEvents::counts())->toBe([]); // Cached now, without the held-back message.
+
+    seen('inquiry.created');
+    seen('orderx.created');
+
+    expect(SeenEvents::latestMessage('rare.*')?->event)->toBe('rare.event')
+        ->and(SeenEvents::latestMessage('inquiry.*')?->event)->toBe('inquiry.created')
+        ->and(SeenEvents::latestMessage('inquiry.created')?->event)->toBe('inquiry.created')
+        // LIKE would read order_* as "order, any character, anything"; the templates would not.
+        ->and(SeenEvents::latestMessage('order_*'))->toBeNull()
+        ->and(SeenEvents::latestMessage('nothing.*'))->toBeNull();
+});

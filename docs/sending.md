@@ -136,7 +136,9 @@ The level emoji and the buttons always stay.
   of a matching event. The form doesn't have to be saved first. It also warns when a template higher
   up matches that event first.
 - **Resend** uses the current template, because the log keeps the message and not the rendered text.
-- Burst digests don't use templates. Your own message can skip them with `->withoutTemplate()`.
+- Burst digests and the package's own test messages (**Send test**, `ops-notify:test`) don't use
+  templates, so a catch-all template can't hide a connectivity test. Your own message can skip
+  them with `->withoutTemplate()`.
 
 ## The `OpsNotify` facade
 

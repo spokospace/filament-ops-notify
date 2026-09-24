@@ -136,21 +136,26 @@ final class SeenEvents
 
     /**
      * The latest logged message of an event the pattern matches, burst digests aside, for a
-     * template preview. Looks among the events of counts(), so the lookup stays on the index.
-     * Null when there is none, or the log cannot be read.
+     * template preview. Reads the log itself rather than counts(): that is cached, capped and
+     * without held-back messages, and a preview should find every logged message. Null when
+     * there is none, or the log cannot be read.
      */
     public static function latestMessage(string $pattern): ?OpsNotifyLog
     {
-        $events = array_values(array_filter(
-            array_map(strval(...), array_keys(self::counts())),
-            fn (string $event): bool => Str::is($pattern, $event),
-        ));
-
-        if ($events === []) {
-            return null;
-        }
-
         try {
+            // The event names of the window come off the index that covers counts(), and both
+            // lookups stay on indexes. The names are read uncached and unfiltered on purpose.
+            $events = OpsNotifyLog::query()
+                ->where('created_at', '>=', self::since())
+                ->distinct()
+                ->pluck('event')
+                ->filter(fn (mixed $event): bool => Str::is($pattern, (string) $event))
+                ->all();
+
+            if ($events === []) {
+                return null;
+            }
+
             return OpsNotifyLog::query()
                 ->whereIn('event', $events)
                 ->where('created_at', '>=', self::since())
