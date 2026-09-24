@@ -143,10 +143,22 @@ return [
         'load_failed' => 'Nie udało się pobrać obecnego profilu z Telegrama',
     ],
 
+    'rights' => [
+        'title' => 'Uprawnienia bota',
+        'manage_topics' => 'Zarządzać tematami',
+        'invite_users' => 'Zapraszać użytkowników poprzez link',
+        'all' => 'Administrator ze wszystkimi potrzebnymi uprawnieniami',
+        'missing' => 'Administrator, brakuje: :rights',
+        'not_admin' => 'Nie jest administratorem czatu',
+        'not_member' => 'Nie należy do czatu',
+        'unknown' => 'Nie udało się sprawdzić: :error',
+        'how_to' => 'Bot nie ma uprawnienia administratora „:right”. W Telegramie: grupa → Administratorzy → bot → włącz je i spróbuj ponownie.',
+    ],
+
     'invites' => [
         'title' => 'Zaproszenia',
         'create' => 'Utwórz zaproszenie',
-        'rights_help' => 'Bot potrzebuje w grupie uprawnienia administratora „Zapraszanie użytkowników przez link”.',
+        'rights_help' => 'Bot potrzebuje w grupie uprawnienia administratora „Zapraszać użytkowników poprzez link”.',
         'name' => 'Dla kogo',
         'name_help' => 'Dla kogo jest link, np. Anna. Telegram pokazuje to na liście linków z zaproszeniem w grupie. Do 32 znaków.',
         'valid_for' => 'Ważny przez',

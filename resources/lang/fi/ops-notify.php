@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Nykyistä profiilia ei voitu ladata Telegramista',
     ],
 
+    'rights' => [
+        'title' => 'Botin oikeudet',
+        'manage_topics' => 'Hallitse aiheita',
+        'invite_users' => 'Kutsu käyttäjiä linkillä',
+        'all' => 'Ylläpitäjä, jolla on kaikki tarvittavat oikeudet',
+        'missing' => 'Ylläpitäjä, puuttuu: :rights',
+        'not_admin' => 'Ei keskustelun ylläpitäjä',
+        'not_member' => 'Ei keskustelussa',
+        'unknown' => 'Tarkistus ei onnistunut: :error',
+        'how_to' => 'Botilta puuttuu ylläpitäjän oikeus ”:right”. Telegramissa: ryhmä → Ylläpitäjät → botti → ota se käyttöön ja yritä uudelleen.',
+    ],
+
     'invites' => [
         'title' => 'Kutsut',
         'create' => 'Luo kutsu',

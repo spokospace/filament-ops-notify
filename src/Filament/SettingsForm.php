@@ -261,7 +261,7 @@ class SettingsForm
                 try {
                     $id = $this->telegram()->createForumTopic($data['name'], filled($data['color'] ?? null) ? (int) $data['color'] : null);
                 } catch (ChannelException $e) {
-                    Notification::make()->danger()->title(Trans::get('settings.topic_not_created'))->body($e->getMessage())->send();
+                    Notification::make()->danger()->title(Trans::get('settings.topic_not_created'))->body($this->telegram()->explain($e, 'manage_topics'))->send();
 
                     return;
                 }

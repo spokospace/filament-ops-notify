@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Kunde inte läsa in den nuvarande profilen från Telegram',
     ],
 
+    'rights' => [
+        'title' => 'Botens rättigheter',
+        'manage_topics' => 'Hantera ämnen',
+        'invite_users' => 'Bjuda in användare via länk',
+        'all' => 'Administratör med alla nödvändiga rättigheter',
+        'missing' => 'Administratör, saknas: :rights',
+        'not_admin' => 'Inte administratör i chatten',
+        'not_member' => 'Inte med i chatten',
+        'unknown' => 'Kunde inte kontrollera: :error',
+        'how_to' => 'Boten saknar administratörsrättigheten ”:right”. I Telegram: grupp → Administratörer → boten → slå på den och försök igen.',
+    ],
+
     'invites' => [
         'title' => 'Inbjudningar',
         'create' => 'Skapa inbjudan',

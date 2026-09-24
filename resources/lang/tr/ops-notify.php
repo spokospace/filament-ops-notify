@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Mevcut profil Telegram\'dan yüklenemedi',
     ],
 
+    'rights' => [
+        'title' => 'Bot yetkileri',
+        'manage_topics' => 'Konuları yönetme',
+        'invite_users' => 'Bağlantıyla kullanıcı davet etme',
+        'all' => 'Gerekli tüm yetkilere sahip yönetici',
+        'missing' => 'Yönetici, eksik: :rights',
+        'not_admin' => 'Sohbetin yöneticisi değil',
+        'not_member' => 'Sohbette değil',
+        'unknown' => 'Kontrol edilemedi: :error',
+        'how_to' => 'Botun ":right" yönetici yetkisi yok. Telegram\'da: grup → Yöneticiler → bot → bu yetkiyi açın ve tekrar deneyin.',
+    ],
+
     'invites' => [
         'title' => 'Davetler',
         'create' => 'Davet oluştur',

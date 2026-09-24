@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Kunne ikke laste inn gjeldende profil fra Telegram',
     ],
 
+    'rights' => [
+        'title' => 'Botens rettigheter',
+        'manage_topics' => 'Administrere emner',
+        'invite_users' => 'Invitere brukere via lenke',
+        'all' => 'Administrator med alle nødvendige rettigheter',
+        'missing' => 'Administrator, mangler: :rights',
+        'not_admin' => 'Ikke administrator i chatten',
+        'not_member' => 'Ikke i chatten',
+        'unknown' => 'Kunne ikke sjekke: :error',
+        'how_to' => 'Boten mangler administratorrettigheten «:right». I Telegram: gruppe → Administratorer → boten → slå den på, og prøv igjen.',
+    ],
+
     'invites' => [
         'title' => 'Invitasjoner',
         'create' => 'Opprett invitasjon',

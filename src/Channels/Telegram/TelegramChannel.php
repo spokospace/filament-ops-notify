@@ -73,6 +73,101 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
         return filled($name) ? "{$name} #{$id}" : "#{$id}";
     }
 
+    /** Admin rights the package uses: Create topic in Settings, and Invites. */
+    public const RIGHTS = ['can_manage_topics' => 'manage_topics', 'can_invite_users' => 'invite_users'];
+
+    /**
+     * The bot's membership and admin rights in the configured chat (getChatMember), cached for
+     * a minute so the page stays fast but shows a newly granted right soon after. Status is
+     * creator, administrator, member, restricted, left or kicked. Null when not configured.
+     *
+     * @return array{status: string, rights: array<string, bool>}|array{error: string}|null
+     */
+    public function rights(): ?array
+    {
+        if (! $this->isConfigured()) {
+            return null;
+        }
+
+        return Cache::remember($this->rightsKey(), now()->addMinute(), function (): array {
+            try {
+                // A bot's user id is the number before the colon in its token.
+                $member = (array) $this->call('getChatMember', [
+                    'chat_id' => $this->chatId(),
+                    'user_id' => (int) strtok($this->botToken(), ':'),
+                ]);
+            } catch (ChannelException $e) {
+                return ['error' => $e->getMessage()];
+            }
+
+            $status = (string) ($member['status'] ?? '');
+            $rights = [];
+
+            foreach (self::RIGHTS as $field => $name) {
+                // The group's creator has every right; a plain member has none.
+                $rights[$name] = $status === 'creator' || ($status === 'administrator' && ($member[$field] ?? false) === true);
+            }
+
+            return ['status' => $status, 'rights' => $rights];
+        });
+    }
+
+    /** Forgets the cached rights, e.g. after the admin changed them in Telegram. */
+    public function forgetRights(): void
+    {
+        if ($this->isConfigured()) {
+            Cache::forget($this->rightsKey());
+        }
+    }
+
+    /**
+     * A Telegram refusal in words: for a missing admin right, which one and where to turn it on
+     * (and the cached rights are refreshed); anything else as Telegram said it.
+     *
+     * @param  string  $right  A value of RIGHTS, e.g. "invite_users".
+     */
+    public function explain(ChannelException $e, string $right): string
+    {
+        if (! str_contains(strtolower($e->getMessage()), 'not enough rights')) {
+            return $e->getMessage();
+        }
+
+        $this->forgetRights();
+
+        return Trans::get('rights.how_to', ['right' => Trans::get("rights.{$right}")]);
+    }
+
+    /**
+     * One line for the status section, and whether every right the package uses is there.
+     *
+     * @return array{text: string, ok: bool}|null
+     */
+    public function rightsSummary(): ?array
+    {
+        $result = $this->rights();
+
+        if ($result === null) {
+            return null;
+        }
+
+        if (isset($result['error'])) {
+            return ['text' => Trans::get('rights.unknown', ['error' => $result['error']]), 'ok' => false];
+        }
+
+        return match ($result['status']) {
+            'left', 'kicked' => ['text' => Trans::get('rights.not_member'), 'ok' => false],
+            'member', 'restricted' => ['text' => Trans::get('rights.not_admin'), 'ok' => false],
+            default => ($missing = array_keys(array_filter($result['rights'], fn (bool $has): bool => ! $has))) === []
+                ? ['text' => Trans::get('rights.all'), 'ok' => true]
+                : ['text' => Trans::get('rights.missing', ['rights' => implode(', ', array_map(fn (string $right): string => Trans::get("rights.{$right}"), $missing))]), 'ok' => false],
+        };
+    }
+
+    private function rightsKey(): string
+    {
+        return 'ops-notify:telegram-rights:'.hash('sha256', $this->botToken().'|'.$this->chatId());
+    }
+
     /**
      * Asks Telegram who the bot is. Cached, errors included, because the Filament page renders
      * it on every Livewire round trip and a dead API would otherwise block each one.

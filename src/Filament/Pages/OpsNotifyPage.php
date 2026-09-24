@@ -151,7 +151,7 @@ class OpsNotifyPage extends Page implements HasTable
     {
         return $schema->components([
             Section::make(Trans::get('page.status'))
-                ->columns(['default' => 1, 'sm' => 2, 'xl' => 5])
+                ->columns(['default' => 1, 'sm' => 2, 'xl' => 6])
                 ->schema([
                     TextEntry::make('service')
                         ->label(Trans::get('page.service'))
@@ -172,6 +172,12 @@ class OpsNotifyPage extends Page implements HasTable
                     TextEntry::make('connection')
                         ->label(Trans::get('page.connection'))
                         ->state(fn (): string => $this->connectionStatus()),
+                    TextEntry::make('bot_rights')
+                        ->label(Trans::get('rights.title'))
+                        ->badge()
+                        ->state(fn (): ?string => $this->botRights()['text'] ?? null)
+                        ->color(fn (): string => ($this->botRights()['ok'] ?? false) ? 'success' : 'warning')
+                        ->visible(fn (): bool => $this->botRights() !== null),
                     TextEntry::make('delivery')
                         ->label(Trans::get('page.delivery'))
                         ->state(fn (): string => app(QueueStatus::class)->summary()),
@@ -308,6 +314,28 @@ class OpsNotifyPage extends Page implements HasTable
         }
 
         return $resolved instanceof LabelsTopics ? $resolved->topicLabel($id) : "#{$id}";
+    }
+
+    /** @var array{text: string, ok: bool}|false|null Memo for one render: false = not loaded yet. */
+    private array|false|null $botRights = false;
+
+    /**
+     * The bot's admin rights in the chat, in words; null when the default channel is not a
+     * configured Telegram channel.
+     *
+     * @return array{text: string, ok: bool}|null
+     */
+    private function botRights(): ?array
+    {
+        if ($this->botRights === false) {
+            try {
+                $this->botRights = app(OpsNotifier::class)->telegram()->rightsSummary();
+            } catch (Throwable) {
+                $this->botRights = null;
+            }
+        }
+
+        return $this->botRights;
     }
 
     /** The bot profile can only be edited when the Telegram channel has a token and chat. */
