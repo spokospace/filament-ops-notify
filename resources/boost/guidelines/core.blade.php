@@ -27,7 +27,7 @@ OpsMessage::make('build.failed')
 
 ### Rules for agents
 
-- Never write the Telegram bot token to `.env`, `.env.example`, config files, commits, PRs or chat. The human pastes it into the panel's Settings. `OPS_NOTIFY_*` env keys lock the matching panel field, so set them only when asked.
+- Never put the Telegram bot token in `.env.example`, committed files, commits, PRs or chat. By default the human pastes it into the panel's Settings, where it is stored encrypted. The server's `.env` (`OPS_NOTIFY_TELEGRAM_BOT_TOKEN`) also works, but it locks the Settings field, so use it, like any `OPS_NOTIFY_*` key, only when the human asks.
 - Never guess a chat id or topic id. Ask the human, or read them from `php artisan ops-notify:telegram-chats` after they sent `/ping@<bot>` in each topic.
 - Delivery goes through the app's queue (`OPS_NOTIFY_QUEUE_CONNECTION` / `OPS_NOTIFY_QUEUE`). A custom queue name must be added to a Horizon supervisor or a `queue:work --queue=` list, or messages never leave it. Do not switch production to the `sync` queue without asking.
 - Nothing is sent while the app's test suite runs (`ops-notify.disable_in_tests`), so tests need no fakes for it.

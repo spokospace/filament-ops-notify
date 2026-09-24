@@ -16,9 +16,10 @@ BotFather replies with the **token**, which looks like `123456789:AA...`.
 Later, `/mybots` in BotFather lists your bots, and `/revoke` issues a new token. You do not need
 `/setprivacy`: the bot will be an admin, and privacy mode does not apply to admins.
 
-Keep the token out of git, `.env.example`, chats and PR descriptions. Paste it only into
-**Ops Notify → Settings**. If it leaks, send `/revoke` to BotFather and enter the new token
-in the panel.
+Keep the token out of git, `.env.example`, chats and PR descriptions. Paste it into
+**Ops Notify → Settings**, which stores it encrypted, or, if you prefer, set
+`OPS_NOTIFY_TELEGRAM_BOT_TOKEN` in the server's `.env` (the Settings field is then locked). If it
+leaks, send `/revoke` to BotFather and enter the new token.
 
 **One bot per service** (for example `shop_panel_bot`, `warehouse_panel_bot`). Messages are then
 signed by the service that sent them, and each service keeps its own token. Add and promote each
