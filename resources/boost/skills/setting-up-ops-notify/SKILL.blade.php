@@ -42,7 +42,7 @@ Confirm delivery can work: a queue worker must run for the connection in `config
 
 Tell the human to:
 
-1. Create a bot with @BotFather (`/newbot`; the username must end in `bot`) and paste the token into **Ops Notify → Settings** in the panel. Never ask them to paste it into the chat, `.env` or a file.
+1. Create a bot with @BotFather (`/newbot`; the username must end in `bot`) and paste the token into **Ops Notify → Settings** in the panel. Never ask them to paste it into the chat or a committed file. The server's `.env` is an option only if they prefer it.
 2. Create a Telegram **group** (not a channel), turn on **Topics** (only the owner can), add the bot and promote it to admin with **Manage topics**.
 3. Send `/ping@<bot_username>` in every topic they want to use.
 
@@ -81,7 +81,7 @@ Then send through the queue, which also tests the worker. It prints `Queued, ...
 
 ## Never
 
-- Write the bot token to `.env`, `.env.example`, config, commits, PRs or chat.
-- Set `OPS_NOTIFY_*` env keys unless asked: they lock the matching panel field.
+- Put the bot token in `.env.example`, config files, commits, PRs or chat.
+- Write it, or any `OPS_NOTIFY_*` key, into the server's `.env` unless asked: it is supported, but it locks the matching panel field.
 - Invent a chat id or topic id.
 - Switch production to the `sync` queue, or publish the package migrations, without asking.

@@ -94,8 +94,14 @@ Part of the setup happens in Telegram and needs a human.
 
 ### Never
 
-- Write the token to `.env`, `.env.example`, any committed file, a PR, a commit message or the chat.
-- Set `OPS_NOTIFY_*` env keys unless the human asks. They lock the matching fields in the panel.
+- Put the token in `.env.example`, any committed file, a PR, a commit message or the chat. These
+  are shared or kept forever; a leaked token lets anyone post as the bot.
+- Write the token into the server's `.env` on your own initiative. It is supported
+  (`OPS_NOTIFY_TELEGRAM_BOT_TOKEN`), but the default is the panel, which stores it encrypted and
+  lets an admin rotate it without a deploy. A value in `.env` locks the Settings field. Do it
+  only when the human asks for it.
+- Set other `OPS_NOTIFY_*` env keys unless the human asks, for the same reason: they lock the
+  matching fields in the panel.
 - Guess or invent a chat id. Use the one `ops-notify:telegram-chats` prints (the `-100…` one).
 - Switch the queue connection to `sync` in production without asking.
 - Publish the migrations unless the human asks.
