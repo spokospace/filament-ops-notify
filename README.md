@@ -20,7 +20,7 @@ reach Telegram with no code changes.
 ## Features
 
 - **Bell notifications → Telegram, no code.** Every `sendToDatabase()` notification is forwarded
-  once, however many users receive it ([with a shared cache](docs/routing-and-topics.md#forwarding-filament-notifications)).
+  once, however many users receive it ([with a shared cache](https://github.com/spokospace/filament-ops-notify/blob/main/docs/routing-and-topics.md#forwarding-filament-notifications)).
 - **Any Laravel notification, too.** Apps without the bell can forward mail, SMS or push
   notifications, once each and without secrets such as password reset links.
 - **Topics and routing.** Create forum topics from the panel and route events to them by pattern
@@ -29,7 +29,7 @@ reach Telegram with no code changes.
   touching `.env`.
 - **Message templates.** Change an event's title, body, fields and hashtag by pattern in config
   (`inquiry.*` → *New inquiry from :field.Name*); the panel switches the `[service]` prefix and
-  the `#event` line ([Message templates](docs/sending.md#message-templates)).
+  the `#event` line ([Message templates](https://github.com/spokospace/filament-ops-notify/blob/main/docs/sending.md#message-templates)).
 - **Reliable delivery.** Queued, retried, rate-limit aware, and never breaks the request that sent it.
 - **Bot profile.** Pick an avatar (a preset or your own) and set the display name and
   descriptions from the panel.
@@ -90,7 +90,7 @@ Gate::define('viewOpsNotify', fn (User $user): bool => $user->is_admin);
 ```
 
 `manageOpsNotify` can limit *Settings*, *Bot profile*, *Send test* and *Resend* further. See
-[Who may use it](docs/installation.md#who-may-use-it).
+[Who may use it](https://github.com/spokospace/filament-ops-notify/blob/main/docs/installation.md#who-may-use-it).
 
 Delivery runs on the queue, so the app needs a worker (Horizon or `queue:work`) and the scheduler.
 
@@ -101,8 +101,8 @@ Delivery runs on the queue, so the app needs a worker (Horizon or `queue:work`) 
 2. In the panel, open **Ops Notify → Settings** and enter the bot token and chat id.
 3. Press **Send test**.
 
-The [setup checklist](docs/setup-checklist.md) has every step in order. Installing with an AI
-coding agent? Give it [Installing with an AI agent](docs/setup-checklist.md#installing-with-an-ai-agent).
+The [setup checklist](https://github.com/spokospace/filament-ops-notify/blob/main/docs/setup-checklist.md) has every step in order. Installing with an AI
+coding agent? Give it [Installing with an AI agent](https://github.com/spokospace/filament-ops-notify/blob/main/docs/setup-checklist.md#installing-with-an-ai-agent).
 
 Your existing Filament notifications now reach Telegram. To send something yourself:
 
@@ -131,15 +131,15 @@ with an **Open site** button below. The title and field labels are bold.
 
 ## Documentation
 
-- [Setup checklist](docs/setup-checklist.md): what to set up, in order, the rights the bot needs, and
+- [Setup checklist](https://github.com/spokospace/filament-ops-notify/blob/main/docs/setup-checklist.md): what to set up, in order, the rights the bot needs, and
   instructions for AI agents
-- [Installation](docs/installation.md): requirements, migrations, plugin options
-- [Telegram setup](docs/telegram-setup.md): bot, group, topics, finding the chat id, bot profile
-- [Settings](docs/settings.md): panel vs `.env`, every option, languages, the Ops Notify page
-- [Routing and topics](docs/routing-and-topics.md): topics, event rules, forwarding Filament notifications
-- [Sending messages](docs/sending.md): the `ops` channel, the `OpsMessage` API, message templates, delivery, tests
-- [Drivers](docs/drivers.md): writing your own channel driver
-- [Troubleshooting](docs/troubleshooting.md): common Telegram and queue errors and fixes
+- [Installation](https://github.com/spokospace/filament-ops-notify/blob/main/docs/installation.md): requirements, migrations, plugin options
+- [Telegram setup](https://github.com/spokospace/filament-ops-notify/blob/main/docs/telegram-setup.md): bot, group, topics, finding the chat id, bot profile
+- [Settings](https://github.com/spokospace/filament-ops-notify/blob/main/docs/settings.md): panel vs `.env`, every option, languages, the Ops Notify page
+- [Routing and topics](https://github.com/spokospace/filament-ops-notify/blob/main/docs/routing-and-topics.md): topics, event rules, forwarding Filament notifications
+- [Sending messages](https://github.com/spokospace/filament-ops-notify/blob/main/docs/sending.md): the `ops` channel, the `OpsMessage` API, message templates, delivery, tests
+- [Drivers](https://github.com/spokospace/filament-ops-notify/blob/main/docs/drivers.md): writing your own channel driver
+- [Troubleshooting](https://github.com/spokospace/filament-ops-notify/blob/main/docs/troubleshooting.md): common Telegram and queue errors and fixes
 
 ## Testing
 
@@ -154,4 +154,4 @@ own Filament panels.
 
 ## License
 
-MIT, see [LICENSE.md](LICENSE.md).
+MIT, see [LICENSE.md](https://github.com/spokospace/filament-ops-notify/blob/main/LICENSE.md).
