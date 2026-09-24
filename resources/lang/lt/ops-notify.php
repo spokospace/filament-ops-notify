@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Nepavyko įkelti dabartinio profilio iš Telegram',
     ],
 
+    'rights' => [
+        'title' => 'Boto teisės',
+        'manage_topics' => 'Tvarkyti temas',
+        'invite_users' => 'Kviesti naudotojus nuoroda',
+        'all' => 'Administratorius su visomis reikiamomis teisėmis',
+        'missing' => 'Administratorius, trūksta: :rights',
+        'not_admin' => 'Nėra pokalbio administratorius',
+        'not_member' => 'Nėra pokalbyje',
+        'unknown' => 'Nepavyko patikrinti: :error',
+        'how_to' => 'Botui trūksta administratoriaus teisės „:right“. Telegram: grupė → Administratoriai → botas → įjunkite ją ir bandykite dar kartą.',
+    ],
+
     'invites' => [
         'title' => 'Kvietimai',
         'create' => 'Sukurti kvietimą',

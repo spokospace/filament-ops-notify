@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Could not load the current profile from Telegram',
     ],
 
+    'rights' => [
+        'title' => 'Bot rights',
+        'manage_topics' => 'Manage topics',
+        'invite_users' => 'Invite users via link',
+        'all' => 'Admin with all needed rights',
+        'missing' => 'Admin, missing: :rights',
+        'not_admin' => 'Not an admin of the chat',
+        'not_member' => 'Not in the chat',
+        'unknown' => 'Could not check: :error',
+        'how_to' => 'The bot lacks the ":right" admin right. In Telegram: group → Administrators → the bot → turn it on, then try again.',
+    ],
+
     'invites' => [
         'title' => 'Invites',
         'create' => 'Create invite',

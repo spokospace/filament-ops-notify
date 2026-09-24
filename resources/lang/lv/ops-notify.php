@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Neizdevās ielādēt pašreizējo profilu no Telegram',
     ],
 
+    'rights' => [
+        'title' => 'Bota tiesības',
+        'manage_topics' => 'Pārvaldīt tēmas',
+        'invite_users' => 'Uzaicināt lietotājus ar saiti',
+        'all' => 'Administrators ar visām vajadzīgajām tiesībām',
+        'missing' => 'Administrators, trūkst: :rights',
+        'not_admin' => 'Nav tērzēšanas administrators',
+        'not_member' => 'Nav tērzēšanā',
+        'unknown' => 'Neizdevās pārbaudīt: :error',
+        'how_to' => 'Botam trūkst administratora tiesību „:right”. Telegram: grupa → Administratori → bots → ieslēdziet tās un mēģiniet vēlreiz.',
+    ],
+
     'invites' => [
         'title' => 'Ielūgumi',
         'create' => 'Izveidot ielūgumu',

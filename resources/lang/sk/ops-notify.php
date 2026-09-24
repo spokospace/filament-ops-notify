@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Nepodarilo sa načítať aktuálny profil z Telegramu',
     ],
 
+    'rights' => [
+        'title' => 'Oprávnenia bota',
+        'manage_topics' => 'Spravovať témy',
+        'invite_users' => 'Pozývať používateľov cez odkaz',
+        'all' => 'Administrátor so všetkými potrebnými oprávneniami',
+        'missing' => 'Administrátor, chýba: :rights',
+        'not_admin' => 'Nie je administrátorom chatu',
+        'not_member' => 'Nie je v chate',
+        'unknown' => 'Nepodarilo sa overiť: :error',
+        'how_to' => 'Bot nemá administrátorské oprávnenie „:right“. V Telegrame: skupina → Administrátori → bot → zapnite ho a skúste to znova.',
+    ],
+
     'invites' => [
         'title' => 'Pozvánky',
         'create' => 'Vytvoriť pozvánku',

@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Profilul curent nu a putut fi încărcat din Telegram',
     ],
 
+    'rights' => [
+        'title' => 'Drepturile botului',
+        'manage_topics' => 'Gestionare subiecte',
+        'invite_users' => 'Invitare utilizatori prin link',
+        'all' => 'Administrator cu toate drepturile necesare',
+        'missing' => 'Administrator, lipsește: :rights',
+        'not_admin' => 'Nu este administrator al chatului',
+        'not_member' => 'Nu este în chat',
+        'unknown' => 'Nu s-a putut verifica: :error',
+        'how_to' => 'Botului îi lipsește dreptul de administrator „:right”. În Telegram: grup → Administratori → botul → activați-l, apoi încercați din nou.',
+    ],
+
     'invites' => [
         'title' => 'Invitații',
         'create' => 'Creare invitație',

@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Kunne ikke hente den nuværende profil fra Telegram',
     ],
 
+    'rights' => [
+        'title' => 'Bottens rettigheder',
+        'manage_topics' => 'Administrer emner',
+        'invite_users' => 'Inviter brugere via link',
+        'all' => 'Administrator med alle nødvendige rettigheder',
+        'missing' => 'Administrator, mangler: :rights',
+        'not_admin' => 'Ikke administrator i chatten',
+        'not_member' => 'Ikke i chatten',
+        'unknown' => 'Kunne ikke kontrollere: :error',
+        'how_to' => 'Botten mangler administratorrettigheden ":right". I Telegram: gruppe → Administratorer → botten → slå den til, og prøv igen.',
+    ],
+
     'invites' => [
         'title' => 'Invitationer',
         'create' => 'Opret invitation',

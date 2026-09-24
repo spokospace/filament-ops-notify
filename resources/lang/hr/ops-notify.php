@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Nije moguće učitati trenutni profil iz Telegrama',
     ],
 
+    'rights' => [
+        'title' => 'Prava bota',
+        'manage_topics' => 'Upravljanje temama',
+        'invite_users' => 'Pozivanje korisnika putem poveznice',
+        'all' => 'Administrator sa svim potrebnim pravima',
+        'missing' => 'Administrator, nedostaje: :rights',
+        'not_admin' => 'Nije administrator razgovora',
+        'not_member' => 'Nije u razgovoru',
+        'unknown' => 'Provjera nije uspjela: :error',
+        'how_to' => 'Botu nedostaje administratorsko pravo „:right“. U Telegramu: grupa → Administratori → bot → uključi ga pa pokušaj ponovno.',
+    ],
+
     'invites' => [
         'title' => 'Pozivnice',
         'create' => 'Stvori pozivnicu',

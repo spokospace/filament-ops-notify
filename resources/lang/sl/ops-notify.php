@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Trenutnega profila iz Telegrama ni bilo mogoče naložiti',
     ],
 
+    'rights' => [
+        'title' => 'Pravice bota',
+        'manage_topics' => 'Upravljanje tem',
+        'invite_users' => 'Vabljenje uporabnikov prek povezave',
+        'all' => 'Skrbnik z vsemi potrebnimi pravicami',
+        'missing' => 'Skrbnik, manjka: :rights',
+        'not_admin' => 'Ni skrbnik klepeta',
+        'not_member' => 'Ni v klepetu',
+        'unknown' => 'Preverjanje ni uspelo: :error',
+        'how_to' => 'Botu manjka skrbniška pravica „:right“. V Telegramu: skupina → Skrbniki → bot → vklopite jo in poskusite znova.',
+    ],
+
     'invites' => [
         'title' => 'Povabila',
         'create' => 'Ustvari povabilo',

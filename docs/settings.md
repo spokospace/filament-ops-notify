@@ -104,9 +104,14 @@ php artisan vendor:publish --tag=ops-notify-translations
 
 ## The page
 
-- **Status:** service name, enabled flag, channel, connection and delivery.
+- **Status:** service name, enabled flag, channel, connection, bot rights and delivery.
   - **Connection** calls `getMe` and is cached for 10 minutes; errors are cached for 1 minute.
-    *Connected as @your_bot* only proves the token. **Send test** proves the chat id and rights.
+    *Connected as @your_bot* only proves the token. **Send test** proves the chat id.
+  - **Bot rights** asks Telegram (`getChatMember`) whether the bot is an admin of the chat and has
+    the two rights the package uses, *Manage topics* and *Invite users via link*, e.g. *Admin,
+    missing: Invite users via link*. Cached for a minute, so a right granted in Telegram shows up
+    soon. When Telegram refuses *Create topic* or *Create invite* for a missing right, the panel
+    says which right and where to turn it on.
   - **Delivery** shows `connection · queue`, or *Immediately (sync queue)*, plus Horizon's state
     when the queue runs on Horizon. A warning appears below when Horizon is paused or not running,
     when no Horizon supervisor works the queue, or when messages have waited over 5 minutes

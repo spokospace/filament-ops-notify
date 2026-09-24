@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Het huidige profiel kon niet uit Telegram worden geladen',
     ],
 
+    'rights' => [
+        'title' => 'Rechten van de bot',
+        'manage_topics' => 'Topics beheren',
+        'invite_users' => 'Gebruikers uitnodigen via link',
+        'all' => 'Beheerder met alle benodigde rechten',
+        'missing' => 'Beheerder, ontbreekt: :rights',
+        'not_admin' => 'Geen beheerder van de chat',
+        'not_member' => 'Niet in de chat',
+        'unknown' => 'Controle mislukt: :error',
+        'how_to' => 'De bot mist het beheerdersrecht ":right". In Telegram: groep → Beheerders → de bot → zet het aan en probeer het opnieuw.',
+    ],
+
     'invites' => [
         'title' => 'Uitnodigingen',
         'create' => 'Uitnodiging maken',

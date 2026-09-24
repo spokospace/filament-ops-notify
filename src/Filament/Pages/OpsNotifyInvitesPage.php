@@ -81,7 +81,8 @@ class OpsNotifyInvitesPage extends Page implements HasTable
                     try {
                         $link = app(OpsNotifier::class)->telegram()->createInviteLink((string) $data['name'], $expiresAt, $memberLimit);
                     } catch (ChannelException $e) {
-                        Notification::make()->danger()->title(Trans::get('invites.failed'))->body($e->getMessage())->send();
+                        $body = app(OpsNotifier::class)->telegram()->explain($e, 'invite_users');
+                        Notification::make()->danger()->title(Trans::get('invites.failed'))->body($body)->send();
 
                         return;
                     }
@@ -172,7 +173,8 @@ class OpsNotifyInvitesPage extends Page implements HasTable
                         try {
                             app(OpsNotifier::class)->telegram()->revokeInviteLink($record->invite_link);
                         } catch (ChannelException $e) {
-                            Notification::make()->danger()->title(Trans::get('invites.failed'))->body($e->getMessage())->send();
+                            $body = app(OpsNotifier::class)->telegram()->explain($e, 'invite_users');
+                            Notification::make()->danger()->title(Trans::get('invites.failed'))->body($body)->send();
 
                             return;
                         }

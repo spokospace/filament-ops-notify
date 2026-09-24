@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Nem sikerült betölteni a jelenlegi profilt a Telegramból',
     ],
 
+    'rights' => [
+        'title' => 'A bot jogai',
+        'manage_topics' => 'Témák kezelése',
+        'invite_users' => 'Felhasználók meghívása linkkel',
+        'all' => 'Admin minden szükséges joggal',
+        'missing' => 'Admin, hiányzik: :rights',
+        'not_admin' => 'Nem adminja a csevegésnek',
+        'not_member' => 'Nincs a csevegésben',
+        'unknown' => 'Nem sikerült ellenőrizni: :error',
+        'how_to' => 'A botnak nincs „:right” adminjoga. A Telegramban: csoport → Adminisztrátorok → a bot → kapcsold be, majd próbáld újra.',
+    ],
+
     'invites' => [
         'title' => 'Meghívók',
         'create' => 'Meghívó létrehozása',

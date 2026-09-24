@@ -143,6 +143,18 @@ return [
         'load_failed' => 'Praegust profiili ei õnnestunud Telegramist laadida',
     ],
 
+    'rights' => [
+        'title' => 'Boti õigused',
+        'manage_topics' => 'Teemade haldamine',
+        'invite_users' => 'Kasutajate kutsumine lingiga',
+        'all' => 'Administraator kõigi vajalike õigustega',
+        'missing' => 'Administraator, puudu: :rights',
+        'not_admin' => 'Pole vestluse administraator',
+        'not_member' => 'Pole vestluses',
+        'unknown' => 'Kontrollimine ebaõnnestus: :error',
+        'how_to' => 'Botil puudub administraatori õigus „:right“. Telegramis: grupp → Administraatorid → bot → lülitage see sisse ja proovige uuesti.',
+    ],
+
     'invites' => [
         'title' => 'Kutsed',
         'create' => 'Loo kutse',
