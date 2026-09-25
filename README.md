@@ -155,7 +155,8 @@ composer test
 ## Credits
 
 Built and maintained by [spoko.space](https://spoko.space), where it runs in production on our
-own Filament panels.
+own Filament panels. There's a [case study](https://spoko.space/ops-notify-telegram-for-filament/)
+with the story and screenshots behind it.
 
 ## License
 
