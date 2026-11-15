@@ -2,6 +2,8 @@
 
 namespace Spokospace\OpsNotify\Support;
 
+use Spokospace\OpsNotify\Models\OpsNotifyLog;
+
 /**
  * Reads the bell notification title rules (`forward_database_notifications`). The forwarder
  * and the Settings suggestions both go through here, so a suggested title is one a rule can match.
@@ -22,13 +24,39 @@ final class TitleRules
     public static function eventFor(string $title, array $config, ?string $explicit = null): ?string
     {
         $map = (array) ($config['map'] ?? []);
-        $key = $map === [] ? null : self::ruleFor($title, $map);
+        $key = self::ruleFor($title, $map);
 
         if ($key !== null && ! is_string($map[$key])) {
             return null;
         }
 
-        return $explicit ?? ($key !== null ? $map[$key] : self::defaultEvent($config));
+        if ($explicit !== null) {
+            return $explicit;
+        }
+
+        if ($key !== null) {
+            return $map[$key];
+        }
+
+        return self::defaultEvent($config);
+    }
+
+    /**
+     * An event name an app passed in viewData, or null when it is not usable as one: not a
+     * string, blank, containing whitespace or `*` (it would act as a routing pattern), or longer
+     * than the log keeps.
+     */
+    public static function explicitEvent(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $value = trim($value);
+
+        return $value === '' || preg_match('/[\s*]/', $value) || mb_strlen($value) > OpsNotifyLog::EVENT_LENGTH
+            ? null
+            : $value;
     }
 
     /**

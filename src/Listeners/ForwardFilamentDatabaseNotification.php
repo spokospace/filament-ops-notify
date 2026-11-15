@@ -52,9 +52,11 @@ class ForwardFilamentDatabaseNotification
             return;
         }
 
-        $explicit = $data['viewData'][self::EVENT_KEY] ?? null;
-        $explicit = is_string($explicit) && trim($explicit) !== '' ? trim($explicit) : null;
-        $opsEvent = TitleRules::eventFor((string) ($data['title'] ?? ''), $config, $explicit);
+        $opsEvent = TitleRules::eventFor(
+            (string) ($data['title'] ?? ''),
+            $config,
+            TitleRules::explicitEvent($data['viewData'][self::EVENT_KEY] ?? null),
+        );
 
         if ($opsEvent === null) {
             return;

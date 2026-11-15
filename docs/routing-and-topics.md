@@ -143,8 +143,9 @@ Notification::make()
 
 The notification is then sent as `inquiry.created` whatever its title, also when `default_event`
 is `null`, and a title rule that renames it is ignored. A title rule set to "don't forward" still
-drops it, so Settings remains the place to silence a notification. A blank or non-string value
-falls back to the title rules. The key is also available as
+drops it, so Settings remains the place to silence a notification. A value that is not a usable
+event name (not a string, blank, with whitespace or `*`, or over 120 characters) falls back to the
+title rules. The key is also available as
 `ForwardFilamentDatabaseNotification::EVENT_KEY`.
 
 What a forwarded notification keeps:

@@ -121,13 +121,13 @@ it('still drops a notification with an explicit event when a title rule says not
     Http::assertNothingSent();
 });
 
-it('ignores a blank or non-string explicit event and falls back to the title rules', function (mixed $event) {
+it('ignores an explicit event that is not a usable name and falls back to the title rules', function (mixed $event) {
     fakeTelegram();
 
     inquiryNotification()->viewData(['ops_event' => $event])->sendToDatabase($this->admin());
 
     expect(OpsNotifyLog::query()->sole()->event)->toBe('filament.notification');
-})->with([' ', null, 42, [['inquiry.created']]]);
+})->with([' ', null, 42, [['inquiry.created']], 'inquiry.*', 'inquiry created', str_repeat('a', 121)]);
 
 it('does nothing when forwarding is disabled', function () {
     fakeTelegram();
