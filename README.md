@@ -24,7 +24,8 @@ reach Telegram with no code changes.
 - **Any Laravel notification, too.** Apps without the bell can forward mail, SMS or push
   notifications, once each and without secrets such as password reset links.
 - **Topics and routing.** Create forum topics from the panel and route events to them by pattern
-  (`inquiry.*` → *Inquiries*). Filament notifications are routed by title.
+  (`inquiry.*` → *Inquiries*). Filament notifications are routed by title, or by an event the app
+  names with `viewData(['ops_event' => ...])`.
 - **Settings in the panel.** Token (encrypted), chat id, service name, topics and rules, all without
   touching `.env`.
 - **Message templates.** Change an event's title, body, fields and hashtag by pattern in config

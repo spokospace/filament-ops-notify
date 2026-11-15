@@ -33,7 +33,8 @@ Removing a topic from the list does not delete it in Telegram.
 - A notification sent through the `ops` channel, or a forwarded Laravel notification:
   `opsEvent()` if the notification defines it, else the class name in snake case
   (`App\Notifications\OrderPlaced` → `order_placed`).
-- A Filament bell notification: the event its title rule gives it
+- A Filament bell notification: `viewData(['ops_event' => ...])` if the app sets it, else the
+  event its title rule gives it
   ([Forwarding Filament notifications](#forwarding-filament-notifications)), else
   `default_event` (`filament.notification` unless you change it; with `null` it is not forwarded).
 
@@ -127,6 +128,24 @@ there are none to suggest, because unmatched titles are not forwarded.
 
 The title rules pair with event routing. `New inquiry*` becomes `inquiry.created`, and
 `inquiry.*` sends it to the Inquiries topic.
+
+### Naming the event in code
+
+Title rules need no code, but they break when someone rewords or translates the title. When the
+app knows what a notification is, it can name the event itself:
+
+```php
+Notification::make()
+    ->title('New inquiry')
+    ->viewData(['ops_event' => 'inquiry.created'])
+    ->sendToDatabase($admins);
+```
+
+The notification is then sent as `inquiry.created` whatever its title, also when `default_event`
+is `null`, and a title rule that renames it is ignored. A title rule set to "don't forward" still
+drops it, so Settings remains the place to silence a notification. A blank or non-string value
+falls back to the title rules. The key is also available as
+`ForwardFilamentDatabaseNotification::EVENT_KEY`.
 
 What a forwarded notification keeps:
 

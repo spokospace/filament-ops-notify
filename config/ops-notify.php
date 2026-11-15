@@ -90,6 +90,8 @@ return [
     | `map` matches the notification TITLE with Str::is(), first match wins:
     |   a string = event name (route it with `events` above), false = don't forward.
     | Unmatched titles use `default_event`; set it to null to forward only mapped titles.
+    | A notification with ->viewData(['ops_event' => 'inquiry.created']) is sent under that event
+    | instead; only a `false` title rule still drops it.
     */
     'forward_database_notifications' => [
         'enabled' => env('OPS_NOTIFY_FORWARD_DATABASE'),  // [panel] null = enabled

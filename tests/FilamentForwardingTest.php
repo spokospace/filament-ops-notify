@@ -96,6 +96,39 @@ it('forwards only mapped titles when there is no default event', function () {
     expect(OpsNotifyLog::query()->pluck('event')->all())->toBe(['inquiry.created']);
 });
 
+it('sends a notification under the event it names, whatever the title rules say', function () {
+    fakeTelegram();
+    config([
+        'ops-notify.forward_database_notifications.default_event' => null,
+        'ops-notify.forward_database_notifications.map' => ['Nowe zapytanie*' => 'something.else'],
+        'ops-notify.events' => ['inquiry.*' => ['topic' => 7]],
+    ]);
+
+    inquiryNotification()->viewData(['ops_event' => 'inquiry.created'])->sendToDatabase($this->admin());
+    Notification::make()->title('Renamed inquiry')->viewData(['ops_event' => ' inquiry.created '])->sendToDatabase($this->admin());
+
+    Http::assertSentCount(2);
+    Http::assertSent(fn (Request $request) => $request['message_thread_id'] === 7);
+    expect(OpsNotifyLog::query()->pluck('event')->all())->toBe(['inquiry.created', 'inquiry.created']);
+});
+
+it('still drops a notification with an explicit event when a title rule says not to forward it', function () {
+    fakeTelegram();
+    config(['ops-notify.forward_database_notifications.map' => ['Nowe zapytanie*' => false]]);
+
+    inquiryNotification()->viewData(['ops_event' => 'inquiry.created'])->sendToDatabase($this->admin());
+
+    Http::assertNothingSent();
+});
+
+it('ignores a blank or non-string explicit event and falls back to the title rules', function (mixed $event) {
+    fakeTelegram();
+
+    inquiryNotification()->viewData(['ops_event' => $event])->sendToDatabase($this->admin());
+
+    expect(OpsNotifyLog::query()->sole()->event)->toBe('filament.notification');
+})->with([' ', null, 42, [['inquiry.created']]]);
+
 it('does nothing when forwarding is disabled', function () {
     fakeTelegram();
     config(['ops-notify.forward_database_notifications.enabled' => false]);

@@ -18,9 +18,15 @@ use Throwable;
  *
  * Filament calls $user->notify() once per recipient with an identical payload and no shared id;
  * Dedupe lets only the first copy through.
+ *
+ * The event name comes from the notification itself when the app sets one with
+ * ->viewData(['ops_event' => 'inquiry.created']), otherwise from the title rules.
  */
 class ForwardFilamentDatabaseNotification
 {
+    /** viewData key an app sets to name the event explicitly instead of relying on title rules. */
+    public const EVENT_KEY = 'ops_event';
+
     public function __construct(
         private readonly OpsNotifier $notifier,
         private readonly FilamentNotificationConverter $converter,
@@ -46,7 +52,9 @@ class ForwardFilamentDatabaseNotification
             return;
         }
 
-        $opsEvent = TitleRules::eventFor((string) ($data['title'] ?? ''), $config);
+        $explicit = $data['viewData'][self::EVENT_KEY] ?? null;
+        $explicit = is_string($explicit) && trim($explicit) !== '' ? trim($explicit) : null;
+        $opsEvent = TitleRules::eventFor((string) ($data['title'] ?? ''), $config, $explicit);
 
         if ($opsEvent === null) {
             return;

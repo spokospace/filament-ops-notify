@@ -13,17 +13,22 @@ final class TitleRules
      * false drops the notification. Unmatched titles use `default_event`; null forwards nothing
      * but the mapped ones.
      *
+     * An event the app named itself ($explicit, from viewData['ops_event']) wins over a rule that
+     * renames, so rewording the title cannot reroute it; a `false` rule still drops it, so Settings
+     * stays the place to silence a notification.
+     *
      * @param  array<string, mixed>  $config  config('ops-notify.forward_database_notifications')
      */
-    public static function eventFor(string $title, array $config): ?string
+    public static function eventFor(string $title, array $config, ?string $explicit = null): ?string
     {
         $map = (array) ($config['map'] ?? []);
+        $key = $map === [] ? null : self::ruleFor($title, $map);
 
-        if (($key = self::ruleFor($title, $map)) !== null) {
-            return is_string($map[$key]) ? $map[$key] : null;
+        if ($key !== null && ! is_string($map[$key])) {
+            return null;
         }
 
-        return self::defaultEvent($config);
+        return $explicit ?? ($key !== null ? $map[$key] : self::defaultEvent($config));
     }
 
     /**
