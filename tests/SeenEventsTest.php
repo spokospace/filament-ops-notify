@@ -3,7 +3,7 @@
 use Filament\Actions\Action;
 use Filament\Actions\Testing\TestAction;
 use Filament\Forms\Components\Field;
-use Filament\Notifications\Livewire\Notifications;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Text;
 use Illuminate\Support\Facades\Schema;
@@ -276,13 +276,11 @@ it('names the other events a new rule takes over', function () {
 
     // inquiry.updated keeps its own rule, which comes first.
     $form->set("{$path}.events", ['row' => ['pattern' => 'inquiry.updated', 'topic' => '5', 'enabled' => true]])
-        ->callAction(seenTag('inquiry.created'));
-
-    $notifications = new Notifications;
-    $notifications->mount();
-
-    expect($notifications->notifications->last()->getBody())
-        ->toBe('It also catches inquiry.spam. To route only inquiry.created, change the pattern to that name. Save the settings to keep it in the list.');
+        ->callAction(seenTag('inquiry.created'))
+        ->assertNotified(Notification::make()
+            ->success()
+            ->title('Rule inquiry.* added: pick its topic and save the settings.')
+            ->body('It also catches inquiry.spam. To route only inquiry.created, change the pattern to that name. Save the settings to keep it in the list.'));
 });
 
 it('keeps a new row open until it has a topic', function () {
