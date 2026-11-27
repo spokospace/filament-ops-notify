@@ -45,6 +45,12 @@ class BrokenCacheStore implements Store
         throw new RuntimeException(self::ERROR);
     }
 
+    /** In the contract from Laravel 13; an extra method on 12. */
+    public function touch($key, $seconds): bool
+    {
+        throw new RuntimeException(self::ERROR);
+    }
+
     public function forget($key): bool
     {
         throw new RuntimeException(self::ERROR);

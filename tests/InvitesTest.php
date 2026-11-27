@@ -2,6 +2,7 @@
 
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
@@ -114,7 +115,8 @@ it('revokes a link from before the chat was stored in the configured chat', func
 });
 
 it('explains that a link belongs to the old chat when Telegram refuses to revoke it there', function () {
-    Http::swap(new Illuminate\Http\Client\Factory);
+    // The first matching fake wins, so drop beforeEach's successful revoke before faking a refusal.
+    Http::swap(new Factory);
     Http::fake(['*/revokeChatInviteLink' => Http::response(['ok' => false, 'description' => 'Bad Request: chat not found'], 400)]);
     $invite = OpsNotifyInvite::query()->create(['channel' => 'telegram', 'chat_id' => '-1001', 'name' => 'Anna', 'invite_link' => 'https://t.me/+AbCdEf123', 'expires_at' => now()->addDay()]);
     moveToAnotherChat();
