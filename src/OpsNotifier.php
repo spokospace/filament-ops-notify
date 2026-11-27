@@ -242,7 +242,7 @@ class OpsNotifier
             Log::warning('[ops-notify] Could not schedule burst digest for "'.$message->event.'": '.$e->getMessage());
 
             // Without a digest the held messages vanish silently. Send this one instead; the next
-            // held message tries to schedule the digest again.
+            // held message of the window tries to schedule the digest again.
             return false;
         }
 
@@ -271,10 +271,17 @@ class OpsNotifier
             try {
                 $guard->releaseDigest($key, $burst['started_at']);
             } catch (Throwable) {
-                // The cache is failing too: the claim expires on its own, and the count is one high.
+                // The cache is failing too: the short claim expires on its own.
             }
 
             throw $e;
+        }
+
+        try {
+            $guard->digestScheduled($key, $burst['started_at']);
+        } catch (Throwable) {
+            // The digest is queued; the claim just stays short, and at worst a second digest
+            // reports what is held after the first.
         }
     }
 

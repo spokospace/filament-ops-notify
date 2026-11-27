@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -259,6 +260,35 @@ it('still gets a digest for a message another worker held while the digest could
     $digest = Queue::pushed(SendBurstDigest::class)->sole();
     expect($guard->heldCount($digest->key, $digest->windowStartedAt))->toBe(2)
         ->and(OpsNotifyLog::query()->where('status', DeliveryStatus::Suppressed)->count())->toBe(2);
+});
+
+it('frees a digest claim whose release failed, so a later held message schedules the digest', function () {
+    burst(2);
+    $guard = app(BurstGuard::class);
+    $key = 'telegram||error.thrown';
+
+    // Worker A holds #3 and claims the digest; its dispatch fails and so does the release.
+    $a = $guard->hit($key);
+    $guard->claimDigest($key, $a['started_at']);
+    burst(1);
+    Queue::assertNotPushed(SendBurstDigest::class);
+
+    $this->travel(61)->seconds();
+    burst(1);
+
+    Queue::assertPushed(SendBurstDigest::class, 1);
+});
+
+it('sends a message that arrives as the window ends instead of holding it past its digest', function () {
+    $this->travelTo(Carbon::parse('2026-11-27 12:00:00.800'));
+    burst(3); // the window started at 12:00:00, so its digest runs from 12:05:00
+
+    // :start was written at .800, so it is still there at 12:05:00.500.
+    $this->travelTo(Carbon::parse('2026-11-27 12:05:00.500'));
+    burst(1);
+
+    Queue::assertPushed(SendOpsMessage::class, 3);
+    expect(OpsNotifyLog::query()->where('status', DeliveryStatus::Suppressed)->count())->toBe(1);
 });
 
 it('reports a count held before the upgrade, when every window shared one key', function () {

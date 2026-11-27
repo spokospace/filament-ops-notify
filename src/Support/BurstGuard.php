@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Cache;
  */
 final class BurstGuard
 {
+    /** Seconds a digest claim waits for its digest to be queued. */
+    private const PENDING_CLAIM = 60;
+
     public function enabled(): bool
     {
         return $this->limit() > 0 && $this->windowMinutes() > 0;
@@ -48,7 +51,9 @@ final class BurstGuard
         $this->keepTtl("{$key}:count", $count, $ttl);
 
         $startedAt = (int) Cache::get("{$key}:start", now()->getTimestamp());
-        $held = $count > $this->limit();
+        // From ends_at on the digest may already have run: a message held now would be reported by
+        // no one. :start outlives ends_at by up to a second (ends_at is cut to whole seconds).
+        $held = $count > $this->limit() && now()->getTimestamp() < $startedAt + $ttl;
 
         if ($held) {
             $heldKey = self::heldKey($event, $startedAt);
@@ -65,22 +70,29 @@ final class BurstGuard
 
     /**
      * True for the one held message that schedules the window's digest. Every held message asks,
-     * not only the first: when scheduling fails, releaseDigest() frees the claim and the next held
-     * message tries again, so the window does not stay held with no digest to report it.
+     * not only the first: when scheduling fails, releaseDigest() frees the claim, and the next
+     * held message of the window tries again. The claim is short until digestScheduled() makes
+     * it last, so a claim whose release failed cannot hold a window back for long.
      */
     public function claimDigest(string $event, int $windowStartedAt): bool
     {
-        return Cache::add(self::key($event).':digest:'.$windowStartedAt, true, $this->heldTtl());
+        return Cache::add(self::claimKey($event, $windowStartedAt), 'pending', self::PENDING_CLAIM);
+    }
+
+    /** The digest is on the queue: the claim now lasts as long as the window's held count. */
+    public function digestScheduled(string $event, int $windowStartedAt): void
+    {
+        Cache::put(self::claimKey($event, $windowStartedAt), 'scheduled', $this->heldTtl());
     }
 
     /**
      * After the digest could not be scheduled: frees the claim, and takes back the held count of
-     * the message that is sent after all.
+     * the message that is sent after all. The claim goes first: it is what blocks the next try.
      */
     public function releaseDigest(string $event, int $windowStartedAt): void
     {
+        Cache::forget(self::claimKey($event, $windowStartedAt));
         Cache::decrement(self::heldKey($event, $windowStartedAt));
-        Cache::forget(self::key($event).':digest:'.$windowStartedAt);
     }
 
     /**
@@ -129,6 +141,11 @@ final class BurstGuard
     private static function key(string $event): string
     {
         return 'ops-notify:burst:'.hash('xxh128', $event);
+    }
+
+    private static function claimKey(string $event, int $windowStartedAt): string
+    {
+        return self::key($event).':digest:'.$windowStartedAt;
     }
 
     /**
