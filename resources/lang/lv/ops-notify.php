@@ -200,6 +200,7 @@ return [
         'revoke' => 'Atsaukt',
         'revoked_notice' => 'Ielūguma saite atsaukta',
         'failed' => 'Telegram noraidīja pieprasījumu',
+        'other_chat' => 'Šī saite pieder tērzēšanai :chat, kas vairs nav iestatītā tērzēšana, un Telegram atteicās to tur atsaukt: :error. Ja bots vairs nav šīs tērzēšanas administrators, atsauciet saiti Telegram.',
         'empty' => 'Vēl nav ielūguma saišu',
     ],
 

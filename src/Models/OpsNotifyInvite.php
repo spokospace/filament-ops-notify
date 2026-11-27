@@ -10,6 +10,7 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property string $channel
+ * @property ?string $chat_id The chat the link was created in; null for links older than the column.
  * @property string $name
  * @property string $invite_link
  * @property ?int $member_limit

@@ -200,6 +200,7 @@ return [
         'revoke' => 'Återkalla',
         'revoked_notice' => 'Inbjudningslänk återkallad',
         'failed' => 'Telegram avvisade begäran',
+        'other_chat' => 'Den här länken hör till chatten :chat, som inte längre är den inställda chatten, och Telegram vägrade återkalla den där: :error. Om boten inte längre är administratör i den chatten, återkalla länken i Telegram.',
         'empty' => 'Inga inbjudningslänkar än',
     ],
 

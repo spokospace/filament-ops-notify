@@ -1,9 +1,12 @@
 <?php
 
+use Illuminate\Cache\ArrayStore;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Testing\Fakes\QueueFake;
 use Spokospace\OpsNotify\Enums\DeliveryStatus;
 use Spokospace\OpsNotify\Enums\Level;
 use Spokospace\OpsNotify\Jobs\SendBurstDigest;
@@ -192,7 +195,7 @@ it('keeps the held count when the digest job fails, so a retry still reports it'
     $failing->shouldReceive('queue')->once()->andThrow(new RuntimeException('db down'));
 
     expect(fn () => $digest->handle($failing, app(BurstGuard::class)))->toThrow(RuntimeException::class)
-        ->and(app(BurstGuard::class)->heldCount($digest->key ?? $digest->event))->toBe(1);
+        ->and(app(BurstGuard::class)->heldCount($digest->key ?? $digest->event, $digest->windowStartedAt))->toBe(1);
 
     // The retry, with a working notifier, still posts the summary.
     $digest->handle(app(OpsNotifier::class), app(BurstGuard::class));
@@ -210,6 +213,178 @@ it('schedules the digest even if logging the suppressed row fails', function () 
     OpsMessage::make('error.thrown')->error()->title('Boom')->field('r', uniqid())->send();
 
     Queue::assertPushed(SendBurstDigest::class, 1);
+});
+
+/** A queue that refuses the first $refusals burst digests, then works. */
+function refuseDigests(int $refusals = 1): void
+{
+    Queue::swap(new class(app(), $refusals) extends QueueFake
+    {
+        public function __construct($app, public int $refusals)
+        {
+            parent::__construct($app);
+        }
+
+        public function later($delay, $job, $data = '', $queue = null): mixed
+        {
+            if ($job instanceof SendBurstDigest && $this->refusals-- > 0) {
+                throw new RuntimeException('queue down');
+            }
+
+            return parent::later($delay, $job, $data, $queue);
+        }
+    });
+}
+
+/** Messages held back, and how many of them the queued digests will report. */
+function heldAndReported(): array
+{
+    return [
+        OpsNotifyLog::query()->where('status', DeliveryStatus::Suppressed)->count(),
+        Queue::pushed(SendBurstDigest::class)->sum(fn (SendBurstDigest $digest): int => app(BurstGuard::class)->heldCount($digest->key ?? $digest->event, $digest->windowStartedAt)),
+    ];
+}
+
+it('lets the window through and tries again when the digest cannot be scheduled', function () {
+    refuseDigests();
+
+    burst(2 + 5);
+
+    // #3 could not get a digest, so it went out; #4 queued the digest that covers #4 to #7.
+    expect(heldAndReported())->toBe([4, 4]);
+    Queue::assertPushed(SendOpsMessage::class, 3);
+    Queue::assertPushed(SendBurstDigest::class, 1);
+});
+
+it('sends rather than holds while another worker is still queuing the digest', function () {
+    burst(2);
+    $guard = app(BurstGuard::class);
+    $key = 'telegram||error.thrown';
+
+    // Worker A is over the limit and claims the digest; before its dispatch fails, B's message
+    // comes in. B cannot know whether a digest will come, so it sends.
+    $a = $guard->hit($key);
+    expect($guard->claimDigest($key, $a['started_at']))->toBeTrue();
+    burst(1);
+    $guard->releaseDigest($key, $a['started_at']);
+
+    // The next message over the limit queues the digest and is held behind it.
+    burst(1);
+
+    expect(heldAndReported())->toBe([1, 1]);
+    Queue::assertPushed(SendOpsMessage::class, 3);
+});
+
+it('sends rather than holds behind a claim whose release failed, until the claim expires', function () {
+    refuseDigests();
+    // The cache fails on releasing the claim too, then recovers.
+    $flaky = new class extends ArrayStore
+    {
+        public bool $failing = true;
+
+        public function forget($key)
+        {
+            if ($this->failing && str_contains($key, ':digest:')) {
+                throw new RuntimeException('cache down');
+            }
+
+            return parent::forget($key);
+        }
+    };
+    Cache::extend('flaky', fn () => Cache::repository($flaky));
+    config(['cache.stores.flaky' => ['driver' => 'flaky'], 'cache.default' => 'flaky']);
+
+    burst(2 + 3); // #3 claims and fails; #4 and #5 find a stale claim
+
+    expect(heldAndReported())->toBe([0, 0]);
+    Queue::assertPushed(SendOpsMessage::class, 5);
+
+    $flaky->failing = false;
+    $this->travel(61)->seconds();
+    burst(2); // the claim expired: #6 queues the digest, #7 is held too
+
+    expect(heldAndReported())->toBe([2, 2]);
+});
+
+it('sends a message that arrives as the window ends instead of holding it past its digest', function () {
+    $this->travelTo(Carbon::parse('2026-11-27 12:00:00.800'));
+    burst(3); // the window started at 12:00:00, so its digest runs from 12:05:00
+
+    $this->travelTo(Carbon::parse('2026-11-27 12:04:59.000'));
+    burst(1);
+
+    Queue::assertPushed(SendOpsMessage::class, 3);
+    expect(heldAndReported())->toBe([1, 1]);
+});
+
+it('reports a window once, even when it got two digests', function () {
+    burst(4); // 2 held
+    $digest = Queue::pushed(SendBurstDigest::class)->sole();
+    Queue::fake();
+
+    // The twin runs while the first digest holds the lock: it leaves the count to that one.
+    $lock = app(BurstGuard::class)->digestLock($digest->key, $digest->windowStartedAt);
+    $lock->get();
+    (clone $digest)->handle(app(OpsNotifier::class), app(BurstGuard::class));
+    Queue::assertNothingPushed();
+    $lock->release();
+
+    $digest->handle(app(OpsNotifier::class), app(BurstGuard::class));
+    (clone $digest)->handle(app(OpsNotifier::class), app(BurstGuard::class));
+
+    Queue::assertPushed(SendOpsMessage::class, 1);
+});
+
+it('sends a message whose digest took until the end of the window to queue, instead of holding it', function () {
+    $this->travelTo(Carbon::parse('2026-11-27 12:00:00'));
+    burst(2);
+
+    // The dispatch of the digest is slow: it returns 3 s before the end, inside the margin.
+    Queue::swap(new class(app()) extends QueueFake
+    {
+        public function later($delay, $job, $data = '', $queue = null): mixed
+        {
+            test()->travelTo(Carbon::parse('2026-11-27 12:04:59'));
+
+            return parent::later($delay, $job, $data, $queue);
+        }
+    });
+    test()->travelTo(Carbon::parse('2026-11-27 12:04:56'));
+    burst(1);
+
+    Queue::assertPushed(SendOpsMessage::class, 1);
+    expect(heldAndReported())->toBe([0, 0]);
+});
+
+it('reports a count held before the upgrade, when every window shared one key', function () {
+    burst(3); // 1 held under the new per-window key
+    $digest = Queue::pushed(SendBurstDigest::class)->first();
+    Cache::put('ops-notify:burst:'.hash('xxh128', $digest->key).':held', 4, 600);
+    Queue::fake();
+
+    $digest->handle(app(OpsNotifier::class), app(BurstGuard::class));
+
+    Queue::assertPushed(SendOpsMessage::class, fn (SendOpsMessage $job): bool => $job->message->title === '5 more "error.thrown" messages were held back in 5 minutes');
+    expect(app(BurstGuard::class)->heldCount($digest->key, $digest->windowStartedAt))->toBe(0);
+});
+
+it('gives each window its own held count when the next window starts before the digest runs', function () {
+    $this->freezeTime();
+    burst(5); // window 1: 3 held
+
+    // The error loop goes on: window 2 fills up before window 1's digest has run.
+    $this->travel(6)->minutes();
+    burst(4); // window 2: 2 held
+
+    [$first, $second] = Queue::pushed(SendBurstDigest::class)->all();
+    Queue::fake();
+    $first->handle(app(OpsNotifier::class), app(BurstGuard::class));
+    $second->handle(app(OpsNotifier::class), app(BurstGuard::class));
+
+    expect(Queue::pushed(SendOpsMessage::class)->map(fn (SendOpsMessage $job): ?string => $job->message->title)->all())->toBe([
+        '3 more "error.thrown" messages were held back in 5 minutes',
+        '2 more "error.thrown" messages were held back in 5 minutes',
+    ]);
 });
 
 it('re-arms the burst counter TTL after a bare increment revives it', function () {

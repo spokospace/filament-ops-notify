@@ -18,9 +18,10 @@ php artisan migrate
 
 The service provider and the `OpsNotify` facade are registered automatically.
 
-The migrations create two tables, `ops_notify_logs` and `ops_notify_settings`. They use a plain
-schema, so they work on MySQL, MariaDB, PostgreSQL and SQLite, and both are guarded with
-`Schema::hasTable`. They run straight from the package, so there is nothing to publish.
+The migrations create three tables, `ops_notify_logs`, `ops_notify_settings` and
+`ops_notify_invites`. They use a plain schema, so they work on MySQL, MariaDB, PostgreSQL and
+SQLite, and each is guarded with `Schema::hasTable` (a later column with `Schema::hasColumn`). They
+run straight from the package, so there is nothing to publish.
 
 To change them, publish them and stop the package copies from running:
 
@@ -33,6 +34,14 @@ OPS_NOTIFY_RUN_MIGRATIONS=false
 ```
 
 Without the second step the package copies still run, and your edits are ignored.
+
+### Upgrading
+
+Run `php artisan migrate` after every update. With `OPS_NOTIFY_RUN_MIGRATIONS=false`, publish the
+migrations again first: `vendor:publish` adds the new ones and leaves the ones you edited alone.
+
+- **1.4:** a nullable `chat_id` column on `ops_notify_invites`, so **Revoke** targets the chat an
+  invite was created in. Links created before it are revoked in the chat set in Settings.
 
 The config file is optional. Most settings can be edited in the panel. See [Settings](settings.md).
 

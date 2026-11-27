@@ -15,6 +15,7 @@ use Spokospace\OpsNotify\Support\Button;
 use Spokospace\OpsNotify\Support\Destination;
 use Spokospace\OpsNotify\Support\MessageTemplate;
 use Spokospace\OpsNotify\Support\Trans;
+use Throwable;
 
 class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
 {
@@ -59,6 +60,12 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
     private function chatId(): int|string
     {
         return $this->config['chat_id'] ?? throw new ChannelException('Telegram chat id is not configured.', permanent: true);
+    }
+
+    /** The chat this channel sends to, as a string, or null when it is not configured. */
+    public function configuredChatId(): ?string
+    {
+        return filled($this->config['chat_id'] ?? null) ? (string) $this->config['chat_id'] : null;
     }
 
     public function topicLabel(string $id): string
@@ -116,8 +123,15 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
     /** Forgets the cached rights, e.g. after the admin changed them in Telegram. */
     public function forgetRights(): void
     {
-        if ($this->isConfigured()) {
+        if (! $this->isConfigured()) {
+            return;
+        }
+
+        try {
             Cache::forget($this->rightsKey());
+        } catch (Throwable) {
+            // Cache down: nothing cached to forget. Called while explaining a refusal, so it
+            // must not turn that notification into an error page.
         }
     }
 
@@ -171,7 +185,8 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
 
     /**
      * Asks Telegram who the bot is. Cached, errors included, because the Filament page renders
-     * it on every Livewire round trip and a dead API would otherwise block each one.
+     * it on every Livewire round trip and a dead API would otherwise block each one. Never
+     * throws (ReportsStatus): with the cache down, the line shows the cache error.
      */
     public function status(): string
     {
@@ -179,6 +194,15 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
             return Trans::get('page.not_configured');
         }
 
+        try {
+            return $this->cachedStatus();
+        } catch (Throwable $e) {
+            return $e->getMessage();
+        }
+    }
+
+    private function cachedStatus(): string
+    {
         // Cache the raw result, not the sentence, so it follows the viewer's locale.
         // Derived from a secret, so a cryptographic hash: the token must not be guessable from the key.
         $key = 'ops-notify:telegram-status:'.hash('sha256', $this->botToken());
@@ -354,10 +378,14 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
         return (string) $this->call('createChatInviteLink', $payload)['invite_link'];
     }
 
-    /** Stops an invite link from working. */
-    public function revokeInviteLink(string $link): void
+    /**
+     * Stops an invite link from working.
+     *
+     * @param  int|string|null  $chatId  The chat the link was created in; the configured chat by default.
+     */
+    public function revokeInviteLink(string $link, int|string|null $chatId = null): void
     {
-        $this->call('revokeChatInviteLink', ['chat_id' => $this->chatId(), 'invite_link' => $link]);
+        $this->call('revokeChatInviteLink', ['chat_id' => filled($chatId) ? $chatId : $this->chatId(), 'invite_link' => $link]);
     }
 
     /**

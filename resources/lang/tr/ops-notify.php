@@ -200,6 +200,7 @@ return [
         'revoke' => 'İptal et',
         'revoked_notice' => 'Davet bağlantısı iptal edildi',
         'failed' => 'Telegram isteği reddetti',
+        'other_chat' => "Bu bağlantı artık ayarlı sohbet olmayan :chat sohbetine ait ve Telegram onu orada iptal etmeyi reddetti: :error. Bot artık o sohbetin yöneticisi değilse bağlantıyı Telegram'da iptal edin.",
         'empty' => 'Henüz davet bağlantısı yok',
     ],
 

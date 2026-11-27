@@ -3,6 +3,7 @@
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Repeater;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -12,6 +13,7 @@ use Spokospace\OpsNotify\Channels\Telegram\TelegramChannel;
 use Spokospace\OpsNotify\Filament\Pages\OpsNotifyPage;
 use Spokospace\OpsNotify\Filament\SettingsForm;
 use Spokospace\OpsNotify\Settings\SettingsStore;
+use Spokospace\OpsNotify\Tests\Fixtures\WebhookChannel;
 
 function telegramChannel(): TelegramChannel
 {
@@ -96,6 +98,28 @@ describe('settings slide-over', function () {
             ->assertHasNoActionErrors();
 
         expect(config('ops-notify.channels.telegram.topics'))->toBe([['id' => '9', 'name' => 'Komentarze']]);
+    });
+
+    it('says Create topic needs Telegram instead of failing when the default channel is another driver', function () {
+        app(ChannelManager::class)->extend('webhook', fn (): WebhookChannel => new WebhookChannel);
+        config(['ops-notify.default_channel' => 'hook', 'ops-notify.channels.hook' => ['driver' => 'webhook']]);
+
+        Livewire::test(OpsNotifyPage::class)
+            ->mountAction('settings')
+            ->callAction(TestAction::make('createTopic')->schemaComponent('topics', 'mountedActionSchema0'), data: ['name' => 'Komentarze'])
+            ->assertNotified(Notification::make()->danger()->title('Topic not created')->body('The "hook" channel is not a Telegram driver.'));
+
+        Http::assertNotSent(fn (Request $request) => str_ends_with($request->url(), '/createForumTopic'));
+    });
+
+    it('says Create topic cannot run when the default channel is not defined', function () {
+        config(['ops-notify.default_channel' => 'missing']);
+        app(ChannelManager::class)->forgetChannels();
+
+        Livewire::test(OpsNotifyPage::class)
+            ->mountAction('settings')
+            ->callAction(TestAction::make('createTopic')->schemaComponent('topics', 'mountedActionSchema0'), data: ['name' => 'Komentarze'])
+            ->assertNotified(Notification::make()->danger()->title('Topic not created')->body('Ops notify channel [missing] is not defined.'));
     });
 
     it('collapses saved lists and summarises them in the section header', function () {

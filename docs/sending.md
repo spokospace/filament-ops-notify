@@ -176,7 +176,11 @@ Every message becomes a queued `SendOpsMessage` job.
   titles. Tune it with `burst.max_per_event` and `burst.window_minutes` (`0` turns it off). It
   is counted per event name (bell notifications without a title rule share the default event, so
   they are counted per title), needs a cache shared by the workers, and does not apply to the
-  `sync` queue or to `sendNow()`.
+  `sync` queue or to `sendNow()`. If the cache is down, the guard holds nothing back and
+  duplicates are not merged; the messages are still queued and logged. A message is only held
+  once the window's digest is on the queue: if the digest cannot be queued, messages go out and
+  the next one over the limit tries again (after up to a minute, if the cache failed too). Nothing is held in the last 2 seconds of a window.
+  Each window has its own count, so two windows in a row get two digests that add up.
 - **Retries:** up to 5 real failures (timeouts, 5xx), with a backoff of 10 s, 30 s, 2 min and
   5 min. Waiting for the rate limit, or for Telegram's `retry_after` after a 429, does not count.
   A message still undelivered after `rate_limit.give_up_after_minutes` (60) is marked failed.

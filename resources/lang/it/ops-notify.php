@@ -200,6 +200,7 @@ return [
         'revoke' => 'Revoca',
         'revoked_notice' => 'Link di invito revocato',
         'failed' => 'Telegram ha rifiutato la richiesta',
+        'other_chat' => 'Questo link appartiene alla chat :chat, che non è più la chat configurata, e Telegram ha rifiutato di revocarlo lì: :error. Se il bot non è più amministratore di quella chat, revoca il link in Telegram.',
         'empty' => 'Ancora nessun link di invito',
     ],
 

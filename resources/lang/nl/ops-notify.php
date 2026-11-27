@@ -200,6 +200,7 @@ return [
         'revoke' => 'Intrekken',
         'revoked_notice' => 'Uitnodigingslink ingetrokken',
         'failed' => 'Telegram heeft het verzoek geweigerd',
+        'other_chat' => 'Deze link hoort bij chat :chat, die niet meer de ingestelde chat is, en Telegram weigerde hem daar in te trekken: :error. Is de bot geen beheerder meer van die chat, trek de link dan in Telegram in.',
         'empty' => 'Nog geen uitnodigingslinks',
     ],
 

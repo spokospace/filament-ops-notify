@@ -219,23 +219,37 @@ class OpsNotifier
         // One event sent to different chats/topics must not share a counter, nor one digest: a
         // quiet destination would be suppressed by a noisy one and the digest go to the wrong chat.
         $key = $destination->channel.'|'.($destination->topic ?? '').'|'.$eventKey;
-        $burst = $guard->hit($key);
 
-        if (! $burst['held']) {
+        try {
+            $burst = $guard->hit($key);
+        } catch (Throwable $e) {
+            // The guard lives in the cache. With the cache down, send rather than lose the message:
+            // it may well be the alert about that outage.
+            Log::warning('[ops-notify] Burst guard unavailable, sending "'.$message->event.'" anyway: '.$e->getMessage());
+
             return false;
         }
 
-        if ($burst['first']) {
-            try {
-                // Schedule before logging the suppressed row: a DB hiccup on the log must not cost
-                // the digest, or messages #12..N would be held silently with no summary ever sent.
-                $this->scheduleDigest($message, $destination, $key, $burst, $guard, $perTitle);
-            } catch (Throwable $e) {
-                Log::warning('[ops-notify] Could not schedule burst digest for "'.$message->event.'": '.$e->getMessage());
+        if (! $burst['over']) {
+            return false;
+        }
 
-                // Without a digest the held messages vanish silently; let this one through instead.
+        try {
+            // Schedule before logging the suppressed row: a DB hiccup on the log must not cost
+            // the digest, or messages #12..N would be held silently with no summary ever sent.
+            // Checked again after the dispatch: a slow one near the window's end could otherwise
+            // count this message after the digest has read the count.
+            if (! $this->digestQueued($message, $destination, $key, $burst, $perTitle, $guard) || ! $guard->canHold($burst['started_at'])) {
                 return false;
             }
+
+            $guard->countHeld($key, $burst['started_at']);
+        } catch (Throwable $e) {
+            Log::warning('[ops-notify] Could not hold "'.$message->event.'" behind a burst digest, sending it: '.$e->getMessage());
+
+            // Without a digest a held message would vanish silently: send it. The next message
+            // over the limit tries to queue the digest again.
+            return false;
         }
 
         $log = $this->createLog($message, $destination, DeliveryStatus::Suppressed);
@@ -244,16 +258,41 @@ class OpsNotifier
     }
 
     /**
-     * @param  array{held: bool, first: bool, ends_at: Carbon}  $burst
+     * Whether the window's digest is on the queue, queuing it when no other message has claimed
+     * that yet. False while another message is still queuing it (or its claim is stale): this
+     * message then goes out rather than wait behind a digest that may never come.
+     *
+     * @param  array{over: bool, started_at: int, ends_at: Carbon}  $burst
      */
-    private function scheduleDigest(OpsMessage $message, Destination $destination, string $key, array $burst, BurstGuard $guard, bool $perTitle): void
+    private function digestQueued(OpsMessage $message, Destination $destination, string $key, array $burst, bool $perTitle, BurstGuard $guard): bool
     {
-        $startedAt = $burst['ends_at']->copy()->subMinutes($guard->windowMinutes())->getTimestamp();
+        if (! $guard->claimDigest($key, $burst['started_at'])) {
+            return $guard->isDigestScheduled($key, $burst['started_at']);
+        }
 
-        $this->route(
-            SendBurstDigest::dispatch($message->event, $destination, $message->level, $startedAt, $key, $perTitle ? $message->title : null)
-                ->delay($burst['ends_at'])
-        );
+        try {
+            $this->route(
+                SendBurstDigest::dispatch($message->event, $destination, $message->level, $burst['started_at'], $key, $perTitle ? $message->title : null)
+                    ->delay($burst['ends_at'])
+            );
+        } catch (Throwable $e) {
+            try {
+                $guard->releaseDigest($key, $burst['started_at']);
+            } catch (Throwable) {
+                // The cache is failing too: the short claim expires on its own.
+            }
+
+            throw $e;
+        }
+
+        try {
+            $guard->digestScheduled($key, $burst['started_at']);
+        } catch (Throwable) {
+            // The digest is queued, but other messages cannot tell: they go out until the claim
+            // expires. A second digest for the window then finds the count already cleared.
+        }
+
+        return true;
     }
 
     private function dispatch(OpsMessage $message, Destination $destination, ?OpsNotifyLog $log): void

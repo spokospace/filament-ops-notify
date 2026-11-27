@@ -200,6 +200,7 @@ return [
         'revoke' => 'Atšaukti',
         'revoked_notice' => 'Kvietimo nuoroda atšaukta',
         'failed' => 'Telegram atmetė užklausą',
+        'other_chat' => 'Ši nuoroda priklauso pokalbiui :chat, kuris nebėra nustatytas pokalbis, ir Telegram atsisakė ją ten atšaukti: :error. Jei botas nebėra to pokalbio administratorius, atšaukite nuorodą Telegram programoje.',
         'empty' => 'Kvietimo nuorodų dar nėra',
     ],
 

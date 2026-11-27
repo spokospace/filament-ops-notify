@@ -200,6 +200,7 @@ return [
         'revoke' => 'Peruuta',
         'revoked_notice' => 'Kutsulinkki peruutettu',
         'failed' => 'Telegram hylkäsi pyynnön',
+        'other_chat' => 'Tämä linkki kuuluu keskusteluun :chat, joka ei ole enää asetettu keskustelu, ja Telegram kieltäytyi peruuttamasta sitä siellä: :error. Jos botti ei ole enää sen keskustelun ylläpitäjä, peruuta linkki Telegramissa.',
         'empty' => 'Ei vielä kutsulinkkejä',
     ],
 

@@ -200,6 +200,7 @@ return [
         'revoke' => 'Trekk tilbake',
         'revoked_notice' => 'Invitasjonslenke trukket tilbake',
         'failed' => 'Telegram avviste forespørselen',
+        'other_chat' => 'Denne lenken hører til chatten :chat, som ikke lenger er den innstilte chatten, og Telegram nektet å trekke den tilbake der: :error. Hvis boten ikke lenger er administrator i den chatten, trekk tilbake lenken i Telegram.',
         'empty' => 'Ingen invitasjonslenker ennå',
     ],
 

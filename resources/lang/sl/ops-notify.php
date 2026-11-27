@@ -200,6 +200,7 @@ return [
         'revoke' => 'Prekliči',
         'revoked_notice' => 'Povezava za povabilo preklicana',
         'failed' => 'Telegram je zahtevo zavrnil',
+        'other_chat' => 'Ta povezava pripada klepetu :chat, ki ni več nastavljeni klepet, in Telegram je tam ni hotel preklicati: :error. Če bot ni več skrbnik tega klepeta, prekličite povezavo v Telegramu.',
         'empty' => 'Še ni povezav za povabilo',
     ],
 

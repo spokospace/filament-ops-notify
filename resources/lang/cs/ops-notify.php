@@ -200,6 +200,7 @@ return [
         'revoke' => 'Zrušit',
         'revoked_notice' => 'Pozvánkový odkaz zrušen',
         'failed' => 'Telegram požadavek odmítl',
+        'other_chat' => 'Tento odkaz patří k chatu :chat, který už není nastaveným chatem, a Telegram ho tam odmítl zrušit: :error. Pokud bot už není administrátorem toho chatu, zrušte odkaz v Telegramu.',
         'empty' => 'Zatím žádné pozvánkové odkazy',
     ],
 

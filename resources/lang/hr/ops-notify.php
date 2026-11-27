@@ -200,6 +200,7 @@ return [
         'revoke' => 'Opozovi',
         'revoked_notice' => 'Poveznica za pozivnicu opozvana',
         'failed' => 'Telegram je odbio zahtjev',
+        'other_chat' => 'Ova poveznica pripada chatu :chat, koji više nije postavljeni chat, a Telegram ju je tamo odbio opozvati: :error. Ako bot više nije administrator tog chata, opozovi poveznicu u Telegramu.',
         'empty' => 'Još nema poveznica za pozivnice',
     ],
 

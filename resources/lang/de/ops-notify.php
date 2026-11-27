@@ -200,6 +200,7 @@ return [
         'revoke' => 'Widerrufen',
         'revoked_notice' => 'Einladungslink widerrufen',
         'failed' => 'Telegram hat die Anfrage abgelehnt',
+        'other_chat' => 'Dieser Link gehört zum Chat :chat, der nicht mehr der eingestellte Chat ist, und Telegram hat den Widerruf dort abgelehnt: :error. Ist der Bot dort kein Administrator mehr, den Link direkt in Telegram widerrufen.',
         'empty' => 'Noch keine Einladungslinks',
     ],
 

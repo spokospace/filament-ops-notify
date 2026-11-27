@@ -200,6 +200,7 @@ return [
         'revoke' => 'Tühista',
         'revoked_notice' => 'Kutselink tühistatud',
         'failed' => 'Telegram lükkas päringu tagasi',
+        'other_chat' => 'See link kuulub vestlusele :chat, mis ei ole enam seadistatud vestlus, ja Telegram keeldus seda seal tühistamast: :error. Kui bot ei ole enam selle vestluse administraator, tühistage link Telegramis.',
         'empty' => 'Kutselinke veel pole',
     ],
 

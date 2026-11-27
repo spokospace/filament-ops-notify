@@ -370,16 +370,18 @@ class OpsNotifyPage extends Page implements HasTable
 
     private function connectionStatus(): string
     {
+        // status() must not throw, but a driver that breaks that promise (or a cache outage)
+        // must cost this one line, not the whole page.
         try {
             $channel = app(OpsNotifier::class)->channels()->channel();
+
+            return match (true) {
+                $channel instanceof ReportsStatus => $channel->status(),
+                $channel->isConfigured() => Trans::get('page.configured'),
+                default => Trans::get('page.not_configured'),
+            };
         } catch (Throwable $e) {
             return $e->getMessage();
         }
-
-        return match (true) {
-            $channel instanceof ReportsStatus => $channel->status(),
-            $channel->isConfigured() => Trans::get('page.configured'),
-            default => Trans::get('page.not_configured'),
-        };
     }
 }

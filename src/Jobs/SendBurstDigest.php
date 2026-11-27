@@ -46,7 +46,14 @@ class SendBurstDigest implements ShouldQueue
     {
         $event = $this->key ?? $this->event;
 
-        if (($held = $guard->heldCount($event)) === 0) {
+        // While another digest of this window holds the lock, it is reporting the count (or will,
+        // when its job is retried): this one has nothing to add.
+        $guard->digestLock($event, $this->windowStartedAt)->get(fn () => $this->report($notifier, $guard, $event));
+    }
+
+    private function report(OpsNotifier $notifier, BurstGuard $guard, string $event): void
+    {
+        if (($held = $guard->heldCount($event, $this->windowStartedAt)) === 0) {
             return;
         }
 
@@ -63,7 +70,7 @@ class SendBurstDigest implements ShouldQueue
         $notifier->queue($message, $this->destination, digest: true);
 
         // Only now the digest is on the queue: clearing earlier would make a failed retry read 0.
-        $guard->clearHeld($event);
+        $guard->clearHeld($event, $this->windowStartedAt);
     }
 
     /** @return list<string> e.g. "12× Database connection lost", most frequent first. */

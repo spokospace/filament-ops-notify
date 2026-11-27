@@ -2,6 +2,7 @@
 
 namespace Spokospace\OpsNotify\Support;
 
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
@@ -10,9 +11,22 @@ use Illuminate\Support\Facades\Cache;
  * differ only in an id, so dedupe does not catch them. The first `burst.max_per_event` of an
  * event in a window go out; the rest are held back and summed up in one digest message when
  * the window ends. The window is fixed and starts with the event's first message.
+ *
+ * A message is only held behind a digest that is already on the queue (claimDigest(),
+ * digestScheduled()). Until then, and whenever the cache fails, messages go out as usual: a
+ * held message that no digest reports would be lost without a trace.
  */
 final class BurstGuard
 {
+    /** Seconds a digest claim waits for its digest to be queued. */
+    private const PENDING_CLAIM = 60;
+
+    /**
+     * Seconds before the window's end from which nothing is held: the digest runs at the end,
+     * and a message held later than it reads the count would be reported by no one.
+     */
+    private const END_MARGIN = 2;
+
     public function enabled(): bool
     {
         return $this->limit() > 0 && $this->windowMinutes() > 0;
@@ -31,10 +45,10 @@ final class BurstGuard
     /**
      * Counts one message of $event.
      *
-     * @return array{held: bool, first: bool, ends_at: Carbon} held: over the limit, do not send;
-     *                                                         first: the first one held in
-     *                                                         this window, so the caller
-     *                                                         schedules the digest for ends_at.
+     * over: past the limit, so the message is held if the window's digest is on the queue (see
+     * claimDigest()). started_at: when the window started; it names the window's held count.
+     *
+     * @return array{over: bool, started_at: int, ends_at: Carbon}
      */
     public function hit(string $event): array
     {
@@ -47,18 +61,55 @@ final class BurstGuard
         $count = (int) Cache::increment("{$key}:count");
         $this->keepTtl("{$key}:count", $count, $ttl);
 
-        $endsAt = Carbon::createFromTimestamp((int) Cache::get("{$key}:start", now()->getTimestamp()))->addSeconds($ttl);
-        $held = $count > $this->limit();
+        $startedAt = (int) Cache::get("{$key}:start", now()->getTimestamp());
 
-        if ($held) {
-            // Outlives the window, so a delayed or backed-up worker running the digest late can
-            // still read it: give it as long as delivery itself is allowed to keep retrying.
-            $heldTtl = $ttl + max(900, (int) config('ops-notify.rate_limit.give_up_after_minutes', 60) * 60);
-            Cache::add("{$key}:held", 0, $heldTtl);
-            $this->keepTtl("{$key}:held", (int) Cache::increment("{$key}:held"), $heldTtl);
-        }
+        return [
+            'over' => $count > $this->limit() && $this->canHold($startedAt),
+            'started_at' => $startedAt,
+            'ends_at' => Carbon::createFromTimestamp($startedAt)->addSeconds($ttl),
+        ];
+    }
 
-        return ['held' => $held, 'first' => $count === $this->limit() + 1, 'ends_at' => $endsAt];
+    /** False from END_MARGIN seconds before the window's end, when its digest may be about to run. */
+    public function canHold(int $windowStartedAt): bool
+    {
+        return now()->getTimestamp() < $windowStartedAt + $this->windowMinutes() * 60 - self::END_MARGIN;
+    }
+
+    /**
+     * True for the one message over the limit that queues the window's digest. The claim is
+     * short until digestScheduled() makes it last, so a claim whose release failed cannot keep
+     * the window from getting a digest for long.
+     */
+    public function claimDigest(string $event, int $windowStartedAt): bool
+    {
+        return Cache::add(self::claimKey($event, $windowStartedAt), 'pending', self::PENDING_CLAIM);
+    }
+
+    /** The digest is on the queue: from now on the window's messages over the limit are held. */
+    public function digestScheduled(string $event, int $windowStartedAt): void
+    {
+        Cache::put(self::claimKey($event, $windowStartedAt), 'scheduled', $this->heldTtl());
+    }
+
+    public function isDigestScheduled(string $event, int $windowStartedAt): bool
+    {
+        return Cache::get(self::claimKey($event, $windowStartedAt)) === 'scheduled';
+    }
+
+    /** The digest could not be queued: the next message over the limit tries again. */
+    public function releaseDigest(string $event, int $windowStartedAt): void
+    {
+        Cache::forget(self::claimKey($event, $windowStartedAt));
+    }
+
+    /** Counts one held message, for the window's digest. */
+    public function countHeld(string $event, int $windowStartedAt): void
+    {
+        $key = self::heldKey($event, $windowStartedAt);
+
+        Cache::add($key, 0, $this->heldTtl());
+        $this->keepTtl($key, (int) Cache::increment($key), $this->heldTtl());
     }
 
     /**
@@ -75,23 +126,62 @@ final class BurstGuard
     }
 
     /**
-     * How many messages of $event were held back. Read-only: the count is cleared with
-     * clearHeld() only once the digest has actually been queued, so a digest job that fails and
-     * retries still sees the count instead of a 0 it would exit on.
+     * How many messages of $event were held back in the window that started at $windowStartedAt.
+     * Read-only: the count is cleared with clearHeld() only once the digest has actually been
+     * queued, so a digest job that fails and retries still sees the count instead of a 0 it
+     * would exit on.
      */
-    public function heldCount(string $event): int
+    public function heldCount(string $event, int $windowStartedAt): int
     {
-        return (int) Cache::get(self::key($event).':held', 0);
+        return (int) Cache::get(self::heldKey($event, $windowStartedAt), 0)
+            // Up to 1.3 every window shared one count. A digest queued before the upgrade still
+            // finds it there. Remove once no 1.3 digest can be pending.
+            + (int) Cache::get(self::key($event).':held', 0);
     }
 
-    /** Resets the held counter for the next window, once its digest is safely on the queue. */
-    public function clearHeld(string $event): void
+    /** Clears that window's held count, once its digest is safely on the queue. */
+    public function clearHeld(string $event, int $windowStartedAt): void
     {
+        Cache::forget(self::heldKey($event, $windowStartedAt));
         Cache::forget(self::key($event).':held');
+    }
+
+    /**
+     * One digest of a window at a time. A window can get two (a claim that expired while its
+     * digest was being queued; a queue that delivers a job twice): they must not both report the
+     * count. Long enough for a slow titles query on a big log table.
+     */
+    public function digestLock(string $event, int $windowStartedAt): Lock
+    {
+        return Cache::lock(self::claimKey($event, $windowStartedAt).':lock', 300);
+    }
+
+    /**
+     * Held counts and digest claims outlive their window, so a delayed or backed-up worker running
+     * the digest late can still read them: as long as delivery itself is allowed to keep retrying.
+     */
+    private function heldTtl(): int
+    {
+        return $this->windowMinutes() * 60 + max(900, (int) config('ops-notify.rate_limit.give_up_after_minutes', 60) * 60);
     }
 
     private static function key(string $event): string
     {
         return 'ops-notify:burst:'.hash('xxh128', $event);
+    }
+
+    private static function claimKey(string $event, int $windowStartedAt): string
+    {
+        return self::key($event).':digest:'.$windowStartedAt;
+    }
+
+    /**
+     * One held counter per window. The counter outlives its window, so with one shared key the
+     * next window of a running error loop would add to it before the first digest read it: that
+     * digest would report the next window's messages too, and clearing it would lose them.
+     */
+    private static function heldKey(string $event, int $windowStartedAt): string
+    {
+        return self::key($event).':held:'.$windowStartedAt;
     }
 }

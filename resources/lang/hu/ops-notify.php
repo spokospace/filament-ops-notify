@@ -200,6 +200,7 @@ return [
         'revoke' => 'Visszavonás',
         'revoked_notice' => 'Meghívólink visszavonva',
         'failed' => 'A Telegram elutasította a kérést',
+        'other_chat' => 'Ez a link a(z) :chat csevegéshez tartozik, amely már nem a beállított csevegés, és a Telegram ott nem engedte visszavonni: :error. Ha a bot már nem adminisztrátora annak a csevegésnek, vond vissza a linket a Telegramban.',
         'empty' => 'Még nincsenek meghívólinkek',
     ],
 
