@@ -39,8 +39,8 @@ can check the setup without expanding them.
 - **Settings are cached forever** and the cache is cleared on save. Alerts therefore keep working
   while the database is down, and long-running queue workers (Horizon) pick up changes without a
   restart. While the cache is down, settings are read from the database instead, so the token,
-  chat and rules saved here still apply. Saving needs the cache: with Redis down it fails
-  and changes nothing.
+  chat and rules saved here still apply. Saving needs the cache: while it is down, saving
+  fails and changes nothing.
 
 ## Other config keys
 

@@ -46,6 +46,12 @@ class SendBurstDigest implements ShouldQueue
     {
         $event = $this->key ?? $this->event;
 
+        // A second digest of the window waits here, then finds the count cleared.
+        $guard->digestLock($event, $this->windowStartedAt)->block(10, fn () => $this->report($notifier, $guard, $event));
+    }
+
+    private function report(OpsNotifier $notifier, BurstGuard $guard, string $event): void
+    {
         if (($held = $guard->heldCount($event, $this->windowStartedAt)) === 0) {
             return;
         }

@@ -2,6 +2,7 @@
 
 namespace Spokospace\OpsNotify\Support;
 
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
@@ -10,11 +11,21 @@ use Illuminate\Support\Facades\Cache;
  * differ only in an id, so dedupe does not catch them. The first `burst.max_per_event` of an
  * event in a window go out; the rest are held back and summed up in one digest message when
  * the window ends. The window is fixed and starts with the event's first message.
+ *
+ * A message is only held behind a digest that is already on the queue (claimDigest(),
+ * digestScheduled()). Until then, and whenever the cache fails, messages go out as usual: a
+ * held message that no digest reports would be lost without a trace.
  */
 final class BurstGuard
 {
     /** Seconds a digest claim waits for its digest to be queued. */
     private const PENDING_CLAIM = 60;
+
+    /**
+     * Seconds before the window's end from which nothing is held: the digest runs at the end,
+     * and a message held later than it reads the count would be reported by no one.
+     */
+    private const END_MARGIN = 2;
 
     public function enabled(): bool
     {
@@ -34,10 +45,10 @@ final class BurstGuard
     /**
      * Counts one message of $event.
      *
-     * held: over the limit, do not send (and make sure the window has a digest, see
+     * over: past the limit, so the message is held if the window's digest is on the queue (see
      * claimDigest()). started_at: when the window started; it names the window's held count.
      *
-     * @return array{held: bool, started_at: int, ends_at: Carbon}
+     * @return array{over: bool, started_at: int, ends_at: Carbon}
      */
     public function hit(string $event): array
     {
@@ -51,48 +62,48 @@ final class BurstGuard
         $this->keepTtl("{$key}:count", $count, $ttl);
 
         $startedAt = (int) Cache::get("{$key}:start", now()->getTimestamp());
-        // From ends_at on the digest may already have run: a message held now would be reported by
-        // no one. :start outlives ends_at by up to a second (ends_at is cut to whole seconds).
-        $held = $count > $this->limit() && now()->getTimestamp() < $startedAt + $ttl;
-
-        if ($held) {
-            $heldKey = self::heldKey($event, $startedAt);
-            Cache::add($heldKey, 0, $this->heldTtl());
-            $this->keepTtl($heldKey, (int) Cache::increment($heldKey), $this->heldTtl());
-        }
 
         return [
-            'held' => $held,
+            'over' => $count > $this->limit() && now()->getTimestamp() < $startedAt + $ttl - self::END_MARGIN,
             'started_at' => $startedAt,
             'ends_at' => Carbon::createFromTimestamp($startedAt)->addSeconds($ttl),
         ];
     }
 
     /**
-     * True for the one held message that schedules the window's digest. Every held message asks,
-     * not only the first: when scheduling fails, releaseDigest() frees the claim, and the next
-     * held message of the window tries again. The claim is short until digestScheduled() makes
-     * it last, so a claim whose release failed cannot hold a window back for long.
+     * True for the one message over the limit that queues the window's digest. The claim is
+     * short until digestScheduled() makes it last, so a claim whose release failed cannot keep
+     * the window from getting a digest for long.
      */
     public function claimDigest(string $event, int $windowStartedAt): bool
     {
         return Cache::add(self::claimKey($event, $windowStartedAt), 'pending', self::PENDING_CLAIM);
     }
 
-    /** The digest is on the queue: the claim now lasts as long as the window's held count. */
+    /** The digest is on the queue: from now on the window's messages over the limit are held. */
     public function digestScheduled(string $event, int $windowStartedAt): void
     {
         Cache::put(self::claimKey($event, $windowStartedAt), 'scheduled', $this->heldTtl());
     }
 
-    /**
-     * After the digest could not be scheduled: frees the claim, and takes back the held count of
-     * the message that is sent after all. The claim goes first: it is what blocks the next try.
-     */
+    public function isDigestScheduled(string $event, int $windowStartedAt): bool
+    {
+        return Cache::get(self::claimKey($event, $windowStartedAt)) === 'scheduled';
+    }
+
+    /** The digest could not be queued: the next message over the limit tries again. */
     public function releaseDigest(string $event, int $windowStartedAt): void
     {
         Cache::forget(self::claimKey($event, $windowStartedAt));
-        Cache::decrement(self::heldKey($event, $windowStartedAt));
+    }
+
+    /** Counts one held message, for the window's digest. */
+    public function countHeld(string $event, int $windowStartedAt): void
+    {
+        $key = self::heldKey($event, $windowStartedAt);
+
+        Cache::add($key, 0, $this->heldTtl());
+        $this->keepTtl($key, (int) Cache::increment($key), $this->heldTtl());
     }
 
     /**
@@ -127,6 +138,16 @@ final class BurstGuard
     {
         Cache::forget(self::heldKey($event, $windowStartedAt));
         Cache::forget(self::key($event).':held');
+    }
+
+    /**
+     * One digest of a window at a time. A window can get two (a claim that expired while its
+     * digest was being queued; a queue that delivers a job twice): the second must find the count
+     * already cleared, not report it again.
+     */
+    public function digestLock(string $event, int $windowStartedAt): Lock
+    {
+        return Cache::lock(self::claimKey($event, $windowStartedAt).':lock', 30);
     }
 
     /**

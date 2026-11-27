@@ -230,19 +230,23 @@ class OpsNotifier
             return false;
         }
 
-        if (! $burst['held']) {
+        if (! $burst['over']) {
             return false;
         }
 
         try {
             // Schedule before logging the suppressed row: a DB hiccup on the log must not cost
             // the digest, or messages #12..N would be held silently with no summary ever sent.
-            $this->ensureDigest($message, $destination, $key, $burst, $perTitle, $guard);
+            if (! $this->digestQueued($message, $destination, $key, $burst, $perTitle, $guard)) {
+                return false;
+            }
+
+            $guard->countHeld($key, $burst['started_at']);
         } catch (Throwable $e) {
             Log::warning('[ops-notify] Could not schedule burst digest for "'.$message->event.'": '.$e->getMessage());
 
-            // Without a digest the held messages vanish silently. Send this one instead; the next
-            // held message of the window tries to schedule the digest again.
+            // Without a digest a held message would vanish silently: send it. The next message
+            // over the limit tries to queue the digest again.
             return false;
         }
 
@@ -252,14 +256,16 @@ class OpsNotifier
     }
 
     /**
-     * Schedules the window's digest unless another held message already did.
+     * Whether the window's digest is on the queue, queuing it when no other message has claimed
+     * that yet. False while another message is still queuing it (or its claim is stale): this
+     * message then goes out rather than wait behind a digest that may never come.
      *
-     * @param  array{held: bool, started_at: int, ends_at: Carbon}  $burst
+     * @param  array{over: bool, started_at: int, ends_at: Carbon}  $burst
      */
-    private function ensureDigest(OpsMessage $message, Destination $destination, string $key, array $burst, bool $perTitle, BurstGuard $guard): void
+    private function digestQueued(OpsMessage $message, Destination $destination, string $key, array $burst, bool $perTitle, BurstGuard $guard): bool
     {
         if (! $guard->claimDigest($key, $burst['started_at'])) {
-            return;
+            return $guard->isDigestScheduled($key, $burst['started_at']);
         }
 
         try {
@@ -280,9 +286,11 @@ class OpsNotifier
         try {
             $guard->digestScheduled($key, $burst['started_at']);
         } catch (Throwable) {
-            // The digest is queued; the claim just stays short, and at worst a second digest
-            // reports what is held after the first.
+            // The digest is queued, but other messages cannot tell: they go out until the claim
+            // expires. A second digest for the window then finds the count already cleared.
         }
+
+        return true;
     }
 
     private function dispatch(OpsMessage $message, Destination $destination, ?OpsNotifyLog $log): void
