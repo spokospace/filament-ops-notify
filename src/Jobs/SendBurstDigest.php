@@ -46,7 +46,7 @@ class SendBurstDigest implements ShouldQueue
     {
         $event = $this->key ?? $this->event;
 
-        if (($held = $guard->heldCount($event)) === 0) {
+        if (($held = $guard->heldCount($event, $this->windowStartedAt)) === 0) {
             return;
         }
 
@@ -63,7 +63,7 @@ class SendBurstDigest implements ShouldQueue
         $notifier->queue($message, $this->destination, digest: true);
 
         // Only now the digest is on the queue: clearing earlier would make a failed retry read 0.
-        $guard->clearHeld($event);
+        $guard->clearHeld($event, $this->windowStartedAt);
     }
 
     /** @return list<string> e.g. "12× Database connection lost", most frequent first. */

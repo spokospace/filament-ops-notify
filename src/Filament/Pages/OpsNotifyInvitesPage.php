@@ -18,6 +18,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
+use InvalidArgumentException;
 use Spokospace\OpsNotify\Channels\Telegram\TelegramChannel;
 use Spokospace\OpsNotify\Exceptions\ChannelException;
 use Spokospace\OpsNotify\Filament\OpsNotifyPlugin;
@@ -80,16 +81,22 @@ class OpsNotifyInvitesPage extends Page implements HasTable
                     $expiresAt = now()->addHours($hours);
                     $memberLimit = ($data['single_use'] ?? true) ? 1 : null;
 
-                    $link = $this->telegram(fn (TelegramChannel $telegram): string => $telegram->createInviteLink((string) $data['name'], $expiresAt, $memberLimit));
+                    $created = $this->telegram(fn (TelegramChannel $telegram): array => [
+                        'link' => $telegram->createInviteLink((string) $data['name'], $expiresAt, $memberLimit),
+                        // Kept with the link: Revoke must target this chat even after Settings move
+                        // notifications to another one.
+                        'chat_id' => $telegram->configuredChatId(),
+                    ]);
 
-                    if ($link === null) {
+                    if ($created === null) {
                         return;
                     }
 
                     $invite = OpsNotifyInvite::query()->create([
                         'channel' => app(OpsNotifier::class)->channels()->defaultChannel(),
+                        'chat_id' => $created['chat_id'],
                         'name' => (string) $data['name'],
-                        'invite_link' => $link,
+                        'invite_link' => $created['link'],
                         'member_limit' => $memberLimit,
                         'expires_at' => $expiresAt,
                         'created_by' => data_get(auth()->user(), 'email'),
@@ -120,25 +127,45 @@ class OpsNotifyInvitesPage extends Page implements HasTable
     }
 
     /**
-     * Runs one Telegram call; on a refusal, says why (which admin right is missing, if that is
-     * the reason) and returns null.
+     * Runs one Telegram call on $channel (the default channel when null); on a refusal, says why
+     * (which admin right is missing, if that is the reason) and returns null.
      *
      * @template T
      *
      * @param  Closure(TelegramChannel): T  $call
+     * @param  string|null  $chatId  The chat the call targets, when the link has one stored.
      * @return T|null
      */
-    private function telegram(Closure $call): mixed
+    private function telegram(Closure $call, ?string $channel = null, ?string $chatId = null): mixed
     {
-        $telegram = app(OpsNotifier::class)->telegram();
+        $telegram = null;
 
         try {
+            // Resolved inside the try: a channel that is gone or not a Telegram driver is a
+            // notification, not an error page.
+            $telegram = app(OpsNotifier::class)->channels()->telegram($channel);
+
             return $call($telegram);
-        } catch (ChannelException $e) {
-            Notification::make()->danger()->title(Trans::get('invites.failed'))->body($telegram->explain($e, 'invite_users'))->send();
+        } catch (ChannelException|InvalidArgumentException $e) {
+            Notification::make()->danger()->title(Trans::get('invites.failed'))->body($this->explain($e, $telegram, $chatId))->send();
 
             return null;
         }
+    }
+
+    private function explain(ChannelException|InvalidArgumentException $e, ?TelegramChannel $telegram, ?string $chatId): string
+    {
+        if ($telegram === null || ! $e instanceof ChannelException) {
+            return $e->getMessage();
+        }
+
+        // Settings now point at another chat: Telegram's own error ("chat not found", "not
+        // enough rights") would not tell the admin that the link belongs to the old chat.
+        if (filled($chatId) && $chatId !== $telegram->configuredChatId()) {
+            return Trans::get('invites.other_chat', ['chat' => $chatId, 'error' => $e->getMessage()]);
+        }
+
+        return $telegram->explain($e, 'invite_users');
     }
 
     public function content(Schema $schema): Schema
@@ -191,11 +218,14 @@ class OpsNotifyInvitesPage extends Page implements HasTable
                     ->requiresConfirmation()
                     ->visible(fn (OpsNotifyInvite $record): bool => $record->state() === OpsNotifyInvite::STATE_ACTIVE)
                     ->action(function (OpsNotifyInvite $record): void {
-                        if ($this->telegram(function (TelegramChannel $telegram) use ($record): bool {
-                            $telegram->revokeInviteLink($record->invite_link);
+                        $revoked = $this->telegram(function (TelegramChannel $telegram) use ($record): bool {
+                            // In the chat the link was made for, not whichever chat Settings name now.
+                            $telegram->revokeInviteLink($record->invite_link, $record->chat_id);
 
                             return true;
-                        }) === null) {
+                        }, $record->channel, $record->chat_id);
+
+                        if ($revoked === null) {
                             return;
                         }
 

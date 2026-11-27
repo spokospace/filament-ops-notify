@@ -15,8 +15,9 @@ use Throwable;
  * - A value set in config/.env wins: the field is "locked" and the stored value is ignored.
  * - Secrets (the bot token) are encrypted with APP_KEY, in the database and in the cache.
  * - Rows are cached forever (cleared on save), so a database outage does not silence the
- *   alert about that outage. A small version key tells long-running queue workers when to
- *   reload, so they pick up changes without a restart.
+ *   alert about that outage. A cache outage does not either: the rows are then read from the
+ *   database directly. A small version key tells long-running queue workers when to reload,
+ *   so they pick up changes without a restart.
  */
 class SettingsStore
 {
@@ -203,20 +204,48 @@ class SettingsStore
             return $this->rows;
         }
 
+        $queried = false;
+        $fromDatabase = null;
+
         try {
-            $rows = Cache::rememberForever(
-                self::CACHE_KEY,
-                fn (): array => OpsNotifySetting::query()->pluck('value', 'key')->all(),
-            );
+            $rows = Cache::rememberForever(self::CACHE_KEY, function () use (&$queried, &$fromDatabase): array {
+                $queried = true;
+
+                return $fromDatabase = $this->queryRows();
+            });
             Cache::add(self::VERSION_KEY, Str::random(16));
 
             return $rows;
         } catch (Throwable) {
-            // No table yet (migration pending) or database and cache both down: config/.env only.
+            // Back off whatever failed, so a dead store is not asked again on every send. The
+            // rows returned below are reused meanwhile.
             $this->failedAt = time();
-
-            return $this->rows;
         }
+
+        if ($fromDatabase !== null) {
+            // The database answered; only the cache could not keep the rows.
+            return $fromDatabase;
+        }
+
+        if (! $queried) {
+            // The cache failed before the database was asked. Read it directly: the bot token,
+            // chat id and routing saved in the panel must still apply during a cache outage.
+            try {
+                return $this->queryRows();
+            } catch (Throwable) {
+                // Cache and database both down.
+            }
+        }
+
+        // No table yet (migration pending) or the database down: what this process had, else
+        // config/.env only.
+        return $this->rows;
+    }
+
+    /** @return array<string, string> */
+    private function queryRows(): array
+    {
+        return OpsNotifySetting::query()->pluck('value', 'key')->all();
     }
 
     /** @return array<string, mixed> */

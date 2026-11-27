@@ -219,7 +219,16 @@ class OpsNotifier
         // One event sent to different chats/topics must not share a counter, nor one digest: a
         // quiet destination would be suppressed by a noisy one and the digest go to the wrong chat.
         $key = $destination->channel.'|'.($destination->topic ?? '').'|'.$eventKey;
-        $burst = $guard->hit($key);
+
+        try {
+            $burst = $guard->hit($key);
+        } catch (Throwable $e) {
+            // The guard lives in the cache. With the cache down, send rather than lose the message:
+            // it may well be the alert about that outage.
+            Log::warning('[ops-notify] Burst guard unavailable, sending "'.$message->event.'" anyway: '.$e->getMessage());
+
+            return false;
+        }
 
         if (! $burst['held']) {
             return false;
@@ -229,11 +238,19 @@ class OpsNotifier
             try {
                 // Schedule before logging the suppressed row: a DB hiccup on the log must not cost
                 // the digest, or messages #12..N would be held silently with no summary ever sent.
-                $this->scheduleDigest($message, $destination, $key, $burst, $guard, $perTitle);
+                $this->scheduleDigest($message, $destination, $key, $burst, $perTitle);
             } catch (Throwable $e) {
                 Log::warning('[ops-notify] Could not schedule burst digest for "'.$message->event.'": '.$e->getMessage());
 
-                // Without a digest the held messages vanish silently; let this one through instead.
+                // Without a digest the held messages vanish silently. Let this one through and start
+                // the window over, so the next ones go out too and the next one over the limit tries
+                // to schedule the digest again.
+                try {
+                    $guard->reset($key);
+                } catch (Throwable) {
+                    // The cache is failing too; its keys expire with the window anyway.
+                }
+
                 return false;
             }
         }
@@ -244,14 +261,12 @@ class OpsNotifier
     }
 
     /**
-     * @param  array{held: bool, first: bool, ends_at: Carbon}  $burst
+     * @param  array{held: bool, first: bool, started_at: int, ends_at: Carbon}  $burst
      */
-    private function scheduleDigest(OpsMessage $message, Destination $destination, string $key, array $burst, BurstGuard $guard, bool $perTitle): void
+    private function scheduleDigest(OpsMessage $message, Destination $destination, string $key, array $burst, bool $perTitle): void
     {
-        $startedAt = $burst['ends_at']->copy()->subMinutes($guard->windowMinutes())->getTimestamp();
-
         $this->route(
-            SendBurstDigest::dispatch($message->event, $destination, $message->level, $startedAt, $key, $perTitle ? $message->title : null)
+            SendBurstDigest::dispatch($message->event, $destination, $message->level, $burst['started_at'], $key, $perTitle ? $message->title : null)
                 ->delay($burst['ends_at'])
         );
     }

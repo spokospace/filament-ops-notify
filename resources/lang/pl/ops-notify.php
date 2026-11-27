@@ -200,6 +200,7 @@ return [
         'revoke' => 'Unieważnij',
         'revoked_notice' => 'Unieważniono link z zaproszeniem',
         'failed' => 'Telegram odrzucił żądanie',
+        'other_chat' => 'Ten link należy do czatu :chat, który nie jest już ustawionym czatem, a Telegram nie pozwolił go tam unieważnić: :error. Jeśli bot nie jest już administratorem tamtego czatu, unieważnij link w Telegramie.',
         'empty' => 'Brak linków z zaproszeniem',
     ],
 

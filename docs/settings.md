@@ -38,7 +38,8 @@ can check the setup without expanding them.
   rotation the saved token cannot be decrypted, and the form asks for it again.
 - **Settings are cached forever** and the cache is cleared on save. Alerts therefore keep working
   while the database is down, and long-running queue workers (Horizon) pick up changes without a
-  restart.
+  restart. While the cache is down, settings are read from the database instead, so the token,
+  chat and rules saved here still apply.
 
 ## Other config keys
 
@@ -108,7 +109,8 @@ php artisan vendor:publish --tag=ops-notify-translations
 
 - **Status:** service name, enabled flag, channel, connection, bot rights and delivery.
   - **Connection** calls `getMe` and is cached for 10 minutes; errors are cached for 1 minute.
-    *Connected as @your_bot* only proves the token. **Send test** proves the chat id.
+    *Connected as @your_bot* only proves the token. **Send test** proves the chat id. While the
+    cache is down, the line shows the cache error and the rest of the page still works.
   - **Bot rights** asks Telegram (`getChatMember`) whether the bot is an admin of the chat and has
     the two rights the package uses, *Manage topics* and *Invite users via link*: *All needed
     rights*, or e.g. *Missing: Invite users via link*. Cached for a minute, so a right granted in Telegram shows up

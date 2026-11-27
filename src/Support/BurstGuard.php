@@ -31,10 +31,11 @@ final class BurstGuard
     /**
      * Counts one message of $event.
      *
-     * @return array{held: bool, first: bool, ends_at: Carbon} held: over the limit, do not send;
-     *                                                         first: the first one held in
-     *                                                         this window, so the caller
-     *                                                         schedules the digest for ends_at.
+     * held: over the limit, do not send. first: the first one held in this window, so the caller
+     * schedules the digest for ends_at. started_at: when the window started; it names the
+     * window's held count.
+     *
+     * @return array{held: bool, first: bool, started_at: int, ends_at: Carbon}
      */
     public function hit(string $event): array
     {
@@ -47,18 +48,39 @@ final class BurstGuard
         $count = (int) Cache::increment("{$key}:count");
         $this->keepTtl("{$key}:count", $count, $ttl);
 
-        $endsAt = Carbon::createFromTimestamp((int) Cache::get("{$key}:start", now()->getTimestamp()))->addSeconds($ttl);
+        $startedAt = (int) Cache::get("{$key}:start", now()->getTimestamp());
         $held = $count > $this->limit();
 
         if ($held) {
             // Outlives the window, so a delayed or backed-up worker running the digest late can
             // still read it: give it as long as delivery itself is allowed to keep retrying.
             $heldTtl = $ttl + max(900, (int) config('ops-notify.rate_limit.give_up_after_minutes', 60) * 60);
-            Cache::add("{$key}:held", 0, $heldTtl);
-            $this->keepTtl("{$key}:held", (int) Cache::increment("{$key}:held"), $heldTtl);
+            $heldKey = self::heldKey($event, $startedAt);
+            Cache::add($heldKey, 0, $heldTtl);
+            $this->keepTtl($heldKey, (int) Cache::increment($heldKey), $heldTtl);
         }
 
-        return ['held' => $held, 'first' => $count === $this->limit() + 1, 'ends_at' => $endsAt];
+        return [
+            'held' => $held,
+            'first' => $count === $this->limit() + 1,
+            'started_at' => $startedAt,
+            'ends_at' => Carbon::createFromTimestamp($startedAt)->addSeconds($ttl),
+        ];
+    }
+
+    /**
+     * Starts $event's window over, held count included. For when the digest could not be
+     * scheduled: the messages after this one go out, and the next one over the limit tries to
+     * schedule the digest again, so nothing is held without a digest to report it.
+     */
+    public function reset(string $event): void
+    {
+        $key = self::key($event);
+
+        $held = self::heldKey($event, (int) Cache::get("{$key}:start", 0));
+        Cache::forget("{$key}:start");
+        Cache::forget("{$key}:count");
+        Cache::forget($held);
     }
 
     /**
@@ -75,23 +97,34 @@ final class BurstGuard
     }
 
     /**
-     * How many messages of $event were held back. Read-only: the count is cleared with
-     * clearHeld() only once the digest has actually been queued, so a digest job that fails and
-     * retries still sees the count instead of a 0 it would exit on.
+     * How many messages of $event were held back in the window that started at $windowStartedAt.
+     * Read-only: the count is cleared with clearHeld() only once the digest has actually been
+     * queued, so a digest job that fails and retries still sees the count instead of a 0 it
+     * would exit on.
      */
-    public function heldCount(string $event): int
+    public function heldCount(string $event, int $windowStartedAt): int
     {
-        return (int) Cache::get(self::key($event).':held', 0);
+        return (int) Cache::get(self::heldKey($event, $windowStartedAt), 0);
     }
 
-    /** Resets the held counter for the next window, once its digest is safely on the queue. */
-    public function clearHeld(string $event): void
+    /** Clears that window's held count, once its digest is safely on the queue. */
+    public function clearHeld(string $event, int $windowStartedAt): void
     {
-        Cache::forget(self::key($event).':held');
+        Cache::forget(self::heldKey($event, $windowStartedAt));
     }
 
     private static function key(string $event): string
     {
         return 'ops-notify:burst:'.hash('xxh128', $event);
+    }
+
+    /**
+     * One held counter per window. The counter outlives its window, so with one shared key the
+     * next window of a running error loop would add to it before the first digest read it: that
+     * digest would report the next window's messages too, and clearing it would lose them.
+     */
+    private static function heldKey(string $event, int $windowStartedAt): string
+    {
+        return self::key($event).':held:'.$windowStartedAt;
     }
 }

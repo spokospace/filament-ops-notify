@@ -16,6 +16,7 @@ error. Hover the status to see it. Delivery problems also show as a warning unde
 | `Telegram API 409: Conflict` from `telegram-chats` / *Import* | A webhook is set on the bot | `getUpdates` does not work while a webhook is set. Remove the webhook (`deleteWebhook`) |
 | `telegram-chats` says *No chats yet* or *No topics yet* | The bot has not seen a `/ping`, it was a plain `/ping`, or it was sent over 24 hours ago | Send `/ping@your_bot` in each topic, then run it again within 24 hours |
 | `telegram-chats` lists two chats with the same name | The group was upgraded to a supergroup; the command prints a warning | Use the `-100…` id the warning names |
+| **Revoke** says the link belongs to another chat | The link was created before Settings moved notifications to another chat, and Telegram refused to revoke it in the old one (the bot left it, or lost *Invite users via link* there) | Revoke it in Telegram: the old group → **Invite links**. The row expires on its own |
 | *Import from Telegram* finds nothing, or *Create topic* fails with *Save the bot token and chat id first* | Both use the saved token and chat id, not unsaved form values | Save the token and chat id, then try again |
 | Imported or created topics are gone after closing Settings | They were only added to the form | Press **Save** |
 | Status says `Not configured` | Token or chat id missing | Save both in Settings |

@@ -532,10 +532,15 @@ class SettingsForm
             ])
             ->modalSubmitActionLabel(Trans::get('settings.create_in_telegram'))
             ->action(function (array $data, Get $get, Set $set): void {
+                $telegram = null;
+
                 try {
-                    $id = $this->telegram()->createForumTopic($data['name'], filled($data['color'] ?? null) ? (int) $data['color'] : null);
+                    // Inside the try: a default channel that is not Telegram throws here, and its
+                    // message is the notification.
+                    $telegram = $this->telegram();
+                    $id = $telegram->createForumTopic($data['name'], filled($data['color'] ?? null) ? (int) $data['color'] : null);
                 } catch (ChannelException $e) {
-                    Notification::make()->danger()->title(Trans::get('settings.topic_not_created'))->body($this->telegram()->explain($e, 'manage_topics'))->send();
+                    Notification::make()->danger()->title(Trans::get('settings.topic_not_created'))->body($telegram?->explain($e, 'manage_topics') ?? $e->getMessage())->send();
 
                     return;
                 }

@@ -135,8 +135,10 @@ a link. **Ops Notify → Invites → Create invite** makes one:
 
 Copy the link and send it however you like. Anyone who has it can join until it is used, expires
 or is revoked, so treat it like a password. The list shows each link as *Active*, *Expired* or
-*Revoked*, with **Revoke** for active ones. Links are stored encrypted. The bot needs the
-**Invite users via link** admin right, and only people who may manage (see
-[Who may use it](installation.md#who-may-use-it)) see Invites.
+*Revoked*, with **Revoke** for active ones. **Revoke** works in the chat the link was created in,
+even after Settings moved notifications to another chat. If Telegram refuses there (the bot left
+that chat, for example), the panel says the link belongs to the old chat: revoke it in Telegram.
+Links are stored encrypted. The bot needs the **Invite users via link** admin right, and only
+people who may manage (see [Who may use it](installation.md#who-may-use-it)) see Invites.
 
 Next: [manage topics and route events](routing-and-topics.md).
