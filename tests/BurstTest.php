@@ -235,11 +235,42 @@ it('lets the window through and tries again when the digest cannot be scheduled'
     $reported = Queue::pushed(SendBurstDigest::class)
         ->sum(fn (SendBurstDigest $digest): int => app(BurstGuard::class)->heldCount($digest->key ?? $digest->event, $digest->windowStartedAt));
 
-    // #3 could not get a digest, so it went out and the window started over: #4 and #5 go out,
-    // #6 schedules the digest that covers #6 and #7.
-    expect($suppressed)->toBe(2)
+    // #3 could not get a digest, so it went out; #4 scheduled the digest that covers #4 to #7.
+    expect($suppressed)->toBe(4)
         ->and($reported)->toBe($suppressed);
-    Queue::assertPushed(SendOpsMessage::class, 5);
+    Queue::assertPushed(SendOpsMessage::class, 3);
+    Queue::assertPushed(SendBurstDigest::class, 1);
+});
+
+it('still gets a digest for a message another worker held while the digest could not be scheduled', function () {
+    burst(2);
+    $guard = app(BurstGuard::class);
+    $key = 'telegram||error.thrown';
+
+    // Worker A holds #3 and claims the digest; before its dispatch fails, worker B holds #4.
+    $a = $guard->hit($key);
+    expect($guard->claimDigest($key, $a['started_at']))->toBeTrue();
+    burst(1);
+    $guard->releaseDigest($key, $a['started_at']);
+
+    // The burst goes on: the next held message schedules the digest, and it counts #4.
+    burst(1);
+
+    $digest = Queue::pushed(SendBurstDigest::class)->sole();
+    expect($guard->heldCount($digest->key, $digest->windowStartedAt))->toBe(2)
+        ->and(OpsNotifyLog::query()->where('status', DeliveryStatus::Suppressed)->count())->toBe(2);
+});
+
+it('reports a count held before the upgrade, when every window shared one key', function () {
+    burst(3); // 1 held under the new per-window key
+    $digest = Queue::pushed(SendBurstDigest::class)->first();
+    Cache::put('ops-notify:burst:'.hash('xxh128', $digest->key).':held', 4, 600);
+    Queue::fake();
+
+    $digest->handle(app(OpsNotifier::class), app(BurstGuard::class));
+
+    Queue::assertPushed(SendOpsMessage::class, fn (SendOpsMessage $job): bool => $job->message->title === '5 more "error.thrown" messages were held back in 5 minutes');
+    expect(app(BurstGuard::class)->heldCount($digest->key, $digest->windowStartedAt))->toBe(0);
 });
 
 it('gives each window its own held count when the next window starts before the digest runs', function () {

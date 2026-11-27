@@ -1,6 +1,8 @@
 <?php
 
 use Filament\Facades\Filament;
+use Filament\Notifications\Notification;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -8,8 +10,10 @@ use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 use Spokospace\OpsNotify\ChannelManager;
 use Spokospace\OpsNotify\Enums\DeliveryStatus;
+use Spokospace\OpsNotify\Filament\Pages\OpsNotifyInvitesPage;
 use Spokospace\OpsNotify\Filament\Pages\OpsNotifyPage;
 use Spokospace\OpsNotify\Jobs\SendOpsMessage;
+use Spokospace\OpsNotify\Models\OpsNotifySetting;
 use Spokospace\OpsNotify\OpsMessage;
 use Spokospace\OpsNotify\OpsNotifier;
 use Spokospace\OpsNotify\Settings\SettingsStore;
@@ -86,4 +90,40 @@ it('renders the Ops Notify page while the cache is down, with the error on the c
     Livewire::test(OpsNotifyPage::class)
         ->assertOk()
         ->assertSee(BrokenCacheStore::ERROR);
+});
+
+it('forwards a bell notification while the cache is down', function () {
+    $admin = $this->admin();
+    cacheGoesDown();
+
+    Notification::make()->title('Build failed')->sendToDatabase($admin);
+
+    Http::assertSent(fn (Request $request) => str_contains($request->url(), '/bot999:PANEL/')
+        && str_contains($request['text'], 'Build failed'));
+});
+
+it('changes nothing when a settings save cannot reach the cache', function () {
+    cacheGoesDown();
+
+    // Applied now and reverted when the cache comes back with the old rows would be worse.
+    expect(fn () => app(SettingsStore::class)->save(['telegram_chat_id' => '-100999']))->toThrow(RuntimeException::class)
+        ->and(OpsNotifySetting::query()->where('key', 'telegram_chat_id')->value('value'))->toBe('"-100555"');
+});
+
+it('explains a missing admin right while the cache is down', function () {
+    Filament::setCurrentPanel('admin');
+    $this->actingAs($this->admin());
+    Http::swap(new Factory);
+    Http::fake(['*/createChatInviteLink' => Http::response(['ok' => false, 'description' => 'Bad Request: not enough rights to manage chat invite link'], 400)]);
+    cacheGoesDown();
+    // Filament keeps its toasts in a cache too; with that one down no toast can show at all. Here
+    // only the package's cache is down, as when an app gives Filament a store of its own.
+    config(['filament.cache_store' => 'array']);
+
+    Livewire::test(OpsNotifyInvitesPage::class)
+        ->callAction('createInvite', data: ['name' => 'Anna', 'valid_for' => 24, 'single_use' => true])
+        ->assertNotified(Notification::make()
+            ->danger()
+            ->title('Telegram rejected the request')
+            ->body('The bot lacks the "Invite users via link" admin right. In Telegram: group → Administrators → the bot → turn it on, then try again.'));
 });

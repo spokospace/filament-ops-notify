@@ -131,6 +131,18 @@ it('explains that a link belongs to the old chat when Telegram refuses to revoke
     expect($invite->fresh()->state())->toBe(OpsNotifyInvite::STATE_ACTIVE);
 });
 
+it('shows a timeout as it is, even for a link from another chat', function () {
+    // The first matching fake wins, so drop beforeEach's successful revoke before faking a failure.
+    Http::swap(new Factory);
+    Http::fake(['*/revokeChatInviteLink' => Http::response(['ok' => false, 'description' => 'Internal Server Error'], 500)]);
+    $invite = OpsNotifyInvite::query()->create(['channel' => 'telegram', 'chat_id' => '-1001', 'name' => 'Anna', 'invite_link' => 'https://t.me/+AbCdEf123', 'expires_at' => now()->addDay()]);
+    moveToAnotherChat();
+
+    Livewire::test(OpsNotifyInvitesPage::class)
+        ->callTableAction('revoke', $invite)
+        ->assertNotified(Notification::make()->danger()->title('Telegram rejected the request')->body('Telegram API 500: Internal Server Error'));
+});
+
 it('shows a notification, not an error page, when the channel is not Telegram', function () {
     app(ChannelManager::class)->extend('webhook', fn (): WebhookChannel => new WebhookChannel);
     config(['ops-notify.default_channel' => 'hook', 'ops-notify.channels.hook' => ['driver' => 'webhook']]);

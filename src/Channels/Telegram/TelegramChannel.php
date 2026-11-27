@@ -123,8 +123,15 @@ class TelegramChannel implements Channel, LabelsTopics, ReportsStatus
     /** Forgets the cached rights, e.g. after the admin changed them in Telegram. */
     public function forgetRights(): void
     {
-        if ($this->isConfigured()) {
+        if (! $this->isConfigured()) {
+            return;
+        }
+
+        try {
             Cache::forget($this->rightsKey());
+        } catch (Throwable) {
+            // Cache down: nothing cached to forget. Called while explaining a refusal, so it
+            // must not turn that notification into an error page.
         }
     }
 

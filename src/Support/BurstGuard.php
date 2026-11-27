@@ -31,11 +31,10 @@ final class BurstGuard
     /**
      * Counts one message of $event.
      *
-     * held: over the limit, do not send. first: the first one held in this window, so the caller
-     * schedules the digest for ends_at. started_at: when the window started; it names the
-     * window's held count.
+     * held: over the limit, do not send (and make sure the window has a digest, see
+     * claimDigest()). started_at: when the window started; it names the window's held count.
      *
-     * @return array{held: bool, first: bool, started_at: int, ends_at: Carbon}
+     * @return array{held: bool, started_at: int, ends_at: Carbon}
      */
     public function hit(string $event): array
     {
@@ -52,35 +51,36 @@ final class BurstGuard
         $held = $count > $this->limit();
 
         if ($held) {
-            // Outlives the window, so a delayed or backed-up worker running the digest late can
-            // still read it: give it as long as delivery itself is allowed to keep retrying.
-            $heldTtl = $ttl + max(900, (int) config('ops-notify.rate_limit.give_up_after_minutes', 60) * 60);
             $heldKey = self::heldKey($event, $startedAt);
-            Cache::add($heldKey, 0, $heldTtl);
-            $this->keepTtl($heldKey, (int) Cache::increment($heldKey), $heldTtl);
+            Cache::add($heldKey, 0, $this->heldTtl());
+            $this->keepTtl($heldKey, (int) Cache::increment($heldKey), $this->heldTtl());
         }
 
         return [
             'held' => $held,
-            'first' => $count === $this->limit() + 1,
             'started_at' => $startedAt,
             'ends_at' => Carbon::createFromTimestamp($startedAt)->addSeconds($ttl),
         ];
     }
 
     /**
-     * Starts $event's window over, held count included. For when the digest could not be
-     * scheduled: the messages after this one go out, and the next one over the limit tries to
-     * schedule the digest again, so nothing is held without a digest to report it.
+     * True for the one held message that schedules the window's digest. Every held message asks,
+     * not only the first: when scheduling fails, releaseDigest() frees the claim and the next held
+     * message tries again, so the window does not stay held with no digest to report it.
      */
-    public function reset(string $event): void
+    public function claimDigest(string $event, int $windowStartedAt): bool
     {
-        $key = self::key($event);
+        return Cache::add(self::key($event).':digest:'.$windowStartedAt, true, $this->heldTtl());
+    }
 
-        $held = self::heldKey($event, (int) Cache::get("{$key}:start", 0));
-        Cache::forget("{$key}:start");
-        Cache::forget("{$key}:count");
-        Cache::forget($held);
+    /**
+     * After the digest could not be scheduled: frees the claim, and takes back the held count of
+     * the message that is sent after all.
+     */
+    public function releaseDigest(string $event, int $windowStartedAt): void
+    {
+        Cache::decrement(self::heldKey($event, $windowStartedAt));
+        Cache::forget(self::key($event).':digest:'.$windowStartedAt);
     }
 
     /**
@@ -104,13 +104,26 @@ final class BurstGuard
      */
     public function heldCount(string $event, int $windowStartedAt): int
     {
-        return (int) Cache::get(self::heldKey($event, $windowStartedAt), 0);
+        return (int) Cache::get(self::heldKey($event, $windowStartedAt), 0)
+            // Up to 1.3 every window shared one count. A digest queued before the upgrade still
+            // finds it there. Remove once no 1.3 digest can be pending.
+            + (int) Cache::get(self::key($event).':held', 0);
     }
 
     /** Clears that window's held count, once its digest is safely on the queue. */
     public function clearHeld(string $event, int $windowStartedAt): void
     {
         Cache::forget(self::heldKey($event, $windowStartedAt));
+        Cache::forget(self::key($event).':held');
+    }
+
+    /**
+     * Held counts and digest claims outlive their window, so a delayed or backed-up worker running
+     * the digest late can still read them: as long as delivery itself is allowed to keep retrying.
+     */
+    private function heldTtl(): int
+    {
+        return $this->windowMinutes() * 60 + max(900, (int) config('ops-notify.rate_limit.give_up_after_minutes', 60) * 60);
     }
 
     private static function key(string $event): string

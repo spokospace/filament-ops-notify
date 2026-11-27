@@ -234,25 +234,16 @@ class OpsNotifier
             return false;
         }
 
-        if ($burst['first']) {
-            try {
-                // Schedule before logging the suppressed row: a DB hiccup on the log must not cost
-                // the digest, or messages #12..N would be held silently with no summary ever sent.
-                $this->scheduleDigest($message, $destination, $key, $burst, $perTitle);
-            } catch (Throwable $e) {
-                Log::warning('[ops-notify] Could not schedule burst digest for "'.$message->event.'": '.$e->getMessage());
+        try {
+            // Schedule before logging the suppressed row: a DB hiccup on the log must not cost
+            // the digest, or messages #12..N would be held silently with no summary ever sent.
+            $this->ensureDigest($message, $destination, $key, $burst, $perTitle, $guard);
+        } catch (Throwable $e) {
+            Log::warning('[ops-notify] Could not schedule burst digest for "'.$message->event.'": '.$e->getMessage());
 
-                // Without a digest the held messages vanish silently. Let this one through and start
-                // the window over, so the next ones go out too and the next one over the limit tries
-                // to schedule the digest again.
-                try {
-                    $guard->reset($key);
-                } catch (Throwable) {
-                    // The cache is failing too; its keys expire with the window anyway.
-                }
-
-                return false;
-            }
+            // Without a digest the held messages vanish silently. Send this one instead; the next
+            // held message tries to schedule the digest again.
+            return false;
         }
 
         $log = $this->createLog($message, $destination, DeliveryStatus::Suppressed);
@@ -261,14 +252,30 @@ class OpsNotifier
     }
 
     /**
-     * @param  array{held: bool, first: bool, started_at: int, ends_at: Carbon}  $burst
+     * Schedules the window's digest unless another held message already did.
+     *
+     * @param  array{held: bool, started_at: int, ends_at: Carbon}  $burst
      */
-    private function scheduleDigest(OpsMessage $message, Destination $destination, string $key, array $burst, bool $perTitle): void
+    private function ensureDigest(OpsMessage $message, Destination $destination, string $key, array $burst, bool $perTitle, BurstGuard $guard): void
     {
-        $this->route(
-            SendBurstDigest::dispatch($message->event, $destination, $message->level, $burst['started_at'], $key, $perTitle ? $message->title : null)
-                ->delay($burst['ends_at'])
-        );
+        if (! $guard->claimDigest($key, $burst['started_at'])) {
+            return;
+        }
+
+        try {
+            $this->route(
+                SendBurstDigest::dispatch($message->event, $destination, $message->level, $burst['started_at'], $key, $perTitle ? $message->title : null)
+                    ->delay($burst['ends_at'])
+            );
+        } catch (Throwable $e) {
+            try {
+                $guard->releaseDigest($key, $burst['started_at']);
+            } catch (Throwable) {
+                // The cache is failing too: the claim expires on its own, and the count is one high.
+            }
+
+            throw $e;
+        }
     }
 
     private function dispatch(OpsMessage $message, Destination $destination, ?OpsNotifyLog $log): void

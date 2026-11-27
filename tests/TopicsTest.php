@@ -112,6 +112,16 @@ describe('settings slide-over', function () {
         Http::assertNotSent(fn (Request $request) => str_ends_with($request->url(), '/createForumTopic'));
     });
 
+    it('says Create topic cannot run when the default channel is not defined', function () {
+        config(['ops-notify.default_channel' => 'missing']);
+        app(ChannelManager::class)->forgetChannels();
+
+        Livewire::test(OpsNotifyPage::class)
+            ->mountAction('settings')
+            ->callAction(TestAction::make('createTopic')->schemaComponent('topics', 'mountedActionSchema0'), data: ['name' => 'Komentarze'])
+            ->assertNotified(Notification::make()->danger()->title('Topic not created')->body('Ops notify channel [missing] is not defined.'));
+    });
+
     it('collapses saved lists and summarises them in the section header', function () {
         app(SettingsStore::class)->save([
             'telegram_topics' => [['id' => '3', 'name' => 'Zapytania'], ['id' => '2', 'name' => 'Błędy']],

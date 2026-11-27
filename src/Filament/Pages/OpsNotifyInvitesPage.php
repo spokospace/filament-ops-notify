@@ -159,9 +159,10 @@ class OpsNotifyInvitesPage extends Page implements HasTable
             return $e->getMessage();
         }
 
-        // Settings now point at another chat: Telegram's own error ("chat not found", "not
-        // enough rights") would not tell the admin that the link belongs to the old chat.
-        if (filled($chatId) && $chatId !== $telegram->configuredChatId()) {
+        // Settings now point at another chat: Telegram's own refusal ("chat not found", "not
+        // enough rights") would not tell the admin that the link belongs to the old chat. A
+        // timeout or a 5xx is not a refusal; a retry may work, so it is shown as it is.
+        if ($e->permanent && filled($chatId) && $chatId !== $telegram->configuredChatId()) {
             return Trans::get('invites.other_chat', ['chat' => $chatId, 'error' => $e->getMessage()]);
         }
 

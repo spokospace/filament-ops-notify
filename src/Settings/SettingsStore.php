@@ -156,6 +156,11 @@ class SettingsStore
      */
     public function save(array $values): void
     {
+        // Fails while the cache is down, before the database changes. Otherwise the save would
+        // apply now (rows are read from the database during an outage) and silently revert once
+        // the cache came back with the old rows.
+        Cache::forget(self::CACHE_KEY);
+
         $upserts = [];
         $deletes = [];
 

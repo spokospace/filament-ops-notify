@@ -19,6 +19,7 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use Spokospace\OpsNotify\Channels\Telegram\TelegramChannel;
 use Spokospace\OpsNotify\Enums\SeenEventStatus;
 use Spokospace\OpsNotify\Exceptions\ChannelException;
@@ -535,12 +536,14 @@ class SettingsForm
                 $telegram = null;
 
                 try {
-                    // Inside the try: a default channel that is not Telegram throws here, and its
-                    // message is the notification.
+                    // Inside the try: a default channel that is undefined or not Telegram throws
+                    // here, and its message is the notification.
                     $telegram = $this->telegram();
                     $id = $telegram->createForumTopic($data['name'], filled($data['color'] ?? null) ? (int) $data['color'] : null);
-                } catch (ChannelException $e) {
-                    Notification::make()->danger()->title(Trans::get('settings.topic_not_created'))->body($telegram?->explain($e, 'manage_topics') ?? $e->getMessage())->send();
+                } catch (ChannelException|InvalidArgumentException $e) {
+                    Notification::make()->danger()->title(Trans::get('settings.topic_not_created'))
+                        ->body($telegram !== null && $e instanceof ChannelException ? $telegram->explain($e, 'manage_topics') : $e->getMessage())
+                        ->send();
 
                     return;
                 }
@@ -563,7 +566,7 @@ class SettingsForm
             ->action(function (Get $get, Set $set): void {
                 try {
                     $added = $this->addTopics($get, $set, $this->telegram()->seenTopics());
-                } catch (ChannelException $e) {
+                } catch (ChannelException|InvalidArgumentException $e) {
                     Notification::make()->danger()->title(Trans::get('settings.import_failed'))->body($e->getMessage())->send();
 
                     return;
