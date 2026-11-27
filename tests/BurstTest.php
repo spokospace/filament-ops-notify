@@ -322,10 +322,38 @@ it('reports a window once, even when it got two digests', function () {
     $digest = Queue::pushed(SendBurstDigest::class)->sole();
     Queue::fake();
 
+    // The twin runs while the first digest holds the lock: it leaves the count to that one.
+    $lock = app(BurstGuard::class)->digestLock($digest->key, $digest->windowStartedAt);
+    $lock->get();
+    (clone $digest)->handle(app(OpsNotifier::class), app(BurstGuard::class));
+    Queue::assertNothingPushed();
+    $lock->release();
+
     $digest->handle(app(OpsNotifier::class), app(BurstGuard::class));
     (clone $digest)->handle(app(OpsNotifier::class), app(BurstGuard::class));
 
     Queue::assertPushed(SendOpsMessage::class, 1);
+});
+
+it('sends a message whose digest took until the end of the window to queue, instead of holding it', function () {
+    $this->travelTo(Carbon::parse('2026-11-27 12:00:00'));
+    burst(2);
+
+    // The dispatch of the digest is slow: it returns 3 s before the end, inside the margin.
+    Queue::swap(new class(app()) extends QueueFake
+    {
+        public function later($delay, $job, $data = '', $queue = null): mixed
+        {
+            test()->travelTo(Carbon::parse('2026-11-27 12:04:59'));
+
+            return parent::later($delay, $job, $data, $queue);
+        }
+    });
+    test()->travelTo(Carbon::parse('2026-11-27 12:04:56'));
+    burst(1);
+
+    Queue::assertPushed(SendOpsMessage::class, 1);
+    expect(heldAndReported())->toBe([0, 0]);
 });
 
 it('reports a count held before the upgrade, when every window shared one key', function () {

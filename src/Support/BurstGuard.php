@@ -64,10 +64,16 @@ final class BurstGuard
         $startedAt = (int) Cache::get("{$key}:start", now()->getTimestamp());
 
         return [
-            'over' => $count > $this->limit() && now()->getTimestamp() < $startedAt + $ttl - self::END_MARGIN,
+            'over' => $count > $this->limit() && $this->canHold($startedAt),
             'started_at' => $startedAt,
             'ends_at' => Carbon::createFromTimestamp($startedAt)->addSeconds($ttl),
         ];
+    }
+
+    /** False from END_MARGIN seconds before the window's end, when its digest may be about to run. */
+    public function canHold(int $windowStartedAt): bool
+    {
+        return now()->getTimestamp() < $windowStartedAt + $this->windowMinutes() * 60 - self::END_MARGIN;
     }
 
     /**
@@ -142,12 +148,12 @@ final class BurstGuard
 
     /**
      * One digest of a window at a time. A window can get two (a claim that expired while its
-     * digest was being queued; a queue that delivers a job twice): the second must find the count
-     * already cleared, not report it again.
+     * digest was being queued; a queue that delivers a job twice): they must not both report the
+     * count. Long enough for a slow titles query on a big log table.
      */
     public function digestLock(string $event, int $windowStartedAt): Lock
     {
-        return Cache::lock(self::claimKey($event, $windowStartedAt).':lock', 30);
+        return Cache::lock(self::claimKey($event, $windowStartedAt).':lock', 300);
     }
 
     /**

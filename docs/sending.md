@@ -179,7 +179,7 @@ Every message becomes a queued `SendOpsMessage` job.
   `sync` queue or to `sendNow()`. If the cache is down, the guard holds nothing back and
   duplicates are not merged; the messages are still queued and logged. A message is only held
   once the window's digest is on the queue: if the digest cannot be queued, messages go out and
-  the next one over the limit tries again. Nothing is held in the last 2 seconds of a window.
+  the next one over the limit tries again (after up to a minute, if the cache failed too). Nothing is held in the last 2 seconds of a window.
   Each window has its own count, so two windows in a row get two digests that add up.
 - **Retries:** up to 5 real failures (timeouts, 5xx), with a backoff of 10 s, 30 s, 2 min and
   5 min. Waiting for the rate limit, or for Telegram's `retry_after` after a 429, does not count.

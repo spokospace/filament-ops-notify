@@ -237,13 +237,15 @@ class OpsNotifier
         try {
             // Schedule before logging the suppressed row: a DB hiccup on the log must not cost
             // the digest, or messages #12..N would be held silently with no summary ever sent.
-            if (! $this->digestQueued($message, $destination, $key, $burst, $perTitle, $guard)) {
+            // Checked again after the dispatch: a slow one near the window's end could otherwise
+            // count this message after the digest has read the count.
+            if (! $this->digestQueued($message, $destination, $key, $burst, $perTitle, $guard) || ! $guard->canHold($burst['started_at'])) {
                 return false;
             }
 
             $guard->countHeld($key, $burst['started_at']);
         } catch (Throwable $e) {
-            Log::warning('[ops-notify] Could not schedule burst digest for "'.$message->event.'": '.$e->getMessage());
+            Log::warning('[ops-notify] Could not hold "'.$message->event.'" behind a burst digest, sending it: '.$e->getMessage());
 
             // Without a digest a held message would vanish silently: send it. The next message
             // over the limit tries to queue the digest again.
